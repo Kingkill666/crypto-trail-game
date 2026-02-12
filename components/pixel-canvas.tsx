@@ -29,9 +29,6 @@ const LAMBO_COLORS: Record<string, Record<number, string>> = {
   neon: { 1: "#0a1a1a", 2: "#06b6d4", 3: "#22d3ee", 4: "#222222", 5: "#333333", 6: "#ff44ff" },
 };
 
-// ── ROAD TILES ──
-const ROAD_PATTERN = [1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1];
-
 // ── BUILDING SPRITES (8-bit cityscape background) ──
 const BUILDINGS = [
   // Tall building
@@ -40,14 +37,6 @@ const BUILDINGS = [
   { pixels: [[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]], color: "#1a1a33" },
   // Medium building with antenna
   { pixels: [[0,1,0],[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]], color: "#222244" },
-];
-
-// ── STAR TWINKLE PATTERN ──
-const STAR_FRAMES = [
-  [0,1,0, 1,1,1, 0,1,0],
-  [0,0,0, 0,1,0, 0,0,0],
-  [0,1,0, 1,1,1, 0,1,0],
-  [1,0,1, 0,1,0, 1,0,1],
 ];
 
 interface PixelCanvasProps {

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { PixelTrailCanvas, PixelTitleCanvas, PixelEventCanvas, PixelBridgeCanvas } from "./pixel-canvas";
 
 // ═══════════════════════════════════════════════════════════════
-// CRYPTO TRAIL — A Degen Oregon Trail for Farcaster (8-BIT EDITION)
+// CRYPTO TRAIL - A Degen Oregon Trail for Farcaster (8-BIT EDITION)
 // ═══════════════════════════════════════════════════════════════
 
 // ── GAME DATA ──────────────────────────────────────────────────
