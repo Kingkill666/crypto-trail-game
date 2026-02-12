@@ -2278,7 +2278,7 @@ export default function CryptoTrail() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "20px", textAlign: "center" }}>
 
           <h1 style={{
-            fontSize: "clamp(32px, 8vw, 64px)", fontWeight: "900", margin: "0 0 4px",
+            fontSize: "clamp(48px, 12vw, 96px)", fontWeight: "900", margin: "0 0 4px",
             color: "#7c3aed",
             textShadow: "3px 3px 0px #06b6d4, 6px 6px 0px #10b981",
             lineHeight: 1.1,
