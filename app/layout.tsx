@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Crypto Trail - 8-Bit Degen Edition',
+  description: 'A degen Oregon Trail for Farcaster. Survive rug pulls, rogue AI agents, and bridge exploits on your journey to Mainnet.',
   generator: 'v0.app',
   icons: {
     icon: [
