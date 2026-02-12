@@ -1,11 +1,408 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { PixelTrailCanvas, PixelTitleCanvas, PixelEventCanvas, PixelBridgeCanvas } from "./pixel-canvas";
 
 // ═══════════════════════════════════════════════════════════════
 // CRYPTO TRAIL - A Degen Oregon Trail for Farcaster (8-BIT EDITION)
+// Farcaster Mini App — Target: 424×695px web, device-sized mobile
 // ═══════════════════════════════════════════════════════════════
+
+// ── FARCASTER SDK (safe import — works outside Farcaster too) ──
+let farcasterSdk: any = null;
+if (typeof window !== "undefined") {
+  try {
+    import("@farcaster/miniapp-sdk").then((mod) => {
+      farcasterSdk = mod.sdk;
+    }).catch(() => {});
+  } catch (e) { /* not in Farcaster context */ }
+}
+
+function useFarcasterReady() {
+  const called = useRef(false);
+  useEffect(() => {
+    if (!called.current) {
+      called.current = true;
+      if (farcasterSdk?.actions?.ready) {
+        farcasterSdk.actions.ready();
+      }
+    }
+  }, []);
+}
+
+async function shareGameCast(text: string, url?: string) {
+  if (farcasterSdk?.actions?.composeCast) {
+    await farcasterSdk.actions.composeCast({
+      text,
+      embeds: url ? [url] : [],
+    });
+  }
+}
+
+// ── 8-BIT LAMBORGHINI SPRITE (32x12 pixels) ──
+const LAMBO_SPRITE = [
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,2,2,2,2,1,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,3,3,3,3,3,2,2,1,1,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,1,1,1,2,2,2,2,2,3,3,3,3,3,3,3,3,2,2,2,1,1,0,0,0,0,0],
+  [0,0,0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,0,0,0,0],
+  [0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,0,0],
+  [0,1,4,4,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,4,4,1,0],
+  [1,4,4,4,4,4,2,5,5,5,2,2,2,2,2,2,2,2,2,2,2,2,5,5,5,2,4,4,4,4,4,1],
+  [1,4,4,4,4,4,2,5,6,5,2,2,2,2,2,2,2,2,2,2,2,2,5,6,5,2,4,4,4,4,4,1],
+  [0,1,4,4,4,2,2,5,5,5,2,2,2,2,2,2,2,2,2,2,2,2,5,5,5,2,2,4,4,4,1,0],
+  [0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+];
+
+const LAMBO_COLORS: Record<string, Record<number, string>> = {
+  red: { 1: "#1a0a0a", 2: "#cc1111", 3: "#ff3333", 4: "#222222", 5: "#333333", 6: "#ffff44" },
+  yellow: { 1: "#1a1a0a", 2: "#ccaa00", 3: "#ffdd00", 4: "#222222", 5: "#333333", 6: "#ffffff" },
+  blue: { 1: "#0a0a1a", 2: "#1155cc", 3: "#3388ff", 4: "#222222", 5: "#333333", 6: "#ffff44" },
+  green: { 1: "#0a1a0a", 2: "#11aa33", 3: "#33ff66", 4: "#222222", 5: "#333333", 6: "#ffff44" },
+  purple: { 1: "#0f0a1a", 2: "#7c3aed", 3: "#a855f7", 4: "#222222", 5: "#333333", 6: "#ffff44" },
+  neon: { 1: "#0a1a1a", 2: "#06b6d4", 3: "#22d3ee", 4: "#222222", 5: "#333333", 6: "#ff44ff" },
+};
+
+const BUILDINGS = [
+  { pixels: [[1,1,1,1],[1,0,1,0],[1,1,1,1],[1,0,1,0],[1,1,1,1],[1,0,1,0],[1,1,1,1]], color: "#1a2244" },
+  { pixels: [[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]], color: "#1a1a33" },
+  { pixels: [[0,1,0],[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]], color: "#222244" },
+];
+
+// ── PIXEL CANVAS COMPONENTS (inlined) ──
+
+function PixelTrailCanvas({ width = 600, height = 120, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor = "red" }: {
+  width?: number; height?: number; animFrame: number; milesTraveled: number; totalMiles: number;
+  tombstones: Array<{ mile: number }>; nextLandmarkEmoji: string; lamboColor?: string;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const W = width, H = height;
+    ctx.fillStyle = "#0a0a12";
+    ctx.fillRect(0, 0, W, H);
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
+    skyGrad.addColorStop(0, "#050510");
+    skyGrad.addColorStop(1, "#0a0a1e");
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H * 0.5);
+    const starSeed = 42;
+    for (let i = 0; i < 20; i++) {
+      const sx = ((starSeed * (i + 1) * 7) % W);
+      const sy = ((starSeed * (i + 1) * 3) % (H * 0.4));
+      const twinkle = (animFrame + i) % 4;
+      ctx.fillStyle = twinkle < 2 ? "#ffffff" : "#666666";
+      ctx.globalAlpha = twinkle === 0 ? 0.9 : twinkle === 1 ? 0.4 : twinkle === 2 ? 0.7 : 0.3;
+      const size = i % 3 === 0 ? 2 : 1;
+      ctx.fillRect(sx, sy, size, size);
+    }
+    ctx.globalAlpha = 1;
+    const scroll = (animFrame * 4) % W;
+    for (let bi = 0; bi < 12; bi++) {
+      const bx = ((bi * 55 - scroll + W * 2) % (W + 100)) - 50;
+      const bldg = BUILDINGS[bi % BUILDINGS.length];
+      const px = 3;
+      const by = H * 0.55 - bldg.pixels.length * px;
+      ctx.globalAlpha = 0.3;
+      bldg.pixels.forEach((row, ry) => {
+        row.forEach((p, rx) => {
+          if (p) {
+            ctx.fillStyle = bldg.color;
+            ctx.fillRect(bx + rx * px, by + ry * px, px, px);
+          } else {
+            if ((animFrame + bi + ry) % 5 < 2) {
+              ctx.fillStyle = "#ffff0033";
+              ctx.fillRect(bx + rx * px, by + ry * px, px, px);
+            }
+          }
+        });
+      });
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#111122";
+    ctx.fillRect(0, H * 0.6, W, H * 0.4);
+    const roadY = H * 0.65;
+    ctx.fillStyle = "#1a1a2a";
+    ctx.fillRect(0, roadY, W, 20);
+    ctx.fillStyle = "#333355";
+    ctx.fillRect(0, roadY, W, 1);
+    ctx.fillRect(0, roadY + 19, W, 1);
+    ctx.fillStyle = "#555533";
+    for (let di = 0; di < 30; di++) {
+      const dx = ((di * 25 - animFrame * 6 + W * 3) % (W + 50)) - 25;
+      ctx.fillRect(dx, roadY + 9, 12, 2);
+    }
+    const nearTombs = tombstones.filter((t) => t.mile <= milesTraveled && t.mile > milesTraveled - 200);
+    nearTombs.forEach((t, i) => {
+      const tx = W * 0.1 + (i * W * 0.12);
+      const ty = roadY - 12;
+      ctx.fillStyle = "#555555";
+      ctx.fillRect(tx + 2, ty, 2, 8);
+      ctx.fillRect(tx, ty + 2, 6, 2);
+      ctx.fillStyle = "#444444";
+      ctx.font = "bold 5px monospace";
+      ctx.fillText("RIP", tx - 1, ty - 2);
+    });
+    const colors = LAMBO_COLORS[lamboColor] || LAMBO_COLORS.red;
+    const pxSize = 3;
+    const lamboX = W * 0.35;
+    const lamboY = roadY - LAMBO_SPRITE.length * pxSize + 6;
+    const bounce = animFrame % 3 === 0 ? -1 : animFrame % 3 === 1 ? 0 : -1;
+    LAMBO_SPRITE.forEach((row, ry) => {
+      row.forEach((p, rx) => {
+        if (p > 0) {
+          ctx.fillStyle = colors[p] || "#ff0000";
+          ctx.fillRect(lamboX + rx * pxSize, lamboY + ry * pxSize + bounce, pxSize, pxSize);
+        }
+      });
+    });
+    for (let ei = 0; ei < 4; ei++) {
+      const ex = lamboX - 8 - ei * 6 - ((animFrame * 3 + ei * 7) % 20);
+      const ey = lamboY + LAMBO_SPRITE.length * pxSize * 0.6 + bounce + Math.sin(animFrame + ei) * 2;
+      ctx.globalAlpha = 0.3 - ei * 0.07;
+      ctx.fillStyle = "#aaaaaa";
+      ctx.fillRect(ex, ey, 3 - (ei > 1 ? 1 : 0), 2);
+    }
+    ctx.globalAlpha = 1;
+    if (animFrame % 2 === 0) {
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = "#ffffff";
+      for (let sl = 0; sl < 3; sl++) {
+        const sly = roadY + 3 + sl * 5;
+        const slx = lamboX - 20 - sl * 30 - (animFrame * 4 % 30);
+        ctx.fillRect(slx, sly, 15, 1);
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.font = "16px serif";
+    ctx.globalAlpha = 0.25 + Math.sin(animFrame * 0.3) * 0.1;
+    ctx.fillText(nextLandmarkEmoji, W * 0.85, roadY - 2);
+    ctx.globalAlpha = 1;
+    const barY = H - 8;
+    ctx.fillStyle = "#111133";
+    ctx.fillRect(10, barY, W - 20, 4);
+    const pct = milesTraveled / totalMiles;
+    ctx.fillStyle = "#7c3aed";
+    ctx.fillRect(10, barY, (W - 20) * pct, 4);
+    ctx.fillStyle = "#ff3333";
+    ctx.fillRect(10 + (W - 20) * pct - 2, barY - 1, 4, 6);
+  }, [width, height, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor]);
+  useEffect(() => { draw(); }, [draw]);
+  return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "8px", border: "2px solid #1a1a2e" }} />;
+}
+
+function PixelTitleCanvas({ width = 500, height = 140, animFrame }: { width?: number; height?: number; animFrame: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const W = width, H = height;
+    ctx.fillStyle = "#050508";
+    ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 40; i++) {
+      const sx = (i * 137 + 23) % W;
+      const sy = (i * 89 + 11) % (H * 0.5);
+      const twinkle = (animFrame + i * 3) % 6;
+      ctx.fillStyle = "#ffffff";
+      ctx.globalAlpha = twinkle < 2 ? 0.8 : twinkle < 4 ? 0.3 : 0.6;
+      ctx.fillRect(sx, sy, twinkle === 0 ? 2 : 1, twinkle === 0 ? 2 : 1);
+    }
+    ctx.globalAlpha = 1;
+    const scroll = (animFrame * 3) % W;
+    for (let bi = 0; bi < 15; bi++) {
+      const bx = ((bi * 40 - scroll + W * 2) % (W + 80)) - 40;
+      const bh = 15 + (bi * 7) % 30;
+      const by = H * 0.55 - bh;
+      ctx.fillStyle = `hsl(${240 + bi * 5}, 30%, ${8 + (bi % 3) * 3}%)`;
+      ctx.fillRect(bx, by, 20, bh);
+      for (let wy = 0; wy < bh - 4; wy += 5) {
+        for (let wx = 2; wx < 18; wx += 6) {
+          ctx.fillStyle = (animFrame + bi + wy) % 7 < 3 ? "#ffff0044" : "#00000000";
+          ctx.fillRect(bx + wx, by + wy + 2, 3, 3);
+        }
+      }
+    }
+    ctx.fillStyle = "#0a0a18";
+    ctx.fillRect(0, H * 0.6, W, H * 0.4);
+    const roadY = H * 0.65;
+    ctx.fillStyle = "#15152a";
+    ctx.fillRect(0, roadY, W, 24);
+    ctx.fillStyle = "#222244";
+    ctx.fillRect(0, roadY, W, 1);
+    ctx.fillRect(0, roadY + 23, W, 1);
+    ctx.fillStyle = "#444422";
+    for (let di = 0; di < 30; di++) {
+      const dx = ((di * 25 - animFrame * 8 + W * 3) % (W + 50)) - 25;
+      ctx.fillRect(dx, roadY + 11, 12, 2);
+    }
+    const colors = LAMBO_COLORS.red;
+    const pxSize = 3;
+    const lamboX = ((animFrame * 5) % (W + 120)) - 120;
+    const lamboYPos = roadY - LAMBO_SPRITE.length * pxSize + 8;
+    const bounce = animFrame % 3 === 0 ? -1 : 0;
+    LAMBO_SPRITE.forEach((row, ry) => {
+      row.forEach((p, rx) => {
+        if (p > 0) {
+          ctx.fillStyle = colors[p] || "#ff0000";
+          ctx.fillRect(lamboX + rx * pxSize, lamboYPos + ry * pxSize + bounce, pxSize, pxSize);
+        }
+      });
+    });
+    for (let ei = 0; ei < 5; ei++) {
+      const ex = lamboX - 6 - ei * 5 - ((animFrame * 4 + ei * 5) % 15);
+      const ey = lamboYPos + 20 + bounce + Math.sin(animFrame * 0.5 + ei) * 2;
+      ctx.globalAlpha = 0.25 - ei * 0.04;
+      ctx.fillStyle = "#aaaaaa";
+      ctx.fillRect(ex, ey, 3, 2);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = "#ff3333";
+    ctx.fillRect(lamboX, roadY + 10, LAMBO_SPRITE[0].length * pxSize, 14);
+    ctx.globalAlpha = 1;
+  }, [width, height, animFrame]);
+  useEffect(() => { draw(); }, [draw]);
+  return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "8px", border: "2px solid #1a1a2e" }} />;
+}
+
+function PixelEventCanvas({ width = 400, height = 100, animFrame, eventType }: { width?: number; height?: number; animFrame: number; eventType: "good" | "bad" | "neutral" }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const W = width, H = height;
+    ctx.fillStyle = "#050508";
+    ctx.fillRect(0, 0, W, H);
+    if (eventType === "good") {
+      for (let i = 0; i < 12; i++) {
+        const cx = (i * 37 + 20) % W;
+        const cy = H - ((animFrame * 3 + i * 20) % (H + 20));
+        const sparkle = (animFrame + i) % 4;
+        ctx.fillStyle = sparkle < 2 ? "#ffd700" : "#ffaa00";
+        ctx.globalAlpha = 0.6 - (i % 4) * 0.1;
+        const s = 3;
+        ctx.fillRect(cx, cy - s, s, s);
+        ctx.fillRect(cx - s, cy, s, s);
+        ctx.fillRect(cx + s, cy, s, s);
+        ctx.fillRect(cx, cy + s, s, s);
+        ctx.fillRect(cx, cy, s, s);
+      }
+      ctx.globalAlpha = 1;
+      for (let x = 0; x < W; x += 2) {
+        const wave = Math.sin(x * 0.02 + animFrame * 0.3) * 10 + H * 0.5;
+        ctx.fillStyle = "#10b98122";
+        ctx.fillRect(x, wave, 2, 3);
+      }
+    } else if (eventType === "bad") {
+      for (let i = 0; i < 8; i++) {
+        const gy = ((animFrame * 7 + i * 29) % H);
+        const gw = 20 + (i * 13) % 60;
+        const gx = (i * 47 + animFrame * 3) % W;
+        ctx.fillStyle = i % 2 === 0 ? "#ff000033" : "#ff444422";
+        ctx.fillRect(gx, gy, gw, 2);
+      }
+      if (animFrame % 4 < 2) {
+        ctx.fillStyle = "#ff000008";
+        ctx.fillRect(0, 0, W, H);
+      }
+      for (let i = 0; i < 6; i++) {
+        const dx = (i * 71 + 10) % W;
+        const dy = ((animFrame * 4 + i * 30) % (H + 20)) - 10;
+        ctx.fillStyle = "#ff4444";
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(dx, dy, 2, 2);
+        ctx.fillRect(dx + 1, dy + 2, 2, 2);
+      }
+      ctx.globalAlpha = 1;
+    } else {
+      for (let i = 0; i < 15; i++) {
+        const col = (i * 31) % W;
+        for (let j = 0; j < 5; j++) {
+          const row = ((animFrame * 2 + i * 11 + j * 17) % H);
+          ctx.fillStyle = "#f59e0b";
+          ctx.globalAlpha = 0.15 - j * 0.02;
+          ctx.fillRect(col, row, 2, 4);
+        }
+      }
+      ctx.globalAlpha = 1;
+      const scanY = (animFrame * 3) % H;
+      ctx.fillStyle = "#f59e0b11";
+      ctx.fillRect(0, scanY, W, 4);
+    }
+    const glowColor = eventType === "good" ? "#10b981" : eventType === "bad" ? "#ef4444" : "#f59e0b";
+    ctx.strokeStyle = glowColor;
+    ctx.globalAlpha = 0.3 + Math.sin(animFrame * 0.5) * 0.15;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, 1, W - 2, H - 2);
+    ctx.globalAlpha = 1;
+  }, [width, height, animFrame, eventType]);
+  useEffect(() => { draw(); }, [draw]);
+  return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "8px" }} />;
+}
+
+function PixelBridgeCanvas({ width = 400, height = 120, animFrame }: { width?: number; height?: number; animFrame: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const W = width, H = height;
+    ctx.fillStyle = "#050510";
+    ctx.fillRect(0, 0, W, H);
+    const bridgeY = H * 0.5;
+    ctx.strokeStyle = "#333355";
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 8; i++) {
+      const cx = i * (W / 7);
+      ctx.beginPath();
+      ctx.moveTo(cx, bridgeY - 20);
+      ctx.lineTo(cx, bridgeY);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "#222244";
+    ctx.fillRect(0, bridgeY, W, 8);
+    ctx.fillStyle = "#333366";
+    ctx.fillRect(W * 0.15, bridgeY - 30, 8, 38);
+    ctx.fillRect(W * 0.85 - 8, bridgeY - 30, 8, 38);
+    for (let i = 0; i < 10; i++) {
+      const px = ((animFrame * 4 + i * 40) % (W + 20)) - 10;
+      const py = bridgeY - 3 + Math.sin(px * 0.05 + i) * 2;
+      ctx.fillStyle = (animFrame + i) % 3 === 0 ? "#06b6d4" : "#7c3aed";
+      ctx.globalAlpha = 0.6;
+      ctx.fillRect(px, py, 3, 3);
+    }
+    ctx.globalAlpha = 1;
+    const colors = LAMBO_COLORS.red;
+    const pxSize = 2;
+    const lamboX = ((animFrame * 3) % (W + 100)) - 80;
+    const lamboYPos = bridgeY - LAMBO_SPRITE.length * pxSize + 2;
+    LAMBO_SPRITE.forEach((row, ry) => {
+      row.forEach((p, rx) => {
+        if (p > 0) {
+          ctx.fillStyle = colors[p] || "#ff0000";
+          ctx.fillRect(lamboX + rx * pxSize, lamboYPos + ry * pxSize, pxSize, pxSize);
+        }
+      });
+    });
+    for (let x = 0; x < W; x += 4) {
+      const wy = bridgeY + 12 + Math.sin(x * 0.03 + animFrame * 0.2) * 3;
+      ctx.fillStyle = "#06b6d4";
+      ctx.globalAlpha = 0.08;
+      ctx.fillRect(x, wy, 4, 2);
+    }
+    ctx.globalAlpha = 1;
+  }, [width, height, animFrame]);
+  useEffect(() => { draw(); }, [draw]);
+  return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "8px", border: "2px solid #1a1a2e" }} />;
+}
 
 // ── GAME DATA ──────────────────────────────────────────────────
 
@@ -472,6 +869,46 @@ function generateNFTImage(gameData: {
   return canvas.toDataURL("image/png");
 }
 
+// ── LEADERBOARD HELPERS ──
+
+const STORAGE_KEY = "crypto-trail-leaderboard";
+
+async function loadLeaderboard() {
+  try {
+    if (typeof window !== "undefined" && (window as any).storage) {
+      const result = await (window as any).storage.get(STORAGE_KEY, true);
+      if (result && result.value) return JSON.parse(result.value);
+    }
+  } catch (e) { /* ignore */ }
+  try {
+    const raw = typeof window !== "undefined" && window.localStorage ? window.localStorage.getItem(STORAGE_KEY) : null;
+    if (raw) return JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+  return [];
+}
+
+async function saveLeaderboard(entries: any[]) {
+  try {
+    const json = JSON.stringify(entries);
+    if (typeof window !== "undefined" && (window as any).storage) {
+      await (window as any).storage.set(STORAGE_KEY, json, true);
+    }
+    if (typeof window !== "undefined" && window.localStorage) {
+      window.localStorage.setItem(STORAGE_KEY, json);
+    }
+  } catch (e) { /* ignore */ }
+}
+
+function formatTimeAgo(ts: number) {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 // ── STYLES ──
 
 const CSS = `
@@ -636,6 +1073,7 @@ function EventPrompt({ children, type = "neutral" }: { children: React.ReactNode
 // ── MAIN COMPONENT ─────────────────────────────────────────────
 
 export default function CryptoTrail() {
+  useFarcasterReady();
   const [phase, setPhase] = useState("title");
   const [playerClass, setPlayerClass] = useState<typeof CLASSES[0] | null>(null);
   const [party, setParty] = useState<Array<{ id: number; name: string; health: number; affliction: typeof AFFLICTIONS[0] | null; alive: boolean }>>([]);
@@ -647,7 +1085,6 @@ export default function CryptoTrail() {
   const [tokens, setTokens] = useState(0);
   const [morale, setMorale] = useState(75);
   const [pace, setPace] = useState("normal");
-  const [riskLevel] = useState("degen");
   const [currentEvent, setCurrentEvent] = useState<typeof TRAIL_EVENTS[0] | null>(null);
   const [currentLandmark, setCurrentLandmark] = useState<typeof LANDMARKS[0] | null>(null);
   const [log, setLog] = useState<Array<{ text: string; day: number }>>([]);
@@ -659,14 +1096,17 @@ export default function CryptoTrail() {
   const [flashColor, setFlashColor] = useState<string | null>(null);
   const [nftImage, setNftImage] = useState<string | null>(null);
   const [nftMintState, setNftMintState] = useState("idle");
-  const [nftMintTx, setNftMintTx] = useState<string | null>(null);
   const [eventAnimPhase, setEventAnimPhase] = useState(0); // 0 = intro, 1 = content, 2 = ready
   const [shopItems, setShopItems] = useState({ audits: 0, hardwareWallets: 0, vpn: 0, aiAgent: 0 });
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
 
   const totalMiles = 900;
   const paceMap: Record<string, number> = { slow: 8, normal: 14, fast: 22, degen: 30 };
-  const riskMap: Record<string, number> = { conservative: 0.6, moderate: 1.0, aggressive: 1.5, degen: 2.5 };
+  const paceRiskMap: Record<string, number> = { slow: 0.5, normal: 1.0, fast: 1.8, degen: 3.0 };
+  const paceMoraleCost: Record<string, number> = { slow: 1, normal: 0, fast: -1, degen: -3 };
+  const paceStableMult: Record<string, number> = { slow: 1, normal: 1, fast: 1.5, degen: 2 };
 
   // Pixel animation timer - faster for smoother 8-bit feel
   useEffect(() => {
@@ -678,6 +1118,33 @@ export default function CryptoTrail() {
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
   }, [log]);
+
+  // Load leaderboard
+  useEffect(() => {
+    loadLeaderboard().then(setLeaderboard);
+  }, []);
+
+  // Submit score on victory/gameover
+  useEffect(() => {
+    if ((phase === "victory" || phase === "gameover") && !scoreSubmitted) {
+      setScoreSubmitted(true);
+      const score = calcScore();
+      const entry = {
+        name: partyNames[0] || "Anon",
+        score,
+        day,
+        miles: milesTraveled,
+        survived: phase === "victory",
+        timestamp: Date.now(),
+      };
+      loadLeaderboard().then((lb: any[]) => {
+        const updated = [...lb, entry].sort((a, b) => b.score - a.score).slice(0, 20);
+        saveLeaderboard(updated);
+        setLeaderboard(updated);
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   // Event animation sequence
   useEffect(() => {
@@ -747,16 +1214,12 @@ export default function CryptoTrail() {
     const milesPerDay = paceMap[pace] + rng(-3, 3);
     const newMiles = Math.min(totalMiles, milesTraveled + milesPerDay);
     const newDay = day + 1;
-    const risk = riskMap[riskLevel];
+    const risk = paceRiskMap[pace];
 
-    let newStables = stables - Math.ceil(party.filter((p) => p.alive).length * 2 * (pace === "degen" ? 2 : 1));
-    let newMorale = morale;
+    let newStables = stables - Math.ceil(party.filter((p) => p.alive).length * 2 * paceStableMult[pace]);
+    let newMorale = morale + paceMoraleCost[pace];
     const newEth = eth;
     let updatedParty = [...party];
-
-    if (pace === "degen") newMorale -= 3;
-    if (pace === "fast") newMorale -= 1;
-    if (pace === "slow") newMorale += 1;
 
     if (newStables <= 0) {
       newStables = 0;
@@ -1486,9 +1949,29 @@ export default function CryptoTrail() {
                 ))}
               </div>
             )}
-            <PixelBtn onClick={() => window.location.reload()} color="#7c3aed" fullWidth>
-              {'>'} TRY AGAIN {'<'}
-            </PixelBtn>
+            <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+              <PixelBtn onClick={() => shareGameCast(`Got REKT on Crypto Trail after ${milesTraveled} miles in ${day} days. Can you survive the crypto frontier? 💀`)} color="#7c3aed" fullWidth>
+                SHARE
+              </PixelBtn>
+              <PixelBtn onClick={() => window.location.reload()} color="#333" textColor="#888" fullWidth>
+                TRY AGAIN
+              </PixelBtn>
+            </div>
+            {leaderboard.length > 0 && (
+              <div style={{ marginTop: "12px", textAlign: "left" }}>
+                <div style={{ fontSize: "10px", color: "#555", marginBottom: "8px", letterSpacing: "2px", textAlign: "center" }}>LEADERBOARD</div>
+                {leaderboard.slice(0, 5).map((e, i) => (
+                  <div key={i} style={{
+                    display: "flex", justifyContent: "space-between", padding: "4px 8px",
+                    background: i === 0 ? "#1a1a0a" : "#0a0a12", borderBottom: "1px solid #1a1a2e",
+                    fontSize: "10px", color: i === 0 ? "#ffd700" : "#666",
+                  }}>
+                    <span>{i + 1}. {e.name}</span>
+                    <span>{e.score?.toLocaleString()} {e.survived ? "✓" : "💀"}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </EventPrompt>
         </div>
       </div>
@@ -1604,9 +2087,30 @@ export default function CryptoTrail() {
             </div>
           )}
 
-          <PixelBtn onClick={() => window.location.reload()} color="#333" textColor="#888" fullWidth>
-            {'>'} PLAY AGAIN {'<'}
-          </PixelBtn>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+            <PixelBtn onClick={() => shareGameCast(`Made it to Mainnet on Crypto Trail! Score: ${score.toLocaleString()} (${rarity.toUpperCase()}) in ${day} days. Can you beat my score? 🏆`)} color="#7c3aed" fullWidth>
+              SHARE
+            </PixelBtn>
+            <PixelBtn onClick={() => window.location.reload()} color="#333" textColor="#888" fullWidth>
+              PLAY AGAIN
+            </PixelBtn>
+          </div>
+
+          {leaderboard.length > 0 && (
+            <div style={{ textAlign: "left", marginBottom: "16px" }}>
+              <div style={{ fontSize: "10px", color: "#555", marginBottom: "8px", letterSpacing: "2px", textAlign: "center" }}>LEADERBOARD</div>
+              {leaderboard.slice(0, 5).map((e, i) => (
+                <div key={i} style={{
+                  display: "flex", justifyContent: "space-between", padding: "4px 8px",
+                  background: i === 0 ? "#1a1a0a" : "#0a0a12", borderBottom: "1px solid #1a1a2e",
+                  fontSize: "10px", color: i === 0 ? "#ffd700" : "#666",
+                }}>
+                  <span>{i + 1}. {e.name}</span>
+                  <span>{e.score?.toLocaleString()} {e.survived ? "✓" : "💀"}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
