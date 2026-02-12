@@ -2375,6 +2375,20 @@ export default function CryptoTrail() {
             </div>
           )}
 
+          <div style={{ marginTop: "16px" }}>
+            <PixelBtn
+              onClick={() => shareGameCast(
+                `The year is 2026. AI took your job. Your portfolio is rekt. Now you must lead 4 degens from Genesis Block to Mainnet.\n\nDodge rug pulls. Cross sketchy bridges. Fight rogue AI agents.\n\nCan you survive the Crypto Trail? 👇`,
+                null,
+                `${APP_URL}/images/share/hero.png`
+              )}
+              color="#7c3aed"
+              fullWidth
+            >
+              SHARE ON FARCASTER
+            </PixelBtn>
+          </div>
+
           <div style={{
             marginTop: "24px", fontSize: "9px", color: "#fff", maxWidth: "400px", letterSpacing: "2px",
           }}>
