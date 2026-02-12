@@ -6,9 +6,9 @@ export async function GET() {
   return NextResponse.json({
     // Generate your account association at https://www.base.dev/preview?tab=account
     accountAssociation: {
-      header: "eyJmaWQiOjAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIn0",
+      header: "eyJmaWQiOjEwMTM0OTEsInR5cGUiOiJhdXRoIiwia2V5IjoiMHgyNTdDYmU4OTk2ODQ5NUMzYUU4QzgxQmNjQjhCRTdmMjU3Q0Q1ZjY2In0",
       payload: "eyJkb21haW4iOiJjcnlwdG8tdHJhaWwtZ2FtZS52ZXJjZWwuYXBwIn0",
-      signature: "REPLACE_WITH_YOUR_SIGNATURE",
+      signature: "32BRqu2C7hG38y9Wc9+zI7sa/3FhYzpuleR90HQfA+N4KRTGuGmU75sRl2zzfNJiU3XkOCnn+JXKxwdLuW7Hnxs=",
     },
     miniapp: {
       version: "1",
