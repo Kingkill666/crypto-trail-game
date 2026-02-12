@@ -2297,7 +2297,7 @@ export default function CryptoTrail() {
             8-BIT DEGEN EDITION
           </div>
           <div style={{
-            fontSize: "clamp(12px, 2.5vw, 15px)", color: "#666", marginBottom: "32px", maxWidth: "450px",
+            fontSize: "clamp(12px, 2.5vw, 15px)", color: "#fff", marginBottom: "32px", maxWidth: "450px",
             lineHeight: "1.6",
           }}>
             The year is 2026. AI took your job, your portfolio is rekt, and you are heading to Mainnet.
@@ -2310,7 +2310,7 @@ export default function CryptoTrail() {
 
           {/* Entry fee info */}
           <div style={{
-            fontSize: "10px", color: "#666", marginBottom: "12px", letterSpacing: "2px",
+            fontSize: "10px", color: "#fff", marginBottom: "12px", letterSpacing: "2px",
           }}>
             ENTRY: ${gamePayment.entryFeeUsd.toFixed(2)} USD
             {gamePayment.entryFeeEth && (
@@ -2348,7 +2348,7 @@ export default function CryptoTrail() {
             <div style={{ marginTop: "12px", fontSize: "10px", color: "#ef4444", letterSpacing: "1px", maxWidth: "350px" }}>
               {gamePayment.errorMsg || "TRANSACTION FAILED"}
               <br />
-              <span style={{ color: "#666", fontSize: "9px" }}>TAP ABOVE TO TRY AGAIN</span>
+              <span style={{ color: "#fff", fontSize: "9px" }}>TAP ABOVE TO TRY AGAIN</span>
             </div>
           )}
 
@@ -2421,7 +2421,7 @@ export default function CryptoTrail() {
           </div>
           {[0, 1, 2, 3].map((i) => (
             <div key={i} style={{ marginBottom: "14px", animation: `pixelSlideUp 0.3s ease-out ${i * 0.1}s both` }}>
-              <label style={{ fontSize: "10px", color: "#666", display: "block", marginBottom: "4px", letterSpacing: "2px", textTransform: "uppercase" }}>
+              <label style={{ fontSize: "10px", color: "#fff", display: "block", marginBottom: "4px", letterSpacing: "2px", textTransform: "uppercase" }}>
                 {i === 0 ? "> PARTY LEADER (YOU)" : `> DEGEN #${i + 1}`}
               </label>
               <input
@@ -2488,7 +2488,7 @@ export default function CryptoTrail() {
               }}>
                 <div>
                   <div style={{ fontSize: "14px", fontWeight: "700", letterSpacing: "1px" }}>{item.emoji} {item.name.toUpperCase()}</div>
-                  <div style={{ fontSize: "10px", color: "#666", letterSpacing: "1px" }}>{item.desc}</div>
+                  <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "1px" }}>{item.desc}</div>
                   <div style={{ fontSize: "11px", color: "#f59e0b", marginTop: "4px" }}>
                     OWNED:{(shopItems as Record<string, number>)[item.key]} | COST:{item.cost} ETH
                   </div>
@@ -2588,7 +2588,7 @@ export default function CryptoTrail() {
               {currentLandmark?.name?.toUpperCase() || "THE BRIDGE"}
             </h2>
             <p style={{
-              color: "#666", fontSize: "12px", marginBottom: "24px", letterSpacing: "1px",
+              color: "#fff", fontSize: "12px", marginBottom: "24px", letterSpacing: "1px",
               animation: eventAnimPhase >= 2 ? "pixelFadeIn 0.3s ease-out" : "none",
               opacity: eventAnimPhase >= 2 ? 1 : 0,
             }}>
@@ -2695,7 +2695,7 @@ export default function CryptoTrail() {
               <div style={{ fontSize: "10px", color: "#555", letterSpacing: "4px", marginBottom: "8px" }}>
                 // DEGEN TRADING TERMINAL //
               </div>
-              <div style={{ fontSize: "10px", color: "#666", marginBottom: "20px", letterSpacing: "2px" }}>
+              <div style={{ fontSize: "10px", color: "#fff", marginBottom: "20px", letterSpacing: "2px" }}>
                 ROUND {tradeState.rounds + 1}/{tradeState.maxRounds} | {market.emoji} {market.name.toUpperCase()}
               </div>
               <div style={{
@@ -2710,7 +2710,7 @@ export default function CryptoTrail() {
                 }}>
                   {tradeState.price} ETH
                 </div>
-                <div style={{ fontSize: "10px", color: "#666", letterSpacing: "1px" }}>
+                <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "1px" }}>
                   HOLDING: {tradeState.bought} | WALLET: {eth} ETH
                 </div>
               </div>
@@ -2757,7 +2757,7 @@ export default function CryptoTrail() {
               color: "#ef4444", fontSize: "32px", marginBottom: "8px", letterSpacing: "6px",
               textShadow: "3px 3px 0px #991111",
             }}>REKT</h1>
-            <p style={{ color: "#666", fontSize: "13px", marginBottom: "6px", letterSpacing: "1px" }}>
+            <p style={{ color: "#fff", fontSize: "13px", marginBottom: "6px", letterSpacing: "1px" }}>
               YOUR ENTIRE PARTY HAS BEEN WIPED OUT.
             </p>
             <p style={{ color: "#444", fontSize: "11px", marginBottom: "24px", letterSpacing: "1px" }}>
@@ -2769,7 +2769,7 @@ export default function CryptoTrail() {
                 {tombstones.map((t, i) => (
                   <div key={i} style={{
                     padding: "8px", background: "#0a0a12", border: "1px solid #1a1a2e",
-                    marginBottom: "4px", fontSize: "10px", color: "#666", letterSpacing: "0.5px",
+                    marginBottom: "4px", fontSize: "10px", color: "#fff", letterSpacing: "0.5px",
                   }}>
                     {t.epitaph}
                   </div>
@@ -2791,7 +2791,7 @@ export default function CryptoTrail() {
                   <div key={i} style={{
                     display: "flex", justifyContent: "space-between", padding: "4px 8px",
                     background: i === 0 ? "#1a1a0a" : "#0a0a12", borderBottom: "1px solid #1a1a2e",
-                    fontSize: "10px", color: i === 0 ? "#ffd700" : "#666",
+                    fontSize: "10px", color: i === 0 ? "#ffd700" : "#fff",
                   }}>
                     <span>{i + 1}. {e.name}</span>
                     <span>{e.score?.toLocaleString()} {e.survived ? "✓" : "💀"}</span>
@@ -2840,7 +2840,7 @@ export default function CryptoTrail() {
           }}>
             YOU MADE IT TO MAINNET!
           </h1>
-          <p style={{ color: "#666", fontSize: "11px", marginBottom: "24px", letterSpacing: "2px" }}>
+          <p style={{ color: "#fff", fontSize: "11px", marginBottom: "24px", letterSpacing: "2px" }}>
             {day} DAYS ACROSS THE CRYPTO FRONTIER
           </p>
 
@@ -2858,7 +2858,7 @@ export default function CryptoTrail() {
                 alignItems: "center", justifyContent: "center", background: "#0a0a12",
               }}>
                 <div style={{ fontSize: "36px", marginBottom: "12px", animation: "spin 2s linear infinite" }}>⛓️</div>
-                <div style={{ color: "#666", fontSize: "11px", letterSpacing: "2px" }}>GENERATING 8-BIT NFT...</div>
+                <div style={{ color: "#fff", fontSize: "11px", letterSpacing: "2px" }}>GENERATING 8-BIT NFT...</div>
                 <div style={{
                   marginTop: "12px", width: "100px", height: "4px", background: "#1a1a2e", overflow: "hidden",
                 }}>
@@ -2987,7 +2987,7 @@ export default function CryptoTrail() {
               <div style={{ marginTop: "4px" }}>
                 <span
                   onClick={handleMintNft}
-                  style={{ color: "#666", fontSize: "9px", cursor: "pointer", textDecoration: "underline" }}
+                  style={{ color: "#fff", fontSize: "9px", cursor: "pointer", textDecoration: "underline" }}
                 >
                   TAP TO RETRY
                 </span>
@@ -3016,12 +3016,12 @@ export default function CryptoTrail() {
               SCORE: {score.toLocaleString()} -- {rarity.toUpperCase()}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px", fontSize: "11px" }}>
-              <div style={{ color: "#666" }}>ETH: <span style={{ color: "#10b981" }}>{eth}</span></div>
-              <div style={{ color: "#666" }}>USDC: <span style={{ color: "#10b981" }}>{stables}</span></div>
-              <div style={{ color: "#666" }}>TOKENS: <span style={{ color: "#10b981" }}>{tokens}</span></div>
-              <div style={{ color: "#666" }}>MORALE: <span style={{ color: "#10b981" }}>{morale}</span></div>
-              <div style={{ color: "#666" }}>SURVIVORS: <span style={{ color: aliveMemberCount >= 3 ? "#10b981" : "#ef4444" }}>{aliveMemberCount}/4</span></div>
-              <div style={{ color: "#666" }}>DAYS: <span style={{ color: "#06b6d4" }}>{day}</span></div>
+              <div style={{ color: "#fff" }}>ETH: <span style={{ color: "#10b981" }}>{eth}</span></div>
+              <div style={{ color: "#fff" }}>USDC: <span style={{ color: "#10b981" }}>{stables}</span></div>
+              <div style={{ color: "#fff" }}>TOKENS: <span style={{ color: "#10b981" }}>{tokens}</span></div>
+              <div style={{ color: "#fff" }}>MORALE: <span style={{ color: "#10b981" }}>{morale}</span></div>
+              <div style={{ color: "#fff" }}>SURVIVORS: <span style={{ color: aliveMemberCount >= 3 ? "#10b981" : "#ef4444" }}>{aliveMemberCount}/4</span></div>
+              <div style={{ color: "#fff" }}>DAYS: <span style={{ color: "#06b6d4" }}>{day}</span></div>
             </div>
           </div>
 
@@ -3064,7 +3064,7 @@ export default function CryptoTrail() {
                 <div key={i} style={{
                   display: "flex", justifyContent: "space-between", padding: "4px 8px",
                   background: i === 0 ? "#1a1a0a" : "#0a0a12", borderBottom: "1px solid #1a1a2e",
-                  fontSize: "10px", color: i === 0 ? "#ffd700" : "#666",
+                  fontSize: "10px", color: i === 0 ? "#ffd700" : "#fff",
                 }}>
                   <span>{i + 1}. {e.name}</span>
                   <span>{e.score?.toLocaleString()} {e.survived ? "✓" : "💀"}</span>
@@ -3092,7 +3092,7 @@ export default function CryptoTrail() {
           padding: "8px 0", borderBottom: "2px solid #1a1a2e", marginBottom: "10px",
         }}>
           <div style={{ fontSize: "14px", fontWeight: "900", color: "#7c3aed", letterSpacing: "2px" }}>CRYPTO TRAIL</div>
-          <div style={{ fontSize: "10px", color: "#666", letterSpacing: "1px" }}>
+          <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "1px" }}>
             DAY {day} | {market.emoji} <span style={{ color: market.color }}>{market.name.toUpperCase()}</span>
           </div>
         </div>
@@ -3170,7 +3170,7 @@ export default function CryptoTrail() {
 
         {/* PARTY */}
         <div style={{ marginBottom: "12px" }}>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "6px", fontWeight: "700", letterSpacing: "2px" }}>
+          <div style={{ fontSize: "10px", color: "#fff", marginBottom: "6px", fontWeight: "700", letterSpacing: "2px" }}>
             DEGEN SQUAD
           </div>
           <div style={{ display: "grid", gap: "4px" }}>
@@ -3217,7 +3217,7 @@ export default function CryptoTrail() {
 
         {/* PACE */}
         <div style={{ marginBottom: "12px" }}>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", letterSpacing: "2px" }}>PACE</div>
+          <div style={{ fontSize: "10px", color: "#fff", marginBottom: "4px", letterSpacing: "2px" }}>PACE</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "4px" }}>
             {(["slow", "normal", "fast", "degen"] as const).map((p) => (
               <button key={p} onClick={() => setPace(p)} style={{
@@ -3235,7 +3235,7 @@ export default function CryptoTrail() {
 
         {/* LOG */}
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "10px", color: "#666", marginBottom: "4px", letterSpacing: "2px" }}>TRAIL LOG</div>
+          <div style={{ fontSize: "10px", color: "#fff", marginBottom: "4px", letterSpacing: "2px" }}>TRAIL LOG</div>
           <div ref={logRef} style={{
             height: "80px", overflow: "auto", background: "#050508",
             border: "2px solid #1a1a2e", padding: "6px",
@@ -3245,7 +3245,7 @@ export default function CryptoTrail() {
               <div style={{ color: "#222", letterSpacing: "1px" }}>{'>'} AWAITING INPUT...</div>
             ) : (
               log.map((entry, i) => (
-                <div key={i} style={{ color: "#666" }}>
+                <div key={i} style={{ color: "#fff" }}>
                   <span style={{ color: "#333" }}>[D{entry.day}]</span> {entry.text}
                 </div>
               ))
