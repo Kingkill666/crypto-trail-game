@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useAccount } from "wagmi";
+import { useAppKit } from "@reown/appkit/react";
+import { useGamePayment, useNftMint } from "@/hooks/use-web3";
 
 // ═══════════════════════════════════════════════════════════════
 // CRYPTO TRAIL - A Degen Oregon Trail for Farcaster (8-BIT EDITION)
@@ -29,13 +32,43 @@ function useFarcasterReady() {
   }, []);
 }
 
-async function shareGameCast(text: string, url?: string) {
-  if (farcasterSdk?.actions?.composeCast) {
-    await farcasterSdk.actions.composeCast({
-      text,
-      embeds: url ? [url] : [],
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://crypto-trail-game.vercel.app";
+
+async function uploadNftImage(base64DataUrl: string): Promise<string | null> {
+  try {
+    const res = await fetch("/api/nft-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: base64DataUrl }),
     });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.url || null;
+  } catch {
+    return null;
   }
+}
+
+async function shareGameCast(text: string, nftImageDataUrl?: string | null) {
+  if (!farcasterSdk?.actions?.composeCast) return;
+
+  const embeds: string[] = [];
+
+  // Upload NFT image and add as first embed
+  if (nftImageDataUrl) {
+    const imageUrl = await uploadNftImage(nftImageDataUrl);
+    if (imageUrl) embeds.push(imageUrl);
+  }
+
+  // Add the game URL as second embed (max 2 embeds per cast)
+  if (embeds.length < 2) {
+    embeds.push(APP_URL);
+  }
+
+  await farcasterSdk.actions.composeCast({
+    text,
+    embeds: embeds as [] | [string] | [string, string],
+  });
 }
 
 // ── 8-BIT LAMBORGHINI SPRITE (32x12 pixels) ──
@@ -1925,6 +1958,13 @@ function EventPrompt({ children, type = "neutral" }: { children: React.ReactNode
 
 export default function CryptoTrail() {
   useFarcasterReady();
+
+  // ── WEB3 ──
+  const { address, isConnected } = useAccount();
+  const { open: openWallet } = useAppKit();
+  const gamePayment = useGamePayment();
+  const nftMint = useNftMint();
+
   const [phase, setPhase] = useState("title");
   const [playerClass, setPlayerClass] = useState<typeof CLASSES[0] | null>(null);
   const [party, setParty] = useState<Array<{ id: number; name: string; health: number; affliction: typeof AFFLICTIONS[0] | null; alive: boolean }>>([]);
@@ -1947,6 +1987,7 @@ export default function CryptoTrail() {
   const [flashColor, setFlashColor] = useState<string | null>(null);
   const [nftImage, setNftImage] = useState<string | null>(null);
   const [nftMintState, setNftMintState] = useState("idle");
+  const [sharing, setSharing] = useState(false);
   const [eventAnimPhase, setEventAnimPhase] = useState(0); // 0 = intro, 1 = content, 2 = ready
   const [shopItems, setShopItems] = useState({ audits: 0, hardwareWallets: 0, vpn: 0, aiAgent: 0 });
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -2030,7 +2071,22 @@ export default function CryptoTrail() {
   };
 
   // ── GAME ACTIONS ──
-  const startGame = () => setPhase("class_select");
+
+  // Handle payment success → start game
+  useEffect(() => {
+    if (gamePayment.paymentState === "success" && phase === "title") {
+      setPhase("class_select");
+    }
+  }, [gamePayment.paymentState, phase]);
+
+  const startGame = () => {
+    if (!isConnected) {
+      openWallet();
+      return;
+    }
+    // Initiate $1 USD payment
+    gamePayment.pay();
+  };
 
   const selectClass = (cls: typeof CLASSES[0]) => {
     setPlayerClass(cls);
@@ -2067,36 +2123,49 @@ export default function CryptoTrail() {
     const newDay = day + 1;
     const risk = paceRiskMap[pace];
 
-    let newStables = stables - Math.ceil(party.filter((p) => p.alive).length * 2 * paceStableMult[pace]);
+    let newStables = stables - Math.ceil(party.filter((p) => p.alive).length * 3 * paceStableMult[pace]);
     let newMorale = morale + paceMoraleCost[pace];
     const newEth = eth;
     let updatedParty = [...party];
 
     if (newStables <= 0) {
       newStables = 0;
-      newMorale -= 10;
+      newMorale -= 15;
       addLog("Out of stablecoins! Your party is starving for liquidity!");
     }
+
+    // Difficulty scales with distance — the frontier gets harsher
+    const progress = newMiles / totalMiles;
+    const dangerScale = 1 + progress * 1.4;
 
     updatedParty = updatedParty.map((member) => {
       if (!member.alive) return member;
       let hp = member.health;
 
+      // Passive attrition — the trail wears everyone down
+      if (Math.random() < 0.12 * dangerScale) {
+        hp -= rng(2, 5);
+      }
+
       if (member.affliction) {
         hp -= member.affliction.severity * 5;
-        if (Math.random() < 0.2) {
+        // Recovery gets harder the further you go
+        if (Math.random() < 0.15 / dangerScale) {
           addLog(`${member.name} recovered from ${member.affliction.name}!`);
           return { ...member, health: Math.max(1, hp), affliction: null };
         }
       }
 
-      if (!member.affliction && Math.random() < 0.06 * risk) {
+      if (!member.affliction && Math.random() < 0.09 * risk * dangerScale) {
         const aff = pick(AFFLICTIONS);
         addLog(`${aff.emoji} ${member.name} has contracted ${aff.name}!`);
         return { ...member, health: hp, affliction: aff };
       }
 
-      if (pace === "slow" && !member.affliction) hp = Math.min(100, hp + 3);
+      if (pace === "slow" && !member.affliction) hp = Math.min(100, hp + 2);
+
+      // Low morale saps health
+      if (newMorale < 25) hp -= rng(1, 3);
 
       if (hp <= 0) {
         const deathMsg = pick(DEATH_MESSAGES);
@@ -2139,8 +2208,14 @@ export default function CryptoTrail() {
       return;
     }
 
-    if (Math.random() < 0.35 * risk) {
-      const event = pick(TRAIL_EVENTS);
+    if (Math.random() < (0.35 + progress * 0.2) * risk) {
+      // Events skew toward bad outcomes as the trail gets harder
+      let eventPool = TRAIL_EVENTS;
+      if (Math.random() < progress * 0.4) {
+        const badEvents = TRAIL_EVENTS.filter((e) => e.type === "bad");
+        eventPool = badEvents.length > 0 ? badEvents : TRAIL_EVENTS;
+      }
+      const event = pick(eventPool);
       setCurrentEvent(event);
       setParty(updatedParty);
       setDay(newDay);
@@ -2339,11 +2414,15 @@ export default function CryptoTrail() {
 
   // ── TITLE SCREEN ──
   if (phase === "title") {
+    const isPaying = gamePayment.paymentState === "paying" || gamePayment.paymentState === "confirming";
+    const payError = gamePayment.paymentState === "error";
+
     return (
       <div style={containerStyle}>
         <style>{CSS}</style>
         {scanlines}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "20px", textAlign: "center" }}>
+
           <div style={{ fontSize: "11px", color: "#555", marginBottom: "12px", letterSpacing: "8px", textTransform: "uppercase", animation: "pixelFlicker 2s infinite" }}>
             {'<'} A FARCASTER MINI APP {'>'}
           </div>
@@ -2375,12 +2454,54 @@ export default function CryptoTrail() {
             <PixelTitleCanvas animFrame={animFrame} />
           </div>
 
-          <PixelBtn onClick={startGame} color="#7c3aed" size="lg">
-            {'>'} BEGIN JOURNEY {'<'}
+          {/* Entry fee info */}
+          <div style={{
+            fontSize: "10px", color: "#666", marginBottom: "12px", letterSpacing: "2px",
+          }}>
+            ENTRY: ${gamePayment.entryFeeUsd.toFixed(2)} USD
+            {gamePayment.entryFeeEth && (
+              <span style={{ color: "#444" }}>
+                {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
+              </span>
+            )}
+          </div>
+
+          <PixelBtn
+            onClick={() => {
+              if (payError) gamePayment.reset();
+              startGame();
+            }}
+            color={isPaying ? "#333" : "#7c3aed"}
+            size="lg"
+            disabled={isPaying}
+          >
+            {!isConnected
+              ? "> CONNECT & PLAY <"
+              : isPaying
+                ? "PROCESSING..."
+                : "> BEGIN JOURNEY <"
+            }
           </PixelBtn>
 
-          <div style={{ marginTop: "24px", fontSize: "9px", color: "#333", maxWidth: "400px", letterSpacing: "2px" }}>
-            INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * POWERED BY DEGEN ENERGY
+          {/* Payment status messages */}
+          {isPaying && (
+            <div style={{ marginTop: "12px", fontSize: "10px", color: "#f59e0b", letterSpacing: "1px" }}>
+              {gamePayment.paymentState === "paying" ? "CONFIRM IN YOUR WALLET..." : "CONFIRMING ON BASE..."}
+            </div>
+          )}
+
+          {payError && (
+            <div style={{ marginTop: "12px", fontSize: "10px", color: "#ef4444", letterSpacing: "1px", maxWidth: "350px" }}>
+              {gamePayment.errorMsg || "TRANSACTION FAILED"}
+              <br />
+              <span style={{ color: "#666", fontSize: "9px" }}>TAP ABOVE TO TRY AGAIN</span>
+            </div>
+          )}
+
+          <div style={{
+            marginTop: "24px", fontSize: "9px", color: "#333", maxWidth: "400px", letterSpacing: "2px",
+          }}>
+            INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * BASE MAINNET
           </div>
         </div>
       </div>
@@ -2802,7 +2923,7 @@ export default function CryptoTrail() {
               </div>
             )}
             <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-              <PixelBtn onClick={() => shareGameCast(`Got REKT on Crypto Trail after ${milesTraveled} miles in ${day} days. Can you survive the crypto frontier? 💀`)} color="#7c3aed" fullWidth>
+              <PixelBtn onClick={() => shareGameCast(`Got REKT on Crypto Trail after ${milesTraveled} miles in ${day} days. Can you survive the crypto frontier?`)} color="#7c3aed" fullWidth>
                 SHARE
               </PixelBtn>
               <PixelBtn onClick={() => window.location.reload()} color="#333" textColor="#888" fullWidth>
@@ -2836,6 +2957,22 @@ export default function CryptoTrail() {
     const rarity = getRarityTier(score);
     const rarityColors: Record<string, string> = { legendary: "#ffd700", epic: "#a855f7", rare: "#06b6d4", common: "#10b981" };
     const rarityGlows: Record<string, string> = { legendary: "0 0 40px #ffd70066", epic: "0 0 30px #a855f766", rare: "0 0 20px #06b6d466", common: "none" };
+    const isMinting = nftMint.mintState === "minting" || nftMint.mintState === "confirming";
+    const mintSuccess = nftMint.mintState === "success";
+    const mintError = nftMint.mintState === "error";
+
+    const handleMintNft = () => {
+      if (!nftImage) return;
+      if (mintError) nftMint.reset();
+      nftMint.mint({
+        score,
+        classId: playerClass?.id || "dev",
+        survivors: aliveMemberCount,
+        days: day,
+        tokenURI: nftImage, // base64 data URL — contract stores the URI
+      });
+    };
+
     return (
       <div style={containerStyle}>
         <style>{CSS}</style>
@@ -2853,6 +2990,7 @@ export default function CryptoTrail() {
             {day} DAYS ACROSS THE CRYPTO FRONTIER
           </p>
 
+          {/* NFT Preview */}
           <div style={{
             position: "relative", margin: "0 auto 24px", maxWidth: "320px",
             overflow: "hidden",
@@ -2898,16 +3036,121 @@ export default function CryptoTrail() {
                 {rarity}
               </div>
             )}
+
+            {/* Minted badge overlay */}
+            {mintSuccess && (
+              <div style={{
+                position: "absolute", bottom: "6px", left: "6px",
+                padding: "2px 8px",
+                background: "#10b98133",
+                border: "2px solid #10b981",
+                color: "#10b981",
+                fontSize: "9px", fontWeight: "900", letterSpacing: "2px",
+              }}>
+                MINTED ON BASE
+              </div>
+            )}
           </div>
 
-          {nftMintState === "ready" && (
-            <div style={{ marginBottom: "20px" }}>
+          {/* Mint NFT Button */}
+          {nftImage && nftMintState === "ready" && !mintSuccess && (
+            <div style={{ marginBottom: "16px" }}>
+              {isConnected ? (
+                <PixelBtn
+                  onClick={handleMintNft}
+                  color={isMinting ? "#333" : "#10b981"}
+                  size="lg"
+                  fullWidth
+                  disabled={isMinting}
+                >
+                  {isMinting
+                    ? (nftMint.mintState === "minting" ? "CONFIRM IN WALLET..." : "MINTING ON BASE...")
+                    : nftMint.nftContractConfigured
+                      ? "> MINT NFT TO WALLET (BASE) <"
+                      : "> MINT NFT (CONTRACT PENDING) <"
+                  }
+                </PixelBtn>
+              ) : (
+                <PixelBtn onClick={() => openWallet()} color="#7c3aed" size="lg" fullWidth>
+                  {'>'} CONNECT WALLET TO MINT {'<'}
+                </PixelBtn>
+              )}
+              <div style={{ fontSize: "9px", color: "#444", marginTop: "6px", letterSpacing: "1px" }}>
+                FREE MINT — GAS ONLY (~$0.01 ON BASE)
+              </div>
+            </div>
+          )}
+
+          {/* Mint success + Share Mint button */}
+          {mintSuccess && (
+            <>
+              <div style={{
+                padding: "10px", background: "#0a1a0f", border: "2px solid #10b981",
+                marginBottom: "12px", fontSize: "11px", color: "#10b981", letterSpacing: "1px",
+              }}>
+                NFT MINTED SUCCESSFULLY ON BASE L2
+                {nftMint.txHash && (
+                  <div style={{ marginTop: "4px" }}>
+                    <a
+                      href={`https://basescan.org/tx/${nftMint.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#06b6d4", fontSize: "9px", letterSpacing: "1px" }}
+                    >
+                      VIEW ON BASESCAN
+                    </a>
+                  </div>
+                )}
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <PixelBtn
+                  onClick={async () => {
+                    setSharing(true);
+                    await shareGameCast(
+                      `I survived the crypto frontier and minted my Crypto Trail NFT on Base! Score: ${score.toLocaleString()} (${rarity.toUpperCase()}) in ${day} days.\n\nCan you make it to Mainnet?`,
+                      nftImage
+                    );
+                    setSharing(false);
+                  }}
+                  color="#7c3aed"
+                  size="lg"
+                  fullWidth
+                  disabled={sharing}
+                >
+                  {sharing ? "UPLOADING NFT..." : "> SHARE MINT ON FARCASTER <"}
+                </PixelBtn>
+              </div>
+            </>
+          )}
+
+          {/* Mint error */}
+          {mintError && (
+            <div style={{
+              padding: "8px", background: "#1a0a0a", border: "2px solid #ef4444",
+              marginBottom: "16px", fontSize: "10px", color: "#ef4444", letterSpacing: "1px",
+            }}>
+              {nftMint.errorMsg || "MINT FAILED"}
+              <div style={{ marginTop: "4px" }}>
+                <span
+                  onClick={handleMintNft}
+                  style={{ color: "#666", fontSize: "9px", cursor: "pointer", textDecoration: "underline" }}
+                >
+                  TAP TO RETRY
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Download button */}
+          {nftImage && nftMintState === "ready" && (
+            <div style={{ marginBottom: "16px" }}>
               <PixelBtn onClick={downloadNFT} color="#333" textColor="#888" fullWidth size="sm">
                 {'>'} DOWNLOAD IMAGE {'<'}
               </PixelBtn>
             </div>
           )}
 
+          {/* Score panel */}
           <div style={{
             padding: "14px", background: "#0a0a12", border: "2px solid #1a1a2e",
             marginBottom: "16px", textAlign: "left",
@@ -2940,8 +3183,20 @@ export default function CryptoTrail() {
           )}
 
           <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-            <PixelBtn onClick={() => shareGameCast(`Made it to Mainnet on Crypto Trail! Score: ${score.toLocaleString()} (${rarity.toUpperCase()}) in ${day} days. Can you beat my score? 🏆`)} color="#7c3aed" fullWidth>
-              SHARE
+            <PixelBtn
+              onClick={async () => {
+                setSharing(true);
+                await shareGameCast(
+                  `Made it to Mainnet on Crypto Trail! Score: ${score.toLocaleString()} (${rarity.toUpperCase()}) in ${day} days. Can you beat my score?`,
+                  nftImage
+                );
+                setSharing(false);
+              }}
+              color="#7c3aed"
+              fullWidth
+              disabled={sharing}
+            >
+              {sharing ? "UPLOADING..." : "SHARE"}
             </PixelBtn>
             <PixelBtn onClick={() => window.location.reload()} color="#333" textColor="#888" fullWidth>
               PLAY AGAIN
