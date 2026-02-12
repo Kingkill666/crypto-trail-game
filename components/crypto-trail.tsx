@@ -751,7 +751,29 @@ const EVENT_SPRITES: Record<string, { draw: (ctx: CanvasRenderingContext2D, f: n
   },
 };
 
+// ── SPONSORED EVENT IMAGES (use logo instead of pixel sprite) ──
+const EVENT_IMAGES: Record<string, string> = {
+  "BETR POKER CHAMPION": "/images/Betr-logo.png",
+  "BRND MINI APP WINNER": "/images/BRND-logo.png",
+  "DAU CO-SPONSOR": "/images/DAU-logo.png",
+  "FARCASTER MINI APP": "/images/Farcaster_logo.png",
+};
+
 function PixelEventIcon({ eventTitle, animFrame }: { eventTitle: string; animFrame: number }) {
+  const imageSrc = EVENT_IMAGES[eventTitle];
+
+  // Render logo image for sponsored events
+  if (imageSrc) {
+    return (
+      <img src={imageSrc} alt={eventTitle} style={{
+        width: "72px", height: "72px", objectFit: "contain",
+        display: "block", margin: "0 auto 8px",
+        border: "2px solid #1a1a2e", borderRadius: "4px",
+        background: "#0a0a12", padding: "4px",
+      }} />
+    );
+  }
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -1382,6 +1404,10 @@ const TRAIL_EVENTS = [
   { type: "good" as const, title: "AI DEV SPEEDRUN", message: "Claude wrote your entire smart contract in 30 seconds. Deployed to Base.", effect: (g: GameState) => ({ ...g, eth: g.eth + 300, tokens: g.tokens + 150 }) },
   { type: "good" as const, title: "AI ART SELLS", message: "An AI generated your NFT collection. A collector bought the floor for 3 ETH.", effect: (g: GameState) => ({ ...g, eth: g.eth + 300 }) },
   { type: "good" as const, title: "GPT PREDICTS THE DIP", message: "Your fine-tuned model predicted the exact bottom. You bought. It pumped 8x.", effect: (g: GameState) => ({ ...g, eth: g.eth + 600 }) },
+  { type: "good" as const, title: "BETR POKER CHAMPION", message: "You entered the BETR Poker tournament and crushed the final table. You walk away with 2,500 Betrmint!", effect: (g: GameState) => ({ ...g, tokens: g.tokens + 250, morale: Math.min(100, g.morale + 15) }) },
+  { type: "good" as const, title: "BRND MINI APP WINNER", message: "Your mini app beat out all the competition and placed 1st in BRND rankings! You earn 40,000 BRND tokens!", effect: (g: GameState) => ({ ...g, tokens: g.tokens + 400, morale: Math.min(100, g.morale + 20) }) },
+  { type: "good" as const, title: "DAU CO-SPONSOR", message: "DAU came in and co-sponsored your project! They believe in your vision and back you with 1,000 DAU.", effect: (g: GameState) => ({ ...g, stables: g.stables + 300, morale: Math.min(100, g.morale + 15) }) },
+  { type: "good" as const, title: "FARCASTER MINI APP", message: "Your mini app placed 1st on Farcaster! The community loves it. You earn $50 USDC in rewards!", effect: (g: GameState) => ({ ...g, stables: g.stables + 250, morale: Math.min(100, g.morale + 20) }) },
   { type: "bad" as const, title: "RUG PULL!", message: "The dev team deleted their Twitter and drained the LP. Classic.", effect: (g: GameState) => ({ ...g, eth: Math.max(0, g.eth - 300 - Math.floor(Math.random() * 200)), morale: Math.max(0, g.morale - 20) }) },
   { type: "bad" as const, title: "GAS SPIKE!", message: "Gas fees are 500 gwei. Your transaction cost more than your rent.", effect: (g: GameState) => ({ ...g, eth: Math.max(0, g.eth - 200) }) },
   { type: "bad" as const, title: "BEAR MARKET", message: "Everything is down 40%. CT is dead. Even the AI bots stopped trading.", effect: (g: GameState) => ({ ...g, eth: Math.max(0, Math.floor(g.eth * 0.7)), morale: Math.max(0, g.morale - 15) }) },
