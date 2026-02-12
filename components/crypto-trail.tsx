@@ -2385,7 +2385,7 @@ export default function CryptoTrail() {
               color="#7c3aed"
               fullWidth
             >
-              SHARE ON FARCASTER
+              SHARE
             </PixelBtn>
           </div>
 
@@ -2702,8 +2702,7 @@ export default function CryptoTrail() {
               )}
               <PixelBtn onClick={() => {
                 setMorale((m) => Math.min(100, m + 10));
-                party.forEach((p) => { if (p.alive) p.health = Math.min(100, p.health + 15); });
-                setParty([...party]);
+                setParty(party.map((p) => p.alive ? { ...p, health: Math.min(100, p.health + 15) } : p));
                 addLog(`Rested at ${currentLandmark.name}. Party recovered.`);
                 setPhase("trail");
               }} color="#10b981" fullWidth>
