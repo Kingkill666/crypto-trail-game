@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     images: ['https://i.postimg.cc/Y2d3rm4D/Crypto-Trail-share-URL.png'],
   },
   other: {
-    'fc:frame': JSON.stringify({
-      version: "1",
+    'fc:miniapp': JSON.stringify({
+      version: "next",
       imageUrl: "https://i.postimg.cc/Y2d3rm4D/Crypto-Trail-share-URL.png",
       button: {
         title: "Play Crypto Trail",
         action: {
-          type: "launch_frame",
+          type: "launch_miniapp",
           name: "Crypto Trail",
           url: APP_URL,
           splashImageUrl: `${APP_URL}/images/CryptoTrail-Splash.png`,
