@@ -1518,564 +1518,66 @@ async function generateNFTImage(gameData: {
   // ── DRAW SPRITE (full canvas, the image already has VICTORY text + character) ──
   ctx.drawImage(spriteImg, 0, 0, W, H);
 
-  // ── STARS ──
-  for (let i = 0; i < 50; i++) {
-    const sx = Math.floor(rand() * W), sy = Math.floor(rand() * (H * 0.35));
-    const bright = 0.15 + rand() * 0.6;
-    if (rand() > 0.93) {
-      px(sx, sy, 2, 2, "#fff", bright);
-      px(sx - 1, sy, 1, 2, "#fff", bright * 0.3);
-      px(sx + 2, sy, 1, 2, "#fff", bright * 0.3);
-      px(sx, sy - 1, 2, 1, "#fff", bright * 0.3);
-      px(sx, sy + 2, 2, 1, "#fff", bright * 0.3);
-    } else {
-      px(sx, sy, rand() > 0.8 ? 2 : 1, 1, "#fff", bright);
-    }
-  }
+  // ── STATS OVERLAY AT BOTTOM ──
+  // Semi-transparent dark panel covering bottom portion
+  const panelH = 120;
+  const panelY = H - panelH;
+  // Gradient fade from transparent to dark
+  const fadeGrad = ctx.createLinearGradient(0, panelY - 30, 0, panelY + 10);
+  fadeGrad.addColorStop(0, "rgba(0,0,0,0)");
+  fadeGrad.addColorStop(1, "rgba(0,0,0,0.85)");
+  ctx.fillStyle = fadeGrad;
+  ctx.fillRect(0, panelY - 30, W, 40);
+  px(0, panelY, W, panelH, "#000", 0.85);
 
-  // ── CITY SKYLINE (behind character) ──
-  // Back layer
-  for (let i = 0; i < 12; i++) {
-    const bw = 16 + Math.floor(rand() * 30), bh = 40 + Math.floor(rand() * 80);
-    const bx = Math.floor(rand() * (W + 20)) - 10, by = H * 0.42 - bh;
-    px(bx, by, bw, bh, "#060610");
-    for (let wy = by + 3; wy < H * 0.42 - 2; wy += 4)
-      for (let wx = bx + 2; wx < bx + bw - 2; wx += 4)
-        if (rand() > 0.45) px(wx, wy, 2, 2, pal.neon1, 0.08 + rand() * 0.15);
-  }
-  // Mid layer
-  for (let i = 0; i < 8; i++) {
-    const bw = 20 + Math.floor(rand() * 40), bh = 50 + Math.floor(rand() * 100);
-    const bx = Math.floor(rand() * (W + 10)) - 5, by = H * 0.42 - bh;
-    px(bx, by, bw, bh, "#080814");
-    px(bx, by, 1, bh, pal.neon1, 0.06);
-    px(bx + bw - 1, by, 1, bh, pal.neon1, 0.04);
-    px(bx + 1, by, bw - 2, 1, pal.neon1, 0.2);
-    for (let wy = by + 4; wy < H * 0.42 - 3; wy += 5)
-      for (let wx = bx + 3; wx < bx + bw - 3; wx += 5)
-        if (rand() > 0.3) px(wx, wy, 2, 2, rand() > 0.6 ? pal.neon2 : pal.neon1, 0.2 + rand() * 0.4);
-    if (bh > 90 && rand() > 0.5) { px(bx + Math.floor(bw / 2), by - 8, 1, 8, pal.neon1, 0.2); px(bx + Math.floor(bw / 2) - 1, by - 8, 3, 1, pal.neon2, 0.6); }
-  }
+  // Top neon line
+  px(8, panelY, W - 16, 2, pal.neon1, 0.8);
+  // Corner brackets
+  const cb = 12;
+  px(8, panelY, cb, 2, pal.neon1, 1); px(8, panelY, 2, cb, pal.neon1, 1);
+  px(W - 8 - cb, panelY, cb, 2, pal.neon1, 1); px(W - 10, panelY, 2, cb, pal.neon1, 1);
+  px(8, H - 2, cb, 2, pal.neon1, 0.5); px(8, H - cb, 2, cb, pal.neon1, 0.5);
+  px(W - 8 - cb, H - 2, cb, 2, pal.neon1, 0.5); px(W - 10, H - cb, 2, cb, pal.neon1, 0.5);
 
-  // Neon signs
-  const signs = ["WALLET", "NFT", "GAS", "DEFI", "BASE", "ETH", "HODL", "GM"];
-  for (let i = 0; i < 3; i++) {
-    const st = signs[Math.floor(rand() * signs.length)];
-    const sx = 25 + Math.floor(rand() * (W - 50)), sy = H * 0.42 - 20 - Math.floor(rand() * 80);
-    const sc = rand() > 0.5 ? pal.neon1 : pal.neon2;
-    ctx.font = "bold 8px 'Courier New', monospace"; ctx.textAlign = "center";
-    ctx.fillStyle = sc; ctx.globalAlpha = 0.75; ctx.fillText(st, sx, sy); ctx.globalAlpha = 1;
-  }
-
-  // ── CHARACTER: detailed pixel-art close-up portrait ──
-  // We draw at S=2 pixel scale (each "art pixel" = 2x2 canvas pixels) for crisp 8-bit feel
-  // Character occupies roughly 100x120 art-pixels centered on the canvas
-  const S = 2; // pixel scale
-  const cx = W / 2;
-  const cTop = 68;
-
-  // Helper: draw one art-pixel at scale S
-  const dot = (x: number, y: number, c: string, a = 1) => {
-    ctx.globalAlpha = a; ctx.fillStyle = c;
-    ctx.fillRect(x * S, y * S, S, S);
-    ctx.globalAlpha = 1;
-  };
-  // Helper: draw a filled rect in art-pixel coords
-  const block = (x: number, y: number, w: number, h: number, c: string, a = 1) => {
-    ctx.globalAlpha = a; ctx.fillStyle = c;
-    ctx.fillRect(x * S, y * S, w * S, h * S);
-    ctx.globalAlpha = 1;
-  };
-  // Helper: draw a row of pixels from a color-map string
-  const row = (x: number, y: number, data: string[]) => {
-    for (let i = 0; i < data.length; i++) {
-      if (data[i] !== ".") dot(x + i, y, data[i]);
-    }
-  };
-
-  // Art-pixel coordinate center
-  const ax = Math.floor(cx / S); // 100
-  const ay = Math.floor(cTop / S); // 34
-
-  // Color shortcuts
-  const o = pal.outline;
-  const sk = pal.skin;
-  const sm = pal.skinMid;
-  const ss = pal.skinShade;
-  const sd = pal.skinDark;
-  const sh = pal.skinHi;
-  const hr = pal.hair;
-  const hh = pal.hairHi;
-  const hd = pal.hairDark;
-  const jk = pal.jacket;
-  const jm = pal.jacketMid;
-  const jl = pal.jacketLight;
-  const jd = pal.jacketDark;
-  const gl = pal.shadesGlare;
-  const sg = pal.shades;
-  const sgm = pal.shadesMid;
-
-  // Neon glow behind character (halo effect)
-  const charGlow = ctx.createRadialGradient(cx, cTop + 80, 10, cx, cTop + 80, 150);
-  charGlow.addColorStop(0, pal.neon1 + "22");
-  charGlow.addColorStop(0.5, pal.neon2 + "0c");
-  charGlow.addColorStop(1, "transparent");
-  ctx.fillStyle = charGlow; ctx.fillRect(0, 0, W, H);
-
-  // ── HAIR (spiky/messy, with volume and highlights) ──
-  // Spiky top row
-  row(ax-26, ay-6, [o,o,".",".",".",o,o,".",".",".",".",".",o,o,".",".",".",".",o,o,".",".",".",".",".",o,o,".",".",".",o,o,".",".",".",".",".",".",o,o,".",".",o,o,".",".",".",".",".",o,o,".",".","."]);
-  // Main hair volume
-  for (let dy = -5; dy <= 10; dy++) {
-    const yw = dy < -2 ? 20 + dy * 2 : dy < 4 ? 26 : 25;
-    const xOff = ax - yw;
-    for (let dx = 0; dx < yw * 2; dx++) {
-      const worldX = xOff + dx;
-      // Contour: outline on edges
-      if (dx === 0 || dx === yw * 2 - 1) { dot(worldX, ay + dy, o); continue; }
-      if (dy === -5 && dx > 0 && dx < yw * 2 - 1) { dot(worldX, ay + dy, o); continue; }
-      // Hair base with strand-like variation
-      const strand = Math.floor(rand() * 6);
-      if (strand === 0) dot(worldX, ay + dy, hh);
-      else if (strand === 1) dot(worldX, ay + dy, hd);
-      else dot(worldX, ay + dy, hr);
-    }
-    // Neon rim highlight on top rows
-    if (dy <= -2) {
-      dot(ax - yw + 2, ay + dy, pal.neon1, 0.15);
-      dot(ax + yw - 3, ay + dy, pal.neon1, 0.1);
-    }
-  }
-  // Hair spikes on top (individual strands sticking up)
-  const spikeXs = [ax - 20, ax - 12, ax - 5, ax + 3, ax + 10, ax + 18];
-  for (const spx of spikeXs) {
-    const spikeH = 2 + Math.floor(rand() * 4);
-    for (let s = 0; s < spikeH; s++) {
-      dot(spx, ay - 6 - s, s === spikeH - 1 ? hh : hr);
-      if (s === 0) dot(spx + 1, ay - 6 - s, hr);
-    }
-  }
-
-  // ── HEAD / FACE (rounded pixel shape with proper contour) ──
-  // Face is ~44 wide, ~50 tall in art-pixels, starts below hair
-  const fy = ay + 11; // face top y
-  // Build face row by row for proper rounded pixel-art shape
-  const faceWidths = [
-    16, 20, 22, 23, 24, 24, 24, 24, 24, 24, // rows 0-9 (forehead)
-    24, 24, 24, 24, 24, 24, 24, 24, 24, 24, // rows 10-19 (eyes/nose area)
-    24, 24, 24, 24, 24, 24, 23, 23, 22, 22, // rows 20-29 (mouth/cheeks)
-    21, 20, 19, 18, 17, 16, 14, 12, 10,      // rows 30-38 (chin taper)
-  ];
-  for (let r = 0; r < faceWidths.length; r++) {
-    const fw = faceWidths[r];
-    const fx = ax - fw;
-    // Skin fill with multi-tone shading
-    for (let c = 0; c < fw * 2; c++) {
-      const xp = fx + c;
-      // Outline on contour
-      if (c === 0 || c === fw * 2 - 1) { dot(xp, fy + r, o); continue; }
-      if (r === 0 && c > 0 && c < fw * 2 - 1) { dot(xp, fy + r, o); continue; }
-      if (r === faceWidths.length - 1) { dot(xp, fy + r, o); continue; }
-      // Distance from center for shading
-      const dist = Math.abs(c - fw) / fw;
-      // Forehead highlight
-      if (r < 5 && dist < 0.4) { dot(xp, fy + r, sh, 0.5 + rand() * 0.3); dot(xp, fy + r, sk); continue; }
-      // Cheek blush area (warm tones)
-      if (r >= 12 && r <= 22 && dist > 0.5) { dot(xp, fy + r, ss); continue; }
-      // Side shading (darker toward edges)
-      if (dist > 0.75) { dot(xp, fy + r, sd); continue; }
-      if (dist > 0.55) { dot(xp, fy + r, ss); continue; }
-      if (dist > 0.35) { dot(xp, fy + r, sm); continue; }
-      // Jaw shading (lower face darker)
-      if (r >= 28) { dot(xp, fy + r, ss); continue; }
-      if (r >= 25) { dot(xp, fy + r, sm); continue; }
-      // Default skin with subtle dithering
-      dot(xp, fy + r, (r + c) % 7 === 0 ? sm : sk);
-    }
-  }
-  // Forehead highlight streak
-  for (let i = -8; i <= 6; i++) dot(ax + i, fy + 2, sh, 0.3);
-  for (let i = -6; i <= 4; i++) dot(ax + i, fy + 3, sh, 0.2);
-
-  // ── EARS (shaped, with inner detail) ──
-  const earY = fy + 10;
-  // Left ear
-  for (let ey = 0; ey < 10; ey++) {
-    const ew = ey < 2 ? 2 : ey < 7 ? 3 : 2;
-    const exStart = ax - faceWidths[10] - ew + 1;
-    for (let ex = 0; ex < ew; ex++) {
-      if (ey === 0 || ey === 9 || ex === 0) dot(exStart + ex, earY + ey, o);
-      else if (ex === ew - 1 && ey > 2 && ey < 7) dot(exStart + ex, earY + ey, sm);
-      else dot(exStart + ex, earY + ey, ey < 5 ? sk : ss);
-    }
-    // Inner ear detail
-    if (ey >= 2 && ey <= 6) dot(exStart + 1, earY + ey, "#c08060", 0.4);
-  }
-  // Right ear
-  for (let ey = 0; ey < 10; ey++) {
-    const ew = ey < 2 ? 2 : ey < 7 ? 3 : 2;
-    const exStart = ax + faceWidths[10];
-    for (let ex = 0; ex < ew; ex++) {
-      if (ey === 0 || ey === 9 || ex === ew - 1) dot(exStart + ex, earY + ey, o);
-      else if (ex === 0 && ey > 2 && ey < 7) dot(exStart + ex, earY + ey, sm);
-      else dot(exStart + ex, earY + ey, ey < 5 ? sk : ss);
-    }
-    if (ey >= 2 && ey <= 6) dot(exStart + ew - 2, earY + ey, "#c08060", 0.4);
-  }
-
-  // ── EYEBROWS (expressive, thick) ──
-  const browY = fy + 7;
-  // Left brow (slightly raised for celebration expression)
-  row(ax - 18, browY - 1, [o, o, o, o, o, o, o, o, o, o]);
-  row(ax - 18, browY,     [hd, o, o, o, o, o, o, o, o, hd]);
-  row(ax - 17, browY + 1, [".", hd, hd, ".", ".", ".", ".", hd, "."]);
-  // Right brow
-  row(ax + 8, browY - 1, [o, o, o, o, o, o, o, o, o, o]);
-  row(ax + 8, browY,     [hd, o, o, o, o, o, o, o, o, hd]);
-  row(ax + 9, browY + 1, [".", hd, hd, ".", ".", ".", ".", hd, "."]);
-
-  // ── SUNGLASSES (detailed, wraparound, reflective) ──
-  const glY = fy + 10; // glasses top
-  const glH = 9; // lens height in art-pixels
-  const lensW = 18; // each lens width
-  const bridgeW = 4;
-  // Frame outline (top bar connecting lenses)
-  block(ax - lensW - bridgeW / 2 - 1, glY - 1, lensW * 2 + bridgeW + 2, 1, o);
-  block(ax - lensW - bridgeW / 2 - 1, glY, 1, glH + 1, o); // left frame edge
-  block(ax + lensW + bridgeW / 2, glY, 1, glH + 1, o); // right frame edge
-  block(ax - lensW - bridgeW / 2 - 1, glY + glH, lensW * 2 + bridgeW + 2, 1, o); // bottom
-
-  // Bridge
-  block(ax - bridgeW / 2, glY, bridgeW, 4, sgm);
-  dot(ax - 1, glY, sg); dot(ax + 1, glY, sg);
-
-  // Left lens
-  const llx = ax - lensW - bridgeW / 2;
-  for (let ly = 0; ly < glH; ly++) {
-    for (let lx = 0; lx < lensW; lx++) {
-      const xp = llx + lx, yp = glY + ly;
-      // Outline on lens edges
-      if (ly === 0 || ly === glH - 1 || lx === 0 || lx === lensW - 1) { dot(xp, yp, o); continue; }
-      // Gradient lens reflection: diagonal sweep
-      const diag = (lx + ly) / (lensW + glH);
-      if (diag < 0.2) dot(xp, yp, gl, 0.7);
-      else if (diag < 0.35) dot(xp, yp, gl, 0.4);
-      else if (diag < 0.5) dot(xp, yp, sgm);
-      else if (diag > 0.8) dot(xp, yp, pal.neon2, 0.3 + rand() * 0.2);
-      else dot(xp, yp, sg);
-      // Horizontal highlight streak
-      if (ly === 2 && lx >= 2 && lx <= lensW - 4) dot(xp, yp, "#fff", 0.15);
-      if (ly === 3 && lx >= 3 && lx <= lensW - 5) dot(xp, yp, "#fff", 0.08);
-      // Neon city reflection (small shapes in lens)
-      if (ly >= 4 && ly <= 6 && lx >= 3 && lx <= lensW - 4 && rand() > 0.7) {
-        dot(xp, yp, rand() > 0.5 ? pal.neon1 : pal.neon2, 0.15 + rand() * 0.2);
-      }
-    }
-  }
-
-  // Right lens
-  const rlx = ax + bridgeW / 2;
-  for (let ly = 0; ly < glH; ly++) {
-    for (let lx = 0; lx < lensW; lx++) {
-      const xp = rlx + lx, yp = glY + ly;
-      if (ly === 0 || ly === glH - 1 || lx === 0 || lx === lensW - 1) { dot(xp, yp, o); continue; }
-      const diag = ((lensW - lx) + ly) / (lensW + glH);
-      if (diag < 0.2) dot(xp, yp, gl, 0.7);
-      else if (diag < 0.35) dot(xp, yp, gl, 0.4);
-      else if (diag < 0.5) dot(xp, yp, sgm);
-      else if (diag > 0.8) dot(xp, yp, pal.neon2, 0.3 + rand() * 0.2);
-      else dot(xp, yp, sg);
-      if (ly === 2 && lx >= 2 && lx <= lensW - 4) dot(xp, yp, "#fff", 0.15);
-      if (ly === 3 && lx >= 3 && lx <= lensW - 5) dot(xp, yp, "#fff", 0.08);
-      if (ly >= 4 && ly <= 6 && lx >= 3 && lx <= lensW - 4 && rand() > 0.7) {
-        dot(xp, yp, rand() > 0.5 ? pal.neon1 : pal.neon2, 0.15 + rand() * 0.2);
-      }
-    }
-  }
-  // Temple arms going to ears
-  block(llx - 3, glY + 1, 3, 2, sgm);
-  block(ax + lensW + bridgeW / 2, glY + 1, 3, 2, sgm);
-
-  // ── NOSE (shaped, with bridge and nostrils) ──
-  const noseY = fy + 20;
-  // Bridge (subtle shadow line)
-  for (let ny = 0; ny < 6; ny++) {
-    dot(ax - 1, noseY + ny, ss, 0.2 + ny * 0.05);
-    dot(ax, noseY + ny, sk);
-    dot(ax + 1, noseY + ny, ss, 0.15);
-  }
-  // Nose tip (wider)
-  row(ax - 3, noseY + 6, [ss, ss, sm, sk, sm, ss, ss]);
-  row(ax - 3, noseY + 7, [".", o, ss, sm, ss, o, "."]);
-  // Nostrils
-  dot(ax - 2, noseY + 7, o); dot(ax + 2, noseY + 7, o);
-  // Nose highlight
-  dot(ax, noseY + 2, sh, 0.3); dot(ax, noseY + 3, sh, 0.2);
-
-  // ── MOUTH (big celebratory grin with teeth detail) ──
-  const mouthY = fy + 30;
-  // Upper lip outline
-  row(ax - 10, mouthY, [".", ".", o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, ".", "."]);
-  row(ax - 11, mouthY, [".", o, ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", ".", o, "."]);
-  // Mouth interior with teeth
-  for (let mr = 1; mr <= 4; mr++) {
-    const mw = mr <= 2 ? 18 : mr === 3 ? 16 : 14;
-    for (let mc = 0; mc < mw; mc++) {
-      const xp = ax - Math.floor(mw / 2) + mc;
-      if (mc === 0 || mc === mw - 1) { dot(xp, mouthY + mr, o); continue; }
-      if (mr <= 2) {
-        // Top teeth row
-        if (mc % 3 === 0) dot(xp, mouthY + mr, "#ddd"); // tooth gap
-        else dot(xp, mouthY + mr, "#fff");
-        // Tooth edge highlight
-        if (mr === 1 && mc > 1 && mc < mw - 2) dot(xp, mouthY + mr, "#fff", 0.9);
-      } else {
-        // Dark mouth interior / bottom lip
-        dot(xp, mouthY + mr, mr === 3 ? "#2a0808" : "#4a1515");
-      }
-    }
-  }
-  // Lower lip
-  row(ax - 8, mouthY + 5, [o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o]);
-  // Lip corner dimples
-  dot(ax - 11, mouthY + 1, ss, 0.6); dot(ax + 10, mouthY + 1, ss, 0.6);
-  // Gold tooth for legendary
-  if (rarity === "legendary") {
-    dot(ax + 3, mouthY + 1, "#ffd700"); dot(ax + 3, mouthY + 2, "#ffd700");
-  }
-
-  // ── CHIN detail ──
-  dot(ax, fy + 37, ss, 0.4); dot(ax - 1, fy + 37, ss, 0.3); dot(ax + 1, fy + 37, ss, 0.3);
-
-  // ── NECK with shading ──
-  const neckY = fy + faceWidths.length;
-  for (let ny = 0; ny < 8; ny++) {
-    const nw = 10 - ny * 0.2;
-    for (let nx = -Math.floor(nw); nx <= Math.floor(nw); nx++) {
-      const xp = ax + nx;
-      if (nx === -Math.floor(nw) || nx === Math.floor(nw)) dot(xp, neckY + ny, o);
-      else if (Math.abs(nx) > nw * 0.6) dot(xp, neckY + ny, ss);
-      else dot(xp, neckY + ny, ny < 3 ? sm : ss);
-    }
-  }
-  // Adam's apple shadow
-  dot(ax, neckY + 3, sd, 0.3); dot(ax, neckY + 4, sd, 0.2);
-
-  // ── JACKET / TORSO (detailed with folds, zipper, neon accents) ──
-  const torsoY = neckY + 7;
-  for (let tr = 0; tr < 30; tr++) {
-    const tw = Math.min(50, 20 + tr * 1.5);
-    for (let tc = -Math.floor(tw); tc <= Math.floor(tw); tc++) {
-      const xp = ax + tc;
-      const yp = torsoY + tr;
-      const dist = Math.abs(tc) / tw;
-      // Outline
-      if (tc === -Math.floor(tw) || tc === Math.floor(tw)) { dot(xp, yp, o); continue; }
-      if (tr === 0 && Math.abs(tc) > 8) { dot(xp, yp, o); continue; }
-      // V-neck opening (top rows, center)
-      if (tr < 6 && Math.abs(tc) < 7 - tr) { dot(xp, yp, tr < 3 ? sm : ss); continue; }
-      // Collar
-      if (tr <= 2 && Math.abs(tc) >= 7 - tr && Math.abs(tc) <= 9 - tr) { dot(xp, yp, jl); continue; }
-      // Jacket fill with detailed shading
-      if (dist > 0.85) dot(xp, yp, jd);
-      else if (dist > 0.65) dot(xp, yp, jm);
-      else if (dist > 0.4) dot(xp, yp, jk);
-      else dot(xp, yp, (tr + tc) % 11 === 0 ? jm : jk);
-      // Zipper line down center
-      if (Math.abs(tc) <= 1 && tr >= 6) {
-        dot(xp, yp, tr % 2 === 0 ? sgm : sg);
-      }
-      // Jacket fold creases
-      if (tc === -Math.floor(tw * 0.4) && tr > 5) dot(xp, yp, jd, 0.4);
-      if (tc === Math.floor(tw * 0.4) && tr > 5) dot(xp, yp, jd, 0.3);
-      // Shoulder highlight
-      if (tr >= 0 && tr <= 3 && dist > 0.3 && dist < 0.7) dot(xp, yp, jl, 0.15);
-    }
-    // Neon piping along shoulders/edges
-    if (tr <= 4) {
-      dot(ax - Math.floor(tw), torsoY + tr, pal.neon1, 0.3);
-      dot(ax + Math.floor(tw), torsoY + tr, pal.neon1, 0.2);
-    }
-    // Bottom neon trim
-    if (tr >= 27) {
-      const trimA = (tr - 27) * 0.15;
-      for (let tc2 = -Math.floor(tw) + 1; tc2 < Math.floor(tw); tc2++) {
-        if ((tc2 + tr) % 3 === 0) dot(ax + tc2, torsoY + tr, pal.neon1, trimA + 0.2);
-      }
-    }
-  }
-
-  // ── ARMS RAISED (proper pixel art arms with joints, fists) ──
-  // Left arm
-  const laX = ax - 22, laY = torsoY + 2;
-  for (let ar = 0; ar < 28; ar++) {
-    const armW = ar < 4 ? 7 : ar < 20 ? 6 : 5;
-    const yPos = laY - ar; // going up
-    const xPos = laX - Math.floor(ar * 0.3); // slight angle outward
-    for (let ac = 0; ac < armW; ac++) {
-      if (ac === 0 || ac === armW - 1 || ar === 0 || ar === 27) dot(xPos + ac, yPos, o);
-      else if (ac <= 1) dot(xPos + ac, yPos, jd);
-      else if (ac >= armW - 2) dot(xPos + ac, yPos, jl, ar < 15 ? 0.5 : 0.3);
-      else dot(xPos + ac, yPos, jk);
-    }
-    // Sleeve wrinkle
-    if (ar === 8 || ar === 16) block(xPos + 1, yPos, armW - 2, 1, jd, 0.3);
-    // Neon stripe
-    if (ar >= 5 && ar <= 22 && ar % 4 === 0) dot(xPos + armW - 2, yPos, pal.neon1, 0.25);
-  }
-  // Left fist (detailed, clenched)
-  const lfx = laX - Math.floor(28 * 0.3) - 1, lfy = laY - 28;
-  for (let fy2 = 0; fy2 < 7; fy2++) {
-    const fwid = fy2 < 1 ? 6 : fy2 < 5 ? 8 : 6;
-    for (let fx = 0; fx < fwid; fx++) {
-      if (fy2 === 0 || fy2 === 6 || fx === 0 || fx === fwid - 1) dot(lfx + fx, lfy + fy2, o);
-      else if (fx <= 1 || fx >= fwid - 2) dot(lfx + fx, lfy + fy2, ss);
-      else dot(lfx + fx, lfy + fy2, fy2 === 2 || fy2 === 4 ? sm : sk);
-    }
-    // Knuckle highlights
-    if (fy2 === 1) { dot(lfx + 2, lfy + fy2, sh, 0.4); dot(lfx + 4, lfy + fy2, sh, 0.4); }
-    // Finger lines
-    if (fy2 === 3) { dot(lfx + 2, lfy + fy2, ss, 0.5); dot(lfx + 4, lfy + fy2, ss, 0.5); dot(lfx + 6, lfy + fy2, ss, 0.5); }
-  }
-
-  // Right arm (mirror)
-  const raX = ax + 22, raY = torsoY + 2;
-  for (let ar = 0; ar < 28; ar++) {
-    const armW = ar < 4 ? 7 : ar < 20 ? 6 : 5;
-    const yPos = raY - ar;
-    const xPos = raX + Math.floor(ar * 0.3) - armW + 1;
-    for (let ac = 0; ac < armW; ac++) {
-      if (ac === 0 || ac === armW - 1 || ar === 0 || ar === 27) dot(xPos + ac, yPos, o);
-      else if (ac >= armW - 2) dot(xPos + ac, yPos, jd);
-      else if (ac <= 1) dot(xPos + ac, yPos, jl, ar < 15 ? 0.5 : 0.3);
-      else dot(xPos + ac, yPos, jk);
-    }
-    if (ar === 8 || ar === 16) block(xPos + 1, yPos, armW - 2, 1, jd, 0.3);
-    if (ar >= 5 && ar <= 22 && ar % 4 === 0) dot(xPos + 1, yPos, pal.neon1, 0.25);
-  }
-  // Right fist
-  const rfx = raX + Math.floor(28 * 0.3) - 6, rfy = raY - 28;
-  for (let fy2 = 0; fy2 < 7; fy2++) {
-    const fwid = fy2 < 1 ? 6 : fy2 < 5 ? 8 : 6;
-    const fxOff = fy2 < 1 || fy2 >= 5 ? 1 : 0;
-    for (let fx = 0; fx < fwid; fx++) {
-      if (fy2 === 0 || fy2 === 6 || fx === 0 || fx === fwid - 1) dot(rfx + fxOff + fx, rfy + fy2, o);
-      else if (fx <= 1 || fx >= fwid - 2) dot(rfx + fxOff + fx, rfy + fy2, ss);
-      else dot(rfx + fxOff + fx, rfy + fy2, fy2 === 2 || fy2 === 4 ? sm : sk);
-    }
-    if (fy2 === 1) { dot(rfx + fxOff + 3, rfy + fy2, sh, 0.4); dot(rfx + fxOff + 5, rfy + fy2, sh, 0.4); }
-    if (fy2 === 3) { dot(rfx + fxOff + 2, rfy + fy2, ss, 0.5); dot(rfx + fxOff + 4, rfy + fy2, ss, 0.5); }
-  }
-
-  // ── CELEBRATION PARTICLES (varied shapes: stars, diamonds, sparkles) ──
-  const particleColors = [pal.neon1, pal.neon2, pal.neon3, "#fff", "#ffcc00"];
-  for (let i = 0; i < 35; i++) {
-    const ppx = 8 + Math.floor(rand() * (W / S - 16));
-    const ppy = 4 + Math.floor(rand() * 80);
-    const pc = particleColors[Math.floor(rand() * particleColors.length)];
-    const pa = 0.4 + rand() * 0.5;
-    const ptype = rand();
-    if (ptype > 0.75) {
-      // 4-point star
-      dot(ppx, ppy - 1, pc, pa); dot(ppx, ppy + 1, pc, pa);
-      dot(ppx - 1, ppy, pc, pa); dot(ppx + 1, ppy, pc, pa);
-      dot(ppx, ppy, pc, pa * 1.2);
-    } else if (ptype > 0.5) {
-      // Diamond
-      dot(ppx, ppy - 1, pc, pa * 0.6);
-      dot(ppx - 1, ppy, pc, pa); dot(ppx, ppy, pc, pa); dot(ppx + 1, ppy, pc, pa);
-      dot(ppx, ppy + 1, pc, pa * 0.6);
-    } else if (ptype > 0.25) {
-      // Small cross
-      dot(ppx, ppy, pc, pa);
-      dot(ppx - 1, ppy, pc, pa * 0.5); dot(ppx + 1, ppy, pc, pa * 0.5);
-      dot(ppx, ppy - 1, pc, pa * 0.5); dot(ppx, ppy + 1, pc, pa * 0.5);
-    } else {
-      // Dot spark
-      dot(ppx, ppy, pc, pa);
-      if (rand() > 0.5) dot(ppx + 1, ppy, pc, pa * 0.3);
-    }
-  }
-
-  // ── NEON CONFETTI STRIPS (raining from top) ──
-  for (let i = 0; i < 12; i++) {
-    const cx2 = 5 + Math.floor(rand() * (W / S - 10));
-    const cy2 = 2 + Math.floor(rand() * 50);
-    const cl = 2 + Math.floor(rand() * 4);
-    const cc = particleColors[Math.floor(rand() * particleColors.length)];
-    for (let j = 0; j < cl; j++) dot(cx2, cy2 + j, cc, 0.3 + rand() * 0.3);
-  }
-
-  // ── TITLE ──
+  // ── RARITY BADGE ──
   ctx.textAlign = "center";
-  ctx.font = "bold 26px 'Courier New', monospace";
-  ctx.fillStyle = pal.neon1; ctx.globalAlpha = 0.1;
-  for (let g = -2; g <= 2; g++) ctx.fillText("CRYPTO TRAIL", W / 2 + g, 28);
-  ctx.globalAlpha = 0.25; ctx.fillText("CRYPTO TRAIL", W / 2, 29);
-  ctx.globalAlpha = 1; ctx.fillStyle = pal.title; ctx.fillText("CRYPTO TRAIL", W / 2, 28);
+  ctx.font = "bold 13px 'Courier New', monospace";
+  ctx.fillStyle = pal.neon1;
+  ctx.fillText(`[ ${rarity.toUpperCase()} ]`, W / 2, panelY + 16);
 
-  px(W / 2 - 60, 34, 120, 1, pal.neon1, 0.3);
-
-  // rarity badge
-  ctx.font = "bold 11px 'Courier New', monospace";
+  // ── CLASS NAME ──
+  ctx.font = "bold 10px 'Courier New', monospace";
   ctx.fillStyle = pal.neon2;
-  ctx.fillText(`[ ${rarity.toUpperCase()} ]`, W / 2, 46);
+  ctx.fillText(playerClass?.name?.toUpperCase() || classId.toUpperCase(), W / 2, panelY + 30);
 
-  // class
-  ctx.font = "bold 9px 'Courier New', monospace";
-  ctx.fillStyle = pal.neon3;
-  ctx.fillText(playerClass?.name?.toUpperCase() || classId.toUpperCase(), W / 2, 58);
+  // ── SCORE (big and bold) ──
+  ctx.font = "bold 22px 'Courier New', monospace";
+  ctx.fillStyle = "#fff";
+  ctx.fillText(`SCORE: ${score.toLocaleString()}`, W / 2, panelY + 55);
 
-  // ── STATS HUD ──
-  const panelY = H * 0.68;
-  const panelH = H - panelY - 10;
-  px(10, panelY, W - 20, panelH, "#000", 0.8);
-  ctx.strokeStyle = pal.frame + "50"; ctx.lineWidth = 1;
-  ctx.strokeRect(10, panelY, W - 20, panelH);
-  px(10, panelY, W - 20, 1, pal.neon1, 0.6);
-  // brackets
-  const cb = 8;
-  px(10, panelY, cb, 1, pal.neon1, 0.9); px(10, panelY, 1, cb, pal.neon1, 0.9);
-  px(W - 10 - cb, panelY, cb, 1, pal.neon1, 0.9); px(W - 11, panelY, 1, cb, pal.neon1, 0.9);
-  px(10, panelY + panelH - 1, cb, 1, pal.neon1, 0.5); px(10, panelY + panelH - cb, 1, cb, pal.neon1, 0.5);
-  px(W - 10 - cb, panelY + panelH - 1, cb, 1, pal.neon1, 0.5); px(W - 11, panelY + panelH - cb, 1, cb, pal.neon1, 0.5);
-
-  const sX = 22, sX2 = W / 2 + 6;
-  let sY = panelY + 15;
-
+  // ── STATS GRID ──
+  const sX = 20, sX2 = W / 2 + 10;
+  let sY = panelY + 72;
   ctx.textAlign = "left";
-  ctx.font = "bold 12px 'Courier New', monospace";
-  ctx.fillStyle = "#fff"; ctx.fillText("SCORE", sX, sY);
-  ctx.fillStyle = pal.neon1; ctx.fillText(score.toLocaleString(), sX + 58, sY);
-  ctx.fillStyle = pal.neon2; ctx.fillText(rarity.toUpperCase(), sX2, sY);
-  sY += 15;
+  ctx.font = "bold 11px 'Courier New', monospace";
 
-  ctx.font = "10px 'Courier New', monospace"; ctx.fillStyle = "#7788aa";
-  ctx.fillText(`Survivors: ${survivors}/${totalParty}`, sX, sY);
-  ctx.fillText(`Days: ${days}`, sX2, sY); sY += 13;
-  ctx.fillText(`ETH: ${eth}`, sX, sY);
-  ctx.fillText(`USDC: ${stables}`, sX2, sY); sY += 13;
-  ctx.fillText(`Tokens: ${tokens}`, sX, sY);
-  ctx.fillText(`Morale: ${morale}`, sX2, sY); sY += 14;
+  ctx.fillStyle = pal.neon1; ctx.fillText(`Survivors: ${survivors}/${totalParty}`, sX, sY);
+  ctx.fillStyle = pal.neon1; ctx.fillText(`Days: ${days}`, sX2, sY);
+  sY += 14;
+  ctx.fillStyle = "#8899bb"; ctx.fillText(`ETH: ${eth}`, sX, sY);
+  ctx.fillStyle = "#8899bb"; ctx.fillText(`USDC: ${stables}`, sX2, sY);
+  sY += 14;
+  ctx.fillStyle = "#8899bb"; ctx.fillText(`Tokens: ${tokens}`, sX, sY);
+  ctx.fillStyle = "#8899bb"; ctx.fillText(`Morale: ${morale}`, sX2, sY);
+  sY += 14;
 
+  // ── PARTY NAMES ──
   ctx.fillStyle = pal.neon1; ctx.font = "bold 9px 'Courier New', monospace";
   ctx.textAlign = "center";
-  const nameStr = aliveParty.join(" \u2022 ");
+  const nameStr = aliveParty.join(" • ");
   ctx.fillText(nameStr.length > 52 ? nameStr.slice(0, 49) + "..." : nameStr, W / 2, sY);
 
-  // survivor diamonds
-  sY += 10;
-  const iconX = W / 2 - (totalParty * 10) / 2;
-  for (let i = 0; i < totalParty; i++) {
-    const alive = i < survivors, ic = alive ? pal.neon1 : "#ff2d55", ia = alive ? 0.9 : 0.3;
-    px(iconX + i * 10 + 2, sY, 1, 1, ic, ia);
-    px(iconX + i * 10 + 1, sY + 1, 3, 1, ic, ia);
-    px(iconX + i * 10, sY + 2, 5, 1, ic, ia);
-    px(iconX + i * 10 + 1, sY + 3, 3, 1, ic, ia);
-    px(iconX + i * 10 + 2, sY + 4, 1, 1, ic, ia);
-  }
-
-  // ── FRAME ──
+  // ── NEON FRAME ──
   const fw = rarity === "legendary" ? 3 : rarity === "epic" ? 2 : 1;
   ctx.strokeStyle = pal.glow; ctx.lineWidth = fw + 6;
   ctx.strokeRect(3, 3, W - 6, H - 6);
@@ -2090,16 +1592,17 @@ async function generateNFTImage(gameData: {
     px(W - cs, H - fw, cs, fw, pal.neon1, 0.5); px(W - fw, H - cs, fw, cs, pal.neon1, 0.5);
   }
 
-  // scanlines
-  for (let sl = 0; sl < H; sl += 3) px(0, sl, W, 1, "#000", 0.05);
+  // Scanlines for retro feel
+  for (let sl = 0; sl < H; sl += 3) px(0, sl, W, 1, "#000", 0.04);
 
-  // serial
+  // Serial number
   ctx.textAlign = "right"; ctx.fillStyle = "#333344";
   ctx.font = "8px 'Courier New', monospace";
   ctx.fillText(`#${(seed % 99999).toString().padStart(5, "0")}`, W - 14, H - 4);
 
   return canvas.toDataURL("image/png");
 }
+
 
 // ── LEADERBOARD HELPERS ──
 
@@ -2695,7 +2198,7 @@ export default function CryptoTrail() {
 
   const generateNFT = useCallback(() => {
     setNftMintState("generating");
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         const gameData = {
           classId: playerClass?.id || "dev",
@@ -2708,7 +2211,7 @@ export default function CryptoTrail() {
           partyNames: party.map((p) => p.name),
           tombstones: tombstones.map((t) => t.name),
         };
-        const imgDataUrl = generateNFTImage(gameData);
+        const imgDataUrl = await generateNFTImage(gameData);
         setNftImage(imgDataUrl);
         setNftMintState("ready");
       } catch {
