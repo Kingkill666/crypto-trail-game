@@ -1445,7 +1445,7 @@ const CLASS_SPRITES: Record<string, { pixels: number[][]; colors: Record<string,
       [0,0,1,1,1,1,0,0],
       [0,0,1,0,0,1,0,0],
     ],
-    colors: { hair: "#4a4a4a", skin: "#ffcc99", shirt: "#3b82f6", pants: "#1e3a5f", acc: "#00ff88" },
+    colors: { hair: "#4a4a4a", skin: "#ffcc99", shirt: "#00ff88", pants: "#0a3a2a", acc: "#00ff88" },
     label: "DEV"
   },
   trader: {
@@ -1461,7 +1461,7 @@ const CLASS_SPRITES: Record<string, { pixels: number[][]; colors: Record<string,
       [0,0,1,1,1,1,0,0],
       [0,0,1,0,0,1,0,0],
     ],
-    colors: { hair: "#ffd700", skin: "#ffcc99", shirt: "#ef4444", pants: "#333", acc: "#ffd700" },
+    colors: { hair: "#ffd700", skin: "#ffcc99", shirt: "#ff2d55", pants: "#3a0a1a", acc: "#ffd700" },
     label: "TRADER"
   },
   influencer: {
@@ -1477,7 +1477,7 @@ const CLASS_SPRITES: Record<string, { pixels: number[][]; colors: Record<string,
       [0,0,1,1,1,1,0,0],
       [0,0,1,0,0,1,0,0],
     ],
-    colors: { hair: "#f472b6", skin: "#ffe0bd", shirt: "#8b5cf6", pants: "#4a2080", acc: "#06b6d4" },
+    colors: { hair: "#bf5af2", skin: "#ffe0bd", shirt: "#bf5af2", pants: "#2a0a4a", acc: "#00d4ff" },
     label: "INFLUENCER"
   },
   vc: {
@@ -1493,16 +1493,16 @@ const CLASS_SPRITES: Record<string, { pixels: number[][]; colors: Record<string,
       [0,0,1,1,1,1,0,0],
       [0,0,1,0,0,1,0,0],
     ],
-    colors: { hair: "#333", skin: "#ffcc99", shirt: "#1a1a1a", pants: "#1a1a1a", acc: "#ffd700" },
+    colors: { hair: "#333", skin: "#ffcc99", shirt: "#ff6b00", pants: "#1a1a1a", acc: "#ffd700" },
     label: "VC"
   },
 };
 
-const NFT_PALETTES: Record<string, Record<string, string>> = {
-  legendary: { sky1: "#1a0a2e", sky2: "#2d1b69", ground: "#0f0f23", accent: "#ffd700", stars: "#fff8dc", frame: "#ffd700", title: "#ffd700" },
-  epic:      { sky1: "#0a1628", sky2: "#1a2d5f", ground: "#0f1a0f", accent: "#a855f7", stars: "#e0d0ff", frame: "#a855f7", title: "#c084fc" },
-  rare:      { sky1: "#0a1a1a", sky2: "#1a3a3a", ground: "#0f1a12", accent: "#06b6d4", stars: "#b0e0e6", frame: "#06b6d4", title: "#22d3ee" },
-  common:    { sky1: "#111118", sky2: "#1a1a2e", ground: "#121212", accent: "#10b981", stars: "#c0c0c0", frame: "#444", title: "#10b981" },
+const NFT_PALETTES: Record<string, { bg1: string; bg2: string; neon1: string; neon2: string; glow: string; frame: string; title: string; road: string }> = {
+  legendary: { bg1: "#0a0015", bg2: "#1a0a3e", neon1: "#ffd700", neon2: "#ff6b00", glow: "#ffd70060", frame: "#ffd700", title: "#ffd700", road: "#2a1a4e" },
+  epic:      { bg1: "#05001a", bg2: "#0f0a3a", neon1: "#bf5af2", neon2: "#ff2d55", glow: "#bf5af260", frame: "#a855f7", title: "#c084fc", road: "#1a0a3a" },
+  rare:      { bg1: "#000a1a", bg2: "#0a1a3a", neon1: "#00d4ff", neon2: "#0088ff", glow: "#00d4ff50", frame: "#06b6d4", title: "#22d3ee", road: "#0a1530" },
+  common:    { bg1: "#050510", bg2: "#0a0a1e", neon1: "#00ff88", neon2: "#00cc66", glow: "#00ff8840", frame: "#444", title: "#10b981", road: "#0a0f1a" },
 };
 
 const ETH_DIAMOND = [
@@ -1591,65 +1591,165 @@ function generateNFTImage(gameData: {
   const sprite = CLASS_SPRITES[classId] || CLASS_SPRITES.dev;
   const seed = hashStats(`${classId}-${score}-${survivors}-${days}-${partyNames.join("")}`);
   const rand = seededRng(seed);
+  const aliveParty = partyNames.filter((_, i) => i < survivors);
 
+  // ── BACKGROUND: dark gradient sky ──
   const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.65);
-  skyGrad.addColorStop(0, pal.sky1);
-  skyGrad.addColorStop(1, pal.sky2);
+  skyGrad.addColorStop(0, pal.bg1);
+  skyGrad.addColorStop(1, pal.bg2);
   ctx.fillStyle = skyGrad;
   ctx.fillRect(0, 0, W, H);
 
-  ctx.fillStyle = pal.ground;
+  // Ground
+  ctx.fillStyle = pal.road;
   ctx.fillRect(0, H * 0.65, W, H * 0.35);
-  ctx.fillStyle = pal.accent + "30";
-  ctx.fillRect(0, H * 0.65, W, 2);
 
+  // Horizon neon glow line
+  ctx.fillStyle = pal.neon1;
+  ctx.globalAlpha = 0.5;
+  ctx.fillRect(0, H * 0.65, W, 2);
+  ctx.globalAlpha = 0.15;
+  ctx.fillRect(0, H * 0.65 - 2, W, 6);
+  ctx.globalAlpha = 1;
+
+  // ── PIXEL STARS ──
   const numStars = 30 + Math.floor(rand() * 40);
   for (let i = 0; i < numStars; i++) {
     const sx = Math.floor(rand() * W);
-    const sy = Math.floor(rand() * H * 0.6);
+    const sy = Math.floor(rand() * H * 0.4);
     const ss = rand() > 0.85 ? 3 : rand() > 0.5 ? 2 : 1;
-    ctx.fillStyle = pal.stars;
+    ctx.fillStyle = "#ffffff";
     ctx.globalAlpha = 0.2 + rand() * 0.6;
     ctx.fillRect(sx, sy, ss, ss);
   }
   ctx.globalAlpha = 1;
 
+  // ── NEON PIXEL CITYSCAPE (8-bit buildings with neon windows) ──
+  const horizonY = H * 0.65;
+  const numBuildings = 10 + Math.floor(rand() * 6);
+  for (let i = 0; i < numBuildings; i++) {
+    const px = 4; // pixel size for buildings
+    const bwPx = 4 + Math.floor(rand() * 8); // width in pixels
+    const bhPx = 8 + Math.floor(rand() * 20); // height in pixels
+    const bw = bwPx * px;
+    const bh = bhPx * px;
+    const bx = Math.floor(rand() * W);
+    const by = horizonY - bh;
+
+    // Building body (dark pixels)
+    for (let py = 0; py < bhPx; py++) {
+      for (let pxx = 0; pxx < bwPx; pxx++) {
+        ctx.fillStyle = "#08080f";
+        ctx.fillRect(bx + pxx * px, by + py * px, px, px);
+      }
+    }
+
+    // Pixel outline (1px neon border on building)
+    ctx.strokeStyle = pal.neon1 + "25";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx, by, bw, bh);
+
+    // Neon pixel windows (2x2 pixel blocks)
+    for (let wy = 1; wy < bhPx - 1; wy += 2) {
+      for (let wx = 1; wx < bwPx - 1; wx += 2) {
+        if (rand() > 0.3) {
+          const wc = rand() > 0.7 ? pal.neon2 : rand() > 0.4 ? pal.neon1 : "#00d4ff";
+          ctx.fillStyle = wc;
+          ctx.globalAlpha = 0.4 + rand() * 0.5;
+          ctx.fillRect(bx + wx * px, by + wy * px, px, px);
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // Rooftop neon pixel accent
+    if (bhPx > 14) {
+      ctx.fillStyle = rand() > 0.5 ? pal.neon1 : pal.neon2;
+      ctx.globalAlpha = 0.8;
+      ctx.fillRect(bx + px, by, bw - px * 2, px);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ── NEON SIGNS (pixel text in the skyline) ──
+  const signs = ["WALLET", "NFT", "GAS", "DEFI", "BASE", "ETH", "HODL", "GM"];
+  const numSigns = 2 + Math.floor(rand() * 3);
+  for (let i = 0; i < numSigns; i++) {
+    const signText = signs[Math.floor(rand() * signs.length)];
+    const sx = 40 + Math.floor(rand() * (W - 80));
+    const sy = horizonY - 40 - Math.floor(rand() * 60);
+    ctx.font = "bold 8px 'Courier New', monospace";
+    ctx.textAlign = "center";
+    // Neon glow box behind
+    const tw = signText.length * 5 + 6;
+    ctx.fillStyle = rand() > 0.5 ? pal.neon1 : pal.neon2;
+    ctx.globalAlpha = 0.12;
+    ctx.fillRect(sx - tw / 2, sy - 8, tw, 10);
+    ctx.globalAlpha = 0.9;
+    ctx.fillText(signText, sx, sy);
+    ctx.globalAlpha = 1;
+  }
+
+  // ── ROAD NEON REFLECTIONS (pixel streaks) ──
+  for (let i = 0; i < 15; i++) {
+    const rx = Math.floor(rand() * W);
+    const ry = horizonY + 8 + Math.floor(rand() * (H * 0.35 - 80));
+    const rh = 4 + Math.floor(rand() * 12);
+    ctx.fillStyle = rand() > 0.5 ? pal.neon1 : pal.neon2;
+    ctx.globalAlpha = 0.04 + rand() * 0.08;
+    ctx.fillRect(rx, ry, 2, rh);
+  }
+  ctx.globalAlpha = 1;
+
+  // ── ETH DIAMOND WATERMARK (Legendary/Epic) ──
   if (rarity === "legendary" || rarity === "epic") {
-    const px = 4;
-    const ox = (W - ETH_DIAMOND[0].length * px) / 2;
-    const oy = 40;
+    const dpx = 4;
+    const ox = (W - ETH_DIAMOND[0].length * dpx) / 2;
+    const oy = 50;
     ctx.globalAlpha = rarity === "legendary" ? 0.5 : 0.3;
     ETH_DIAMOND.forEach((row, ry) => {
       row.forEach((p, rx) => {
         if (p) {
-          ctx.fillStyle = pal.accent;
-          ctx.fillRect(ox + rx * px, oy + ry * px, px, px);
+          ctx.fillStyle = pal.neon1;
+          ctx.fillRect(ox + rx * dpx, oy + ry * dpx, dpx, dpx);
         }
       });
     });
     ctx.globalAlpha = 1;
   }
 
+  // ── PIXEL TOMBSTONES for fallen members ──
   (deadNames || []).forEach((_, i) => {
     const tx = 30 + i * 70;
-    const ty = H * 0.65 - TOMBSTONE_SPRITE.length * 4;
-    const px = 4;
+    const ty = horizonY - TOMBSTONE_SPRITE.length * 4;
+    const tpx = 4;
     TOMBSTONE_SPRITE.forEach((row, ry) => {
       row.forEach((p, rx) => {
         if (p) {
-          ctx.fillStyle = "#555";
-          ctx.fillRect(tx + rx * px, ty + ry * px, px, px);
+          ctx.fillStyle = "#ff2d55";
+          ctx.globalAlpha = 0.5;
+          ctx.fillRect(tx + rx * tpx, ty + ry * tpx, tpx, tpx);
         }
       });
     });
-    ctx.fillStyle = "#888";
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#ff2d55";
     ctx.font = "bold 6px monospace";
-    ctx.fillText("RIP", tx + 2, ty + 10);
+    ctx.textAlign = "center";
+    ctx.fillText("RIP", tx + 10, ty + 10);
   });
 
+  // ── PIXEL CHARACTER SPRITE (centered) ──
   const charPx = 6;
   const charX = (W - sprite.pixels[0].length * charPx) / 2;
-  const charY = H * 0.65 - sprite.pixels.length * charPx - 4;
+  const charY = horizonY - sprite.pixels.length * charPx - 4;
+
+  // Neon glow behind character
+  ctx.fillStyle = pal.neon1;
+  ctx.globalAlpha = 0.08;
+  ctx.fillRect(charX - 6, charY - 4, sprite.pixels[0].length * charPx + 12, sprite.pixels.length * charPx + 8);
+  ctx.globalAlpha = 1;
+
   sprite.pixels.forEach((row, ry) => {
     row.forEach((p, rx) => {
       if (p) {
@@ -1664,13 +1764,13 @@ function generateNFTImage(gameData: {
     });
   });
 
-  const aliveParty = partyNames.filter((_, i) => i < survivors);
-  const survivorColors = ["#10b981", "#06b6d4", "#a855f7", "#f59e0b"];
+  // ── PIXEL SURVIVOR SPRITES ──
+  const survivorColors = [pal.neon1, "#00d4ff", "#bf5af2", "#ffd700"];
   aliveParty.forEach((_, i) => {
     if (i === 0) return;
     const offset = i <= 1 ? -60 : i === 2 ? 60 : 90;
     const sx = W / 2 + offset - 10;
-    const sy = H * 0.65 - MINI_SURVIVOR.length * 3 - 2;
+    const sy = horizonY - MINI_SURVIVOR.length * 3 - 2;
     const mpx = 3;
     MINI_SURVIVOR.forEach((row, ry) => {
       row.forEach((p, rx) => {
@@ -1682,38 +1782,41 @@ function generateNFTImage(gameData: {
     });
   });
 
-  const borderW = rarity === "legendary" ? 4 : rarity === "epic" ? 3 : 2;
-  ctx.strokeStyle = pal.frame;
-  ctx.lineWidth = borderW;
-  ctx.strokeRect(borderW / 2, borderW / 2, W - borderW, H - borderW);
-  if (rarity === "legendary") {
-    const cs = 12;
-    ctx.fillStyle = pal.frame;
-    ctx.fillRect(0, 0, cs, cs);
-    ctx.fillRect(W - cs, 0, cs, cs);
-    ctx.fillRect(0, H - cs, cs, cs);
-    ctx.fillRect(W - cs, H - cs, cs, cs);
-  }
-
-  ctx.fillStyle = pal.title;
-  ctx.font = "bold 22px 'Courier New', monospace";
+  // ── TITLE with neon glow ──
   ctx.textAlign = "center";
+  ctx.font = "bold 22px 'Courier New', monospace";
+  // Glow behind title
+  ctx.fillStyle = pal.neon1;
+  ctx.globalAlpha = 0.12;
+  ctx.fillText("CRYPTO TRAIL", W / 2, 28);
+  ctx.fillText("CRYPTO TRAIL", W / 2 + 1, 29);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = pal.title;
   ctx.fillText("CRYPTO TRAIL", W / 2, 28);
 
+  // Rarity badge
   ctx.font = "bold 10px 'Courier New', monospace";
-  ctx.fillStyle = pal.accent;
+  ctx.fillStyle = pal.neon2;
   ctx.fillText(`[ ${rarity.toUpperCase()} ]`, W / 2, 42);
 
+  // Class label
   ctx.fillStyle = sprite.colors.acc;
   ctx.font = "bold 9px 'Courier New', monospace";
   ctx.fillText(playerClass?.name?.toUpperCase() || sprite.label, W / 2, charY - 8);
 
+  // ── STATS PANEL (semi-transparent HUD) ──
   const panelY = H * 0.75;
   ctx.fillStyle = "#000000aa";
   ctx.fillRect(16, panelY, W - 32, H - panelY - 16);
-  ctx.strokeStyle = pal.frame + "80";
+  ctx.strokeStyle = pal.frame + "60";
   ctx.lineWidth = 1;
   ctx.strokeRect(16, panelY, W - 32, H - panelY - 16);
+
+  // Neon accent line
+  ctx.fillStyle = pal.neon1;
+  ctx.globalAlpha = 0.5;
+  ctx.fillRect(16, panelY, W - 32, 1);
+  ctx.globalAlpha = 1;
 
   ctx.textAlign = "left";
   ctx.font = "bold 11px 'Courier New', monospace";
@@ -1723,11 +1826,11 @@ function generateNFTImage(gameData: {
 
   ctx.fillStyle = "#fff";
   ctx.fillText(`SCORE: ${score.toLocaleString()}`, statX, sy2);
-  ctx.fillStyle = pal.accent;
-  ctx.fillText(`${rarity.toUpperCase()}`, statX2, sy2);
+  ctx.fillStyle = pal.neon1;
+  ctx.fillText(rarity.toUpperCase(), statX2, sy2);
   sy2 += 16;
 
-  ctx.fillStyle = "#888";
+  ctx.fillStyle = "#8888aa";
   ctx.font = "10px 'Courier New', monospace";
   ctx.fillText(`Survivors: ${survivors}/${totalParty}`, statX, sy2);
   ctx.fillText(`Days: ${days}`, statX2, sy2);
@@ -1739,14 +1842,36 @@ function generateNFTImage(gameData: {
   ctx.fillText(`Morale: ${morale}`, statX2, sy2);
   sy2 += 16;
 
-  ctx.fillStyle = "#10b981";
+  ctx.fillStyle = pal.neon1;
   ctx.font = "bold 9px 'Courier New', monospace";
   const nameStr = aliveParty.join(" * ");
   ctx.textAlign = "center";
   ctx.fillText(nameStr.length > 50 ? nameStr.slice(0, 47) + "..." : nameStr, W / 2, sy2);
 
+  // ── NEON FRAME with glow ──
+  const borderW = rarity === "legendary" ? 3 : rarity === "epic" ? 2 : 1;
+  ctx.strokeStyle = pal.glow;
+  ctx.lineWidth = borderW + 4;
+  ctx.strokeRect(2, 2, W - 4, H - 4);
+  ctx.strokeStyle = pal.frame;
+  ctx.lineWidth = borderW;
+  ctx.strokeRect(borderW, borderW, W - borderW * 2, H - borderW * 2);
+
+  // Corner neon accents (Legendary/Epic)
+  if (rarity === "legendary" || rarity === "epic") {
+    const cs = 14;
+    ctx.fillStyle = pal.neon1;
+    ctx.globalAlpha = 0.6;
+    ctx.fillRect(0, 0, cs, 2); ctx.fillRect(0, 0, 2, cs);
+    ctx.fillRect(W - cs, 0, cs, 2); ctx.fillRect(W - 2, 0, 2, cs);
+    ctx.fillRect(0, H - 2, cs, 2); ctx.fillRect(0, H - cs, 2, cs);
+    ctx.fillRect(W - cs, H - 2, cs, 2); ctx.fillRect(W - 2, H - cs, 2, cs);
+    ctx.globalAlpha = 1;
+  }
+
+  // Serial number
   ctx.textAlign = "right";
-  ctx.fillStyle = "#333";
+  ctx.fillStyle = "#333344";
   ctx.font = "8px 'Courier New', monospace";
   ctx.fillText(`#${(seed % 99999).toString().padStart(5, "0")}`, W - 20, H - 6);
 

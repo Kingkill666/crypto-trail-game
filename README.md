@@ -10,7 +10,7 @@
 
 Crypto Trail is a survival strategy game built as a **Farcaster Mini App**. You lead a party of 4 crypto degens on a dangerous 900-mile journey across the blockchain -- from **Genesis Block** to **Mainnet (The Promised Chain)**. Along the way you'll face random events, deadly afflictions, cross-chain bridges, DEX trading terminals, and the constant threat of losing everything.
 
-The game features full **8-bit pixel art** rendered on HTML5 Canvas -- including a driveable Lamborghini sprite, scrolling cityscapes, animated event screens, CRT monitor effects, and a generative NFT system that creates a unique commemorative image of your run.
+The game features full **8-bit pixel art** rendered on HTML5 Canvas -- including a driveable Lamborghini sprite, scrolling cityscapes, animated event screens, CRT monitor effects, and a generative NFT system that creates a unique 8-bit neon cyberpunk commemorative image of your run.
 
 It is designed to run inside the Farcaster client at **424x695px** (web) or full-screen on mobile, with Farcaster SDK integration for sharing scores as casts.
 
@@ -256,31 +256,34 @@ Final Score = (Survivors x 500) + ETH + USDC + Tokens + max(0, 1000 - Days x 10)
 
 ### Score Rarity Tiers
 
-| Score | Rarity | NFT Border |
+| Score | Rarity | NFT Theme |
 |-------|--------|-----------|
-| 6,000+ | **LEGENDARY** | Gold border, corner gems, ETH diamond watermark |
-| 4,000+ | **EPIC** | Purple border, ETH diamond watermark |
-| 2,000+ | **RARE** | Cyan border |
-| Under 2,000 | **COMMON** | Gray border |
+| 6,000+ | **LEGENDARY** | Gold neon glow, corner accents, gold cityscape |
+| 4,000+ | **EPIC** | Purple neon glow, corner accents, violet cityscape |
+| 2,000+ | **RARE** | Cyan neon glow, blue cityscape |
+| Under 2,000 | **COMMON** | Green neon glow, dark cityscape |
 
 ---
 
 ## Generative NFT
 
-When you win, the game generates a **unique 400x400 pixel art NFT** based on your exact run. The image includes:
+When you win, the game generates a **unique 400x400 8-bit pixel art NFT** with a futuristic neon cyberpunk theme. The image includes:
 
-- **Sky gradient** colored by rarity tier
-- **Procedural stars** seeded from your game data (every run is different)
-- **Your class character sprite** (8x10 pixel art with class-specific colors)
-- **Survivor sprites** standing beside your character
-- **Tombstones** for each fallen party member
+- **8-bit neon cityscape** -- Procedural pixel skyscrapers with neon-lit windows, rooftop accents, and floating neon signs (WALLET, NFT, GAS, DEFI, BASE, ETH, HODL, GM)
+- **Procedural pixel stars** seeded from your game data (every run is different)
+- **Your class character sprite** (8x10 pixel art with class-specific neon colors)
+- **Pixel survivor sprites** standing beside your character
+- **Pixel tombstones** for each fallen party member (neon-tinted)
 - **ETH diamond watermark** (Legendary/Epic only)
-- **Stats panel** showing score, rarity, survivors, days, resources
+- **Neon horizon glow line** separating sky from road
+- **Road reflections** -- Neon pixel streaks on the ground
+- **HUD stats panel** -- Semi-transparent overlay with score, rarity, survivors, days, resources
 - **Party names** listed at the bottom
-- **Rarity border** with corner decorations for Legendary tier
+- **Neon frame** with outer glow, crisp inner border, and corner accents (Legendary/Epic)
 - **Unique serial number** derived from a hash of your game data
+- **Rarity-themed neon palette** -- Gold, purple, cyan, or green depending on score tier
 
-You can download the image as a PNG or share your score as a Farcaster cast.
+You can download the image as a PNG, mint it on Base L2, or share your score as a Farcaster cast.
 
 ---
 
@@ -377,7 +380,7 @@ The game is built as a Farcaster Mini App:
 - **Persistent storage** via `window.storage` (Farcaster) + `localStorage` (fallback)
 - **Pixel-perfect rendering** with `imageRendering: pixelated` on all canvases
 - **Animation loop** at 250ms intervals (4 FPS for authentic 8-bit feel)
-- **NFT generation** via Canvas API -- 400x400 deterministic pixel art
+- **NFT generation** via Canvas API -- 400x400 8-bit neon cyberpunk pixel art
 - **27 unique event sprites** -- Each event has a hand-crafted 48x48 pixel icon
 
 ---
