@@ -2311,7 +2311,7 @@ export default function CryptoTrail() {
           }}>
             ENTRY: ${gamePayment.entryFeeUsd.toFixed(2)} USD
             {gamePayment.entryFeeEth && (
-              <span style={{ color: "#444" }}>
+              <span style={{ color: "#fff" }}>
                 {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
               </span>
             )}
@@ -2350,7 +2350,7 @@ export default function CryptoTrail() {
           )}
 
           <div style={{
-            marginTop: "24px", fontSize: "9px", color: "#333", maxWidth: "400px", letterSpacing: "2px",
+            marginTop: "24px", fontSize: "9px", color: "#fff", maxWidth: "400px", letterSpacing: "2px",
           }}>
             INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * BASE MAINNET
           </div>
@@ -2369,7 +2369,7 @@ export default function CryptoTrail() {
           <h2 style={{ textAlign: "center", color: "#7c3aed", fontSize: "22px", marginBottom: "4px", letterSpacing: "3px" }}>
             SELECT YOUR CLASS
           </h2>
-          <div style={{ textAlign: "center", fontSize: "10px", color: "#555", marginBottom: "28px", letterSpacing: "2px" }}>
+          <div style={{ textAlign: "center", fontSize: "10px", color: "#fff", marginBottom: "28px", letterSpacing: "2px" }}>
             EACH CLASS STARTS WITH DIFFERENT RESOURCES AND A UNIQUE BONUS
           </div>
           <div style={{ display: "grid", gap: "10px" }}>
@@ -2389,7 +2389,7 @@ export default function CryptoTrail() {
                   <span style={{ fontSize: "16px", fontWeight: "700", color: "#fff", letterSpacing: "1px" }}>{cls.name.toUpperCase()}</span>
                 </div>
                 <div style={{ fontSize: "11px", color: "#06b6d4", marginBottom: "6px", letterSpacing: "1px" }}>{cls.bonus}</div>
-                <div style={{ fontSize: "10px", color: "#555", display: "flex", gap: "16px", letterSpacing: "1px" }}>
+                <div style={{ fontSize: "10px", color: "#fff", display: "flex", gap: "16px", letterSpacing: "1px" }}>
                   <span>ETH:{cls.startETH}</span>
                   <span>USDC:{cls.startStables}</span>
                   <span>TKN:{cls.startTokens}</span>
@@ -2413,7 +2413,7 @@ export default function CryptoTrail() {
           <h2 style={{ textAlign: "center", color: "#7c3aed", fontSize: "22px", marginBottom: "4px", letterSpacing: "3px" }}>
             NAME YOUR SQUAD
           </h2>
-          <div style={{ textAlign: "center", fontSize: "10px", color: "#555", marginBottom: "28px", letterSpacing: "2px" }}>
+          <div style={{ textAlign: "center", fontSize: "10px", color: "#fff", marginBottom: "28px", letterSpacing: "2px" }}>
             THESE BRAVE DEGENS WILL ACCOMPANY YOU
           </div>
           {[0, 1, 2, 3].map((i) => (
@@ -2467,13 +2467,13 @@ export default function CryptoTrail() {
           <h2 style={{ textAlign: "center", color: "#f59e0b", fontSize: "22px", marginBottom: "4px", letterSpacing: "3px" }}>
             GENESIS BLOCK STORE
           </h2>
-          <div style={{ textAlign: "center", fontSize: "10px", color: "#555", marginBottom: "6px", letterSpacing: "2px" }}>
+          <div style={{ textAlign: "center", fontSize: "10px", color: "#fff", marginBottom: "6px", letterSpacing: "2px" }}>
             STOCK UP BEFORE YOU HIT THE CHAIN
           </div>
           <div style={{ textAlign: "center", fontSize: "13px", color: "#10b981", marginBottom: "6px" }}>
             WALLET: {eth} ETH
           </div>
-          <div style={{ textAlign: "center", color: "#444", marginBottom: "24px", fontSize: "10px", letterSpacing: "1px" }}>
+          <div style={{ textAlign: "center", color: "#fff", marginBottom: "24px", fontSize: "10px", letterSpacing: "1px" }}>
             CLASS: {playerClass?.emoji} {playerClass?.name?.toUpperCase()}
           </div>
           <div style={{ display: "grid", gap: "10px", marginBottom: "20px" }}>
@@ -2526,7 +2526,7 @@ export default function CryptoTrail() {
             </div>
 
             <div style={{
-              fontSize: "11px", color: "#555", letterSpacing: "4px", marginBottom: "8px",
+              fontSize: "11px", color: "#fff", letterSpacing: "4px", marginBottom: "8px",
               animation: eventAnimPhase >= 1 ? "pixelFadeIn 0.3s ease-out" : "none",
               opacity: eventAnimPhase >= 1 ? 1 : 0,
               textTransform: "uppercase",
@@ -2689,7 +2689,7 @@ export default function CryptoTrail() {
         <div style={{ maxWidth: "500px", margin: "0 auto", padding: "40px 20px" }}>
           <EventPrompt type="neutral">
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "10px", color: "#555", letterSpacing: "4px", marginBottom: "8px" }}>
+              <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "4px", marginBottom: "8px" }}>
                 // DEGEN TRADING TERMINAL //
               </div>
               <div style={{ fontSize: "10px", color: "#fff", marginBottom: "20px", letterSpacing: "2px" }}>
@@ -2757,12 +2757,12 @@ export default function CryptoTrail() {
             <p style={{ color: "#fff", fontSize: "13px", marginBottom: "6px", letterSpacing: "1px" }}>
               YOUR ENTIRE PARTY HAS BEEN WIPED OUT.
             </p>
-            <p style={{ color: "#444", fontSize: "11px", marginBottom: "24px", letterSpacing: "1px" }}>
+            <p style={{ color: "#fff", fontSize: "11px", marginBottom: "24px", letterSpacing: "1px" }}>
               {milesTraveled} MILES IN {day} DAYS
             </p>
             {tombstones.length > 0 && (
               <div style={{ marginBottom: "24px" }}>
-                <div style={{ fontSize: "10px", color: "#555", marginBottom: "10px", letterSpacing: "2px" }}>TOMBSTONES</div>
+                <div style={{ fontSize: "10px", color: "#fff", marginBottom: "10px", letterSpacing: "2px" }}>TOMBSTONES</div>
                 {tombstones.map((t, i) => (
                   <div key={i} style={{
                     padding: "8px", background: "#0a0a12", border: "1px solid #1a1a2e",
@@ -2783,7 +2783,7 @@ export default function CryptoTrail() {
             </div>
             {leaderboard.length > 0 && (
               <div style={{ marginTop: "12px", textAlign: "left" }}>
-                <div style={{ fontSize: "10px", color: "#555", marginBottom: "8px", letterSpacing: "2px", textAlign: "center" }}>LEADERBOARD</div>
+                <div style={{ fontSize: "10px", color: "#fff", marginBottom: "8px", letterSpacing: "2px", textAlign: "center" }}>LEADERBOARD</div>
                 {leaderboard.slice(0, 5).map((e, i) => (
                   <div key={i} style={{
                     display: "flex", justifyContent: "space-between", padding: "4px 8px",
@@ -2829,7 +2829,7 @@ export default function CryptoTrail() {
         <style>{CSS}</style>
         {scanlines}
         <div style={{ maxWidth: "500px", margin: "0 auto", padding: "40px 20px 120px", textAlign: "center" }}>
-          <div style={{ fontSize: "10px", color: "#555", letterSpacing: "4px", marginBottom: "12px" }}>// TRANSMISSION RECEIVED //</div>
+          <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "4px", marginBottom: "12px" }}>// TRANSMISSION RECEIVED //</div>
           <h1 style={{
             fontSize: "26px", marginBottom: "4px", fontWeight: "900", letterSpacing: "3px",
             color: "#10b981",
@@ -2926,7 +2926,7 @@ export default function CryptoTrail() {
                   {'>'} CONNECT WALLET TO MINT {'<'}
                 </PixelBtn>
               )}
-              <div style={{ fontSize: "9px", color: "#444", marginTop: "6px", letterSpacing: "1px" }}>
+              <div style={{ fontSize: "9px", color: "#fff", marginTop: "6px", letterSpacing: "1px" }}>
                 FREE MINT — GAS ONLY (~$0.01 ON BASE)
               </div>
             </div>
@@ -3024,9 +3024,9 @@ export default function CryptoTrail() {
 
           {tombstones.length > 0 && (
             <div style={{ marginBottom: "16px" }}>
-              <div style={{ fontSize: "10px", color: "#444", marginBottom: "6px", letterSpacing: "2px" }}>FALLEN DEGENS</div>
+              <div style={{ fontSize: "10px", color: "#fff", marginBottom: "6px", letterSpacing: "2px" }}>FALLEN DEGENS</div>
               {tombstones.map((t, i) => (
-                <div key={i} style={{ fontSize: "9px", color: "#333", marginBottom: "2px", letterSpacing: "0.5px" }}>
+                <div key={i} style={{ fontSize: "9px", color: "#fff", marginBottom: "2px", letterSpacing: "0.5px" }}>
                   {t.epitaph}
                 </div>
               ))}
@@ -3056,7 +3056,7 @@ export default function CryptoTrail() {
 
           {leaderboard.length > 0 && (
             <div style={{ textAlign: "left", marginBottom: "16px" }}>
-              <div style={{ fontSize: "10px", color: "#555", marginBottom: "8px", letterSpacing: "2px", textAlign: "center" }}>LEADERBOARD</div>
+              <div style={{ fontSize: "10px", color: "#fff", marginBottom: "8px", letterSpacing: "2px", textAlign: "center" }}>LEADERBOARD</div>
               {leaderboard.slice(0, 5).map((e, i) => (
                 <div key={i} style={{
                   display: "flex", justifyContent: "space-between", padding: "4px 8px",
@@ -3097,7 +3097,7 @@ export default function CryptoTrail() {
         {/* PROGRESS BAR */}
         <div style={{ marginBottom: "10px" }}>
           <div style={{
-            display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#555", marginBottom: "4px", letterSpacing: "1px",
+            display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#fff", marginBottom: "4px", letterSpacing: "1px",
           }}>
             <span>MILE {milesTraveled}/{totalMiles}</span>
             <span>NEXT: {nextLandmarkInfo.emoji} {nextLandmarkInfo.name.toUpperCase()} ({milesToNext}MI)</span>
@@ -3145,23 +3145,23 @@ export default function CryptoTrail() {
               textAlign: "center",
             }}>
               <div style={{ fontSize: "16px", fontWeight: "900", color: r.color, fontFamily: "monospace" }}>{r.value}</div>
-              <div style={{ fontSize: "8px", color: "#444", textTransform: "uppercase", letterSpacing: "2px", marginTop: "2px" }}>{r.label}</div>
+              <div style={{ fontSize: "8px", color: "#fff", textTransform: "uppercase", letterSpacing: "2px", marginTop: "2px" }}>{r.label}</div>
             </div>
           ))}
         </div>
 
         {/* ITEMS */}
         <div style={{
-          display: "flex", gap: "8px", marginBottom: "12px", fontSize: "9px", color: "#555",
+          display: "flex", gap: "8px", marginBottom: "12px", fontSize: "9px", color: "#fff",
           padding: "6px", background: "#0a0a12", border: "1px solid #1a1a2e",
           justifyContent: "center", flexWrap: "wrap", letterSpacing: "1px",
         }}>
           <span>AUDIT:{shopItems.audits}</span>
-          <span style={{ color: "#333" }}>|</span>
+          <span style={{ color: "#fff" }}>|</span>
           <span>HW:{shopItems.hardwareWallets}</span>
-          <span style={{ color: "#333" }}>|</span>
+          <span style={{ color: "#fff" }}>|</span>
           <span>VPN:{shopItems.vpn}</span>
-          <span style={{ color: "#333" }}>|</span>
+          <span style={{ color: "#fff" }}>|</span>
           <span>AI:{shopItems.aiAgent}</span>
         </div>
 
@@ -3239,11 +3239,11 @@ export default function CryptoTrail() {
             fontSize: "10px", lineHeight: "1.6",
           }}>
             {log.length === 0 ? (
-              <div style={{ color: "#222", letterSpacing: "1px" }}>{'>'} AWAITING INPUT...</div>
+              <div style={{ color: "#fff", letterSpacing: "1px" }}>{'>'} AWAITING INPUT...</div>
             ) : (
               log.map((entry, i) => (
                 <div key={i} style={{ color: "#fff" }}>
-                  <span style={{ color: "#333" }}>[D{entry.day}]</span> {entry.text}
+                  <span style={{ color: "#fff" }}>[D{entry.day}]</span> {entry.text}
                 </div>
               ))
             )}
