@@ -69,6 +69,684 @@ const BUILDINGS = [
   { pixels: [[0,1,0],[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]], color: "#222244" },
 ];
 
+// ── 8-BIT EVENT ICON SPRITES (unique per event) ──
+// Each sprite is drawn on a 48x48 canvas with pixel-perfect rendering
+
+const EVENT_SPRITES: Record<string, { draw: (ctx: CanvasRenderingContext2D, f: number) => void }> = {
+  // ═══ GOOD EVENTS (12) ═══
+  "AIRDROP!": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillRect(14, 4, 20, 4);
+      ctx.fillRect(12, 8, 24, 2);
+      ctx.fillStyle = "#a855f7";
+      ctx.fillRect(16, 4, 4, 4);
+      ctx.fillRect(24, 4, 4, 4);
+      ctx.fillStyle = "#666";
+      ctx.fillRect(14, 10, 1, 10); ctx.fillRect(33, 10, 1, 10);
+      ctx.fillRect(16, 12, 1, 8); ctx.fillRect(31, 12, 1, 8);
+      const by = 20 + (f % 4 < 2 ? 0 : 1);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(18, by, 12, 10);
+      ctx.fillStyle = "#ffaa00";
+      ctx.fillRect(23, by, 2, 10);
+      ctx.fillRect(18, by + 4, 12, 2);
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = (f % 3 === 0) ? 0.9 : 0.3;
+      ctx.fillRect(8, 8, 2, 2); ctx.fillRect(38, 12, 2, 2); ctx.fillRect(6, 28, 2, 2);
+      ctx.fillRect(40, 6, 2, 2);
+      ctx.fillStyle = "#10b981";
+      ctx.globalAlpha = 0.7;
+      for (let i = 0; i < 5; i++) {
+        const tx = 8 + i * 8, ty = 34 + ((f * 2 + i * 7) % 12);
+        ctx.fillRect(tx, ty, 3, 3);
+      }
+      ctx.globalAlpha = 1;
+    }
+  },
+  "PUMP!": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(4, 40, 4, 2); ctx.fillRect(8, 36, 4, 2); ctx.fillRect(12, 38, 4, 2);
+      ctx.fillRect(16, 32, 4, 2); ctx.fillRect(20, 28, 4, 2); ctx.fillRect(24, 24, 4, 2);
+      ctx.fillRect(28, 16, 4, 2); ctx.fillRect(32, 8, 4, 2);
+      const ry = 4 + (f % 3 === 0 ? -1 : 0);
+      ctx.fillStyle = "#e0e0e0";
+      ctx.fillRect(36, ry, 4, 12);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(34, ry + 8, 8, 4);
+      ctx.fillStyle = "#ff6b6b";
+      ctx.fillRect(36, ry, 4, 2);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(36, ry + 12, 4, 3 + (f % 2));
+      ctx.fillStyle = "#ff4444";
+      ctx.fillRect(37, ry + 15, 2, 2 + (f % 3));
+      ctx.fillStyle = "#ffd700";
+      ctx.globalAlpha = 0.6;
+      ctx.fillRect(42, 6, 2, 2); ctx.fillRect(30, 2, 2, 2);
+      ctx.globalAlpha = 1;
+    }
+  },
+  "BASED MOMENT": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillRect(14, 12, 6, 4); ctx.fillRect(26, 12, 6, 4);
+      ctx.fillRect(12, 14, 24, 6);
+      ctx.fillRect(14, 20, 20, 4);
+      ctx.fillRect(16, 24, 16, 4);
+      ctx.fillRect(18, 28, 12, 4);
+      ctx.fillRect(20, 32, 8, 4);
+      ctx.fillRect(22, 36, 4, 2);
+      ctx.fillStyle = "#a855f7";
+      ctx.fillRect(16, 14, 4, 4);
+      ctx.fillStyle = "#ffd700";
+      ctx.globalAlpha = f % 3 === 0 ? 0.9 : 0.4;
+      ctx.fillRect(6, 8, 2, 2); ctx.fillRect(40, 10, 2, 2);
+      ctx.fillRect(8, 30, 2, 2); ctx.fillRect(38, 26, 2, 2);
+      ctx.fillRect(4, 20, 2, 2); ctx.fillRect(42, 18, 2, 2);
+      ctx.globalAlpha = 1;
+    }
+  },
+  "NFT FLIP": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(8, 6, 32, 2); ctx.fillRect(8, 38, 32, 2);
+      ctx.fillRect(8, 6, 2, 34); ctx.fillRect(38, 6, 2, 34);
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(10, 8, 28, 30);
+      ctx.fillStyle = "#06b6d4";
+      ctx.fillRect(22, 12, 4, 2); ctx.fillRect(20, 14, 8, 2); ctx.fillRect(18, 16, 12, 2);
+      ctx.fillRect(16, 18, 16, 2); ctx.fillRect(18, 20, 12, 2); ctx.fillRect(20, 22, 8, 4);
+      ctx.fillRect(22, 26, 4, 4); ctx.fillRect(23, 30, 2, 2);
+      ctx.fillStyle = "#22d3ee";
+      ctx.fillRect(20, 16, 2, 2);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(30, 34, 10, 8);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(33, 36, 1, 4); ctx.fillRect(34, 36, 2, 1); ctx.fillRect(34, 38, 2, 1);
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = f % 2 === 0 ? 0.8 : 0.3;
+      ctx.fillRect(12, 10, 2, 2);
+      ctx.globalAlpha = 1;
+    }
+  },
+  "BUG BOUNTY": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(14, 20, 8, 6); ctx.fillRect(16, 18, 4, 2);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(12, 22, 2, 2); ctx.fillRect(22, 22, 2, 2);
+      ctx.fillRect(12, 26, 2, 4); ctx.fillRect(22, 26, 2, 4);
+      ctx.fillRect(14, 26, 2, 2); ctx.fillRect(20, 26, 2, 2);
+      ctx.fillStyle = "#666";
+      ctx.fillRect(26, 10, 10, 2); ctx.fillRect(24, 12, 2, 8);
+      ctx.fillRect(36, 12, 2, 8); ctx.fillRect(26, 20, 10, 2);
+      ctx.fillRect(24, 10, 2, 2); ctx.fillRect(36, 10, 2, 2);
+      ctx.fillRect(24, 20, 2, 2); ctx.fillRect(36, 20, 2, 2);
+      ctx.fillRect(36, 20, 4, 2); ctx.fillRect(38, 22, 4, 2); ctx.fillRect(40, 24, 4, 2);
+      ctx.fillStyle = "#06b6d433";
+      ctx.fillRect(26, 12, 10, 8);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(6, 36, 6, 6); ctx.fillRect(14, 38, 6, 6); ctx.fillRect(22, 36, 6, 6);
+      ctx.fillStyle = "#ffaa00";
+      ctx.fillRect(8, 38, 2, 2); ctx.fillRect(16, 40, 2, 2); ctx.fillRect(24, 38, 2, 2);
+    }
+  },
+  "FARCASTER FREN": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillRect(10, 18, 16, 4); ctx.fillRect(12, 14, 12, 4); ctx.fillRect(14, 12, 8, 2);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(17, 22, 2, 16); ctx.fillRect(12, 38, 12, 2);
+      ctx.fillStyle = "#06b6d4";
+      ctx.globalAlpha = (f % 4 === 0) ? 0.8 : (f % 4 === 1) ? 0.6 : (f % 4 === 2) ? 0.4 : 0.2;
+      ctx.fillRect(28, 8, 2, 2); ctx.fillRect(30, 6, 2, 6); ctx.fillRect(32, 4, 2, 10);
+      ctx.fillRect(34, 2, 2, 14); ctx.fillRect(36, 6, 2, 6);
+      ctx.globalAlpha = (f % 4 === 2) ? 0.8 : 0.3;
+      ctx.fillRect(38, 8, 2, 4); ctx.fillRect(40, 6, 2, 8); ctx.fillRect(42, 8, 2, 4);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#f472b6";
+      ctx.fillRect(34, 20, 4, 2); ctx.fillRect(32, 22, 8, 2); ctx.fillRect(34, 24, 4, 2);
+      ctx.fillRect(35, 26, 2, 2);
+    }
+  },
+  "YIELD HARVEST": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(12, 16, 2, 24); ctx.fillRect(22, 12, 2, 28); ctx.fillRect(32, 18, 2, 22);
+      ctx.fillStyle = "#22c55e";
+      ctx.fillRect(10, 20, 2, 4); ctx.fillRect(14, 24, 2, 4);
+      ctx.fillRect(20, 16, 2, 4); ctx.fillRect(24, 20, 2, 4);
+      ctx.fillRect(30, 22, 2, 4); ctx.fillRect(34, 26, 2, 4);
+      ctx.fillStyle = "#ffd700";
+      const bob = f % 4 < 2 ? 0 : -1;
+      ctx.fillRect(10, 10 + bob, 6, 6); ctx.fillRect(20, 6 + bob, 6, 6); ctx.fillRect(30, 12 + bob, 6, 6);
+      ctx.fillStyle = "#ffaa00";
+      ctx.fillRect(12, 12 + bob, 2, 2); ctx.fillRect(22, 8 + bob, 2, 2); ctx.fillRect(32, 14 + bob, 2, 2);
+      ctx.fillStyle = "#3d2200";
+      ctx.fillRect(4, 40, 40, 4);
+      ctx.fillStyle = "#5c3300";
+      ctx.fillRect(4, 40, 40, 2);
+    }
+  },
+  "AI AGENT ALPHA": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#333";
+      ctx.fillRect(14, 8, 20, 20);
+      ctx.fillStyle = "#444";
+      ctx.fillRect(16, 10, 16, 16);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(18, 14, 4, 2); ctx.fillRect(18, 18, 4, 2);
+      ctx.fillRect(20, 12, 2, 2); ctx.fillRect(18, 16, 2, 2); ctx.fillRect(20, 20, 2, 2);
+      ctx.fillRect(28, 14, 4, 2); ctx.fillRect(28, 18, 4, 2);
+      ctx.fillRect(30, 12, 2, 2); ctx.fillRect(28, 16, 2, 2); ctx.fillRect(30, 20, 2, 2);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(23, 2, 2, 6);
+      ctx.fillStyle = f % 2 === 0 ? "#10b981" : "#0a0a12";
+      ctx.fillRect(21, 0, 6, 3);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(16, 28, 16, 10);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(20, 30, 8, 2); ctx.fillRect(18, 34, 12, 2);
+      ctx.fillRect(10, 30, 6, 4); ctx.fillRect(32, 30, 6, 4);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(18, 38, 4, 6); ctx.fillRect(26, 38, 4, 6);
+    }
+  },
+  "AI AUDIT SAVES YOU": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(12, 6, 24, 4); ctx.fillRect(10, 10, 28, 16);
+      ctx.fillRect(12, 26, 24, 4); ctx.fillRect(14, 30, 20, 4);
+      ctx.fillRect(18, 34, 12, 4); ctx.fillRect(22, 38, 4, 2);
+      ctx.fillStyle = "#0a3d2a";
+      ctx.fillRect(14, 10, 20, 16); ctx.fillRect(16, 26, 16, 4); ctx.fillRect(20, 30, 8, 2);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(18, 20, 2, 2); ctx.fillRect(20, 22, 2, 2);
+      ctx.fillRect(22, 24, 2, 2); ctx.fillRect(24, 22, 2, 2);
+      ctx.fillRect(26, 20, 2, 2); ctx.fillRect(28, 18, 2, 2); ctx.fillRect(30, 16, 2, 2);
+      ctx.fillStyle = "#10b981";
+      ctx.globalAlpha = 0.2 + (f % 3) * 0.1;
+      ctx.fillRect(6, 4, 36, 38);
+      ctx.globalAlpha = 1;
+    }
+  },
+  "AI DEV SPEEDRUN": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#333";
+      ctx.fillRect(6, 4, 36, 28);
+      ctx.fillStyle = "#0a0a2e";
+      ctx.fillRect(8, 6, 32, 24);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(10, 8, 12, 2); ctx.fillRect(10, 12, 8, 2);
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillRect(20, 12, 14, 2); ctx.fillRect(10, 16, 18, 2);
+      ctx.fillStyle = "#06b6d4";
+      ctx.fillRect(10, 20, 10, 2); ctx.fillRect(22, 20, 8, 2);
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(10, 24, 16, 2);
+      if (f % 3 < 2) { ctx.fillStyle = "#fff"; ctx.fillRect(28, 24, 4, 2); }
+      ctx.fillStyle = "#555";
+      ctx.fillRect(20, 32, 8, 2); ctx.fillRect(16, 34, 16, 2);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(36, 6, 4, 2); ctx.fillRect(34, 8, 4, 2); ctx.fillRect(32, 10, 6, 2);
+      ctx.fillRect(34, 12, 4, 2); ctx.fillRect(36, 14, 4, 2); ctx.fillRect(38, 16, 4, 2);
+    }
+  },
+  "AI ART SELLS": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#664400";
+      ctx.fillRect(12, 32, 2, 14); ctx.fillRect(34, 32, 2, 14); ctx.fillRect(22, 36, 2, 10);
+      ctx.fillStyle = "#ddd";
+      ctx.fillRect(10, 4, 28, 28);
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(12, 6, 24, 24);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(14, 8, 8, 8);
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillRect(22, 12, 10, 10);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(16, 18, 8, 8);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(14, 14, 4, 4);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(34, 28, 12, 8);
+      ctx.fillStyle = "#000";
+      ctx.font = "bold 6px monospace";
+      ctx.fillText("5E", 36, 34);
+      ctx.fillStyle = "#fff";
+      ctx.globalAlpha = f % 2 === 0 ? 0.8 : 0.3;
+      ctx.fillRect(38, 4, 2, 2); ctx.fillRect(4, 10, 2, 2);
+      ctx.globalAlpha = 1;
+    }
+  },
+  "GPT PREDICTS THE DIP": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillRect(14, 4, 20, 2); ctx.fillRect(10, 6, 28, 2);
+      ctx.fillRect(8, 8, 32, 20); ctx.fillRect(10, 28, 28, 2); ctx.fillRect(14, 30, 20, 2);
+      ctx.fillStyle = "#0a0a2e";
+      ctx.fillRect(12, 8, 24, 20);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(14, 12, 2, 2); ctx.fillRect(16, 14, 2, 2); ctx.fillRect(18, 16, 2, 2);
+      ctx.fillRect(20, 18, 2, 2); ctx.fillRect(22, 20, 2, 2);
+      ctx.fillRect(24, 18, 2, 2); ctx.fillRect(26, 14, 2, 2); ctx.fillRect(28, 10, 2, 2);
+      ctx.fillRect(30, 8, 2, 2); ctx.fillRect(32, 6, 2, 2);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(32, 4, 2, 2); ctx.fillRect(30, 6, 2, 2); ctx.fillRect(34, 6, 2, 2);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(12, 32, 24, 2); ctx.fillRect(16, 34, 16, 4);
+      ctx.fillStyle = "#7c3aed";
+      ctx.globalAlpha = 0.15 + (f % 3) * 0.08;
+      ctx.fillRect(8, 4, 32, 28);
+      ctx.globalAlpha = 1;
+    }
+  },
+
+  // ═══ BAD EVENTS (10) ═══
+  "RUG PULL!": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#ffd700";
+      const off = f % 4;
+      ctx.fillRect(12, 8 + off * 2, 4, 4); ctx.fillRect(20, 6 + off * 3, 4, 4);
+      ctx.fillRect(30, 10 + off * 2, 4, 4); ctx.fillRect(16, 14 + off, 4, 4);
+      ctx.fillStyle = "#ef4444";
+      const rx = (f % 6) * 2;
+      ctx.fillRect(4 + rx, 28, 36, 4);
+      ctx.fillStyle = "#dc2626";
+      ctx.fillRect(8 + rx, 28, 4, 4); ctx.fillRect(18 + rx, 28, 4, 4); ctx.fillRect(28 + rx, 28, 4, 4);
+      ctx.fillStyle = "#b91c1c";
+      ctx.fillRect(4 + rx, 32, 4, 4); ctx.fillRect(4 + rx, 36, 2, 2);
+      ctx.fillStyle = "#ffcc99";
+      ctx.fillRect(22, 16, 4, 4);
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillRect(20, 20, 8, 6);
+      ctx.fillStyle = "#1e3a5f";
+      ctx.fillRect(20, 26, 4, 2); ctx.fillRect(24, 26, 4, 2);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(36, 4, 4, 8); ctx.fillRect(36, 14, 4, 4);
+    }
+  },
+  "GAS SPIKE!": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#555";
+      ctx.fillRect(14, 12, 14, 24);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(16, 14, 10, 8);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(16, 14, 10, 8);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 6px monospace";
+      ctx.fillText("999", 17, 21);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(28, 16, 8, 2); ctx.fillRect(34, 16, 2, 12); ctx.fillRect(32, 26, 4, 4);
+      ctx.fillStyle = "#666";
+      ctx.fillRect(16, 10, 10, 2);
+      ctx.fillStyle = "#ff4444";
+      ctx.fillRect(18, 4 - (f % 2), 6, 6);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(20, 2 - (f % 2), 4, 4);
+      ctx.fillStyle = "#ff6b00";
+      ctx.fillRect(16, 6, 2, 4); ctx.fillRect(26, 6, 2, 4);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(34, 30 + (f % 3), 2, 3);
+    }
+  },
+  "BEAR MARKET": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#8B4513";
+      ctx.fillRect(12, 8, 24, 22);
+      ctx.fillRect(8, 12, 4, 8); ctx.fillRect(36, 12, 4, 8);
+      ctx.fillStyle = "#A0522D";
+      ctx.fillRect(10, 14, 2, 4); ctx.fillRect(38, 14, 2, 4);
+      ctx.fillStyle = "#111";
+      ctx.fillRect(18, 16, 4, 4); ctx.fillRect(28, 16, 4, 4);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(18, 16, 2, 2); ctx.fillRect(28, 16, 2, 2);
+      ctx.fillStyle = "#111";
+      ctx.fillRect(20, 26, 2, 2); ctx.fillRect(22, 28, 4, 2); ctx.fillRect(26, 26, 2, 2);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(22, 22, 4, 4);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(8, 34, 4, 2); ctx.fillRect(12, 36, 4, 2); ctx.fillRect(16, 38, 4, 2);
+      ctx.fillRect(20, 40, 4, 2); ctx.fillRect(24, 42, 8, 2); ctx.fillRect(32, 44, 8, 2);
+      ctx.fillRect(38, 42, 2, 2); ctx.fillRect(36, 44, 6, 2);
+    }
+  },
+  "WALLET DRAINED!": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#664400";
+      ctx.fillRect(8, 16, 22, 18);
+      ctx.fillStyle = "#885500";
+      ctx.fillRect(8, 16, 22, 4);
+      ctx.fillStyle = "#553300";
+      ctx.fillRect(26, 22, 4, 8);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(26, 24, 4, 4);
+      ctx.fillStyle = "#ffd700";
+      const sp = f % 4;
+      ctx.fillRect(32 + sp * 2, 16 - sp, 4, 4);
+      ctx.fillRect(34 + sp * 2, 22 - sp, 4, 4);
+      ctx.fillRect(30 + sp * 2, 28 + sp, 4, 4);
+      ctx.fillRect(36 + sp, 12 - sp * 2, 4, 4);
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(10, 20, 16, 10);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(14, 22, 8, 6);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(16, 24, 2, 2); ctx.fillRect(20, 24, 2, 2);
+    }
+  },
+  "LIQUIDATED": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(22, 2, 4, 8); ctx.fillRect(8, 10, 8, 2); ctx.fillRect(32, 10, 8, 2);
+      ctx.fillRect(10, 4, 2, 6); ctx.fillRect(36, 4, 2, 6);
+      ctx.fillRect(6, 20, 4, 2); ctx.fillRect(10, 24, 4, 2); ctx.fillRect(14, 28, 4, 2);
+      ctx.fillRect(18, 32, 4, 2); ctx.fillRect(22, 36, 4, 2); ctx.fillRect(26, 40, 12, 2);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 10px monospace";
+      ctx.fillText("100x", 14, 18);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(14, 22, 2, 2); ctx.fillRect(16, 24, 2, 2);
+      ctx.fillRect(16, 22, 2, 2); ctx.fillRect(14, 24, 2, 2);
+      ctx.fillRect(30, 22, 2, 2); ctx.fillRect(32, 24, 2, 2);
+      ctx.fillRect(32, 22, 2, 2); ctx.fillRect(30, 24, 2, 2);
+      ctx.fillStyle = "#ffd700";
+      ctx.globalAlpha = 0.6;
+      for (let i = 0; i < 6; i++) { ctx.fillRect(10 + i * 6, 38 + (f + i) % 4, 2, 2); }
+      ctx.globalAlpha = 1;
+    }
+  },
+  "AI BOT GONE ROGUE": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#333";
+      ctx.fillRect(14, 6, 20, 18);
+      ctx.fillStyle = "#444";
+      ctx.fillRect(16, 8, 16, 14);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(18, 12, 4, 4); ctx.fillRect(26, 12, 4, 4);
+      ctx.fillStyle = f % 2 === 0 ? "#ff0000" : "#cc0000";
+      ctx.fillRect(19, 13, 2, 2); ctx.fillRect(27, 13, 2, 2);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(18, 18, 2, 2); ctx.fillRect(20, 20, 8, 2); ctx.fillRect(28, 18, 2, 2);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(23, 0, 2, 6);
+      ctx.fillStyle = f % 3 === 0 ? "#ffd700" : "#ff4444";
+      ctx.fillRect(20, 0, 8, 3);
+      ctx.fillStyle = "#ffd700";
+      ctx.globalAlpha = f % 2 === 0 ? 0.8 : 0.3;
+      ctx.fillRect(8, 8, 2, 2); ctx.fillRect(38, 10, 2, 2);
+      ctx.fillRect(6, 18, 2, 2); ctx.fillRect(40, 16, 2, 2);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#333";
+      ctx.fillRect(16, 24, 16, 12);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(20, 26, 8, 2); ctx.fillRect(20, 30, 8, 2);
+      ctx.fillRect(10, 26, 6, 4); ctx.fillRect(32, 26, 6, 4);
+      ctx.fillRect(8, 30, 4, 2); ctx.fillRect(36, 30, 4, 2);
+    }
+  },
+  "PROMPT INJECTION ATTACK": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#aaa";
+      ctx.fillRect(8, 20, 24, 6);
+      ctx.fillStyle = "#888";
+      ctx.fillRect(8, 20, 24, 2);
+      ctx.fillStyle = "#666";
+      ctx.fillRect(4, 18, 4, 10);
+      ctx.fillStyle = "#ccc";
+      ctx.fillRect(32, 22, 10, 2);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(42, 22, 4, 2);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(10, 22, 16, 2);
+      ctx.fillStyle = "#ef4444";
+      ctx.font = "bold 5px monospace";
+      ctx.fillText("INJECT", 12, 38);
+      ctx.fillStyle = "#10b981";
+      ctx.fillText("{DROP *}", 10, 44);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(18, 6, 10, 8); ctx.fillRect(20, 14, 6, 2);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(20, 8, 2, 2); ctx.fillRect(24, 8, 2, 2); ctx.fillRect(22, 12, 2, 2);
+    }
+  },
+  "DEEPFAKE SCAM": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#ffcc99";
+      ctx.fillRect(10, 8, 14, 20);
+      ctx.fillStyle = "#ff9966";
+      ctx.fillRect(24 + (f % 2), 8, 14, 20);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(14, 14, 4, 4); ctx.fillRect(28 + (f % 2), 14, 4, 4);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(22, 6, 4, 24);
+      ctx.fillStyle = "#00ff0044";
+      ctx.fillRect(24, 8 + (f % 3), 16, 2); ctx.fillRect(10, 18 + (f % 4), 14, 2);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(16, 24, 6, 2); ctx.fillRect(28 + (f % 2), 24, 6, 2);
+      ctx.fillStyle = "#ef4444";
+      ctx.font = "bold 5px monospace";
+      ctx.fillText("FAKE", 14, 38);
+      ctx.fillStyle = "#10b981";
+      ctx.fillText("01101", 12, 44);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(4, 4, 6, 2); ctx.fillRect(38, 4, 6, 2);
+    }
+  },
+  "AI HALLUCINATION": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(10, 10, 28, 18); ctx.fillRect(12, 8, 24, 2); ctx.fillRect(12, 28, 24, 2);
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillRect(18, 14, 12, 10);
+      const px = 22 + Math.floor(Math.sin(f * 0.8) * 2);
+      const py = 17 + Math.floor(Math.cos(f * 0.8) * 2);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(px, py, 4, 4);
+      ctx.fillStyle = "#a855f7";
+      ctx.fillRect(20, 14, 2, 2); ctx.fillRect(26, 14, 2, 2);
+      ctx.fillRect(18, 18, 2, 2); ctx.fillRect(28, 18, 2, 2);
+      ctx.fillRect(20, 22, 2, 2); ctx.fillRect(26, 22, 2, 2);
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(6, 4, 2, 4); ctx.fillRect(4, 6, 2, 2); ctx.fillRect(8, 6, 2, 2);
+      ctx.fillRect(38, 4, 2, 4); ctx.fillRect(36, 6, 2, 2); ctx.fillRect(40, 6, 2, 2);
+      ctx.fillStyle = "#ef4444";
+      for (let i = 0; i < 8; i++) { ctx.fillRect(6 + i * 5, 34 + ((f + i) % 3), 3, 2); }
+      ctx.fillStyle = "#ef4444";
+      ctx.font = "bold 5px monospace";
+      ctx.fillText("SAFE\u2713", 12, 44);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(12, 42, 24, 1);
+    }
+  },
+  "AI FLASH CRASH": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(4, 8, 2, 2); ctx.fillRect(6, 12, 2, 2); ctx.fillRect(8, 16, 2, 2);
+      ctx.fillRect(10, 22, 2, 2); ctx.fillRect(12, 30, 2, 2); ctx.fillRect(14, 38, 2, 2);
+      ctx.fillRect(18, 6, 2, 2); ctx.fillRect(20, 10, 2, 2); ctx.fillRect(22, 18, 2, 2);
+      ctx.fillRect(24, 26, 2, 2); ctx.fillRect(26, 34, 2, 2); ctx.fillRect(28, 40, 2, 2);
+      ctx.fillRect(32, 10, 2, 2); ctx.fillRect(34, 16, 2, 2); ctx.fillRect(36, 24, 2, 2);
+      ctx.fillRect(38, 32, 2, 2); ctx.fillRect(40, 40, 2, 2);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(22, 2, 4, 2); ctx.fillRect(20, 4, 4, 2); ctx.fillRect(22, 6, 6, 2);
+      ctx.fillRect(24, 8, 4, 2); ctx.fillRect(22, 10, 4, 2);
+      ctx.fillStyle = "#ff4444";
+      ctx.font = "bold 10px monospace";
+      ctx.fillText("-60%", 10, 44);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(4, 2, 6, 4); ctx.fillRect(38, 2, 6, 4);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(5, 3, 2, 2); ctx.fillRect(39, 3, 2, 2);
+    }
+  },
+
+  // ═══ NEUTRAL EVENTS (5) ═══
+  "CHAIN FORK": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(4, 20, 4, 4); ctx.fillRect(10, 20, 4, 4); ctx.fillRect(16, 20, 4, 4);
+      ctx.fillRect(22, 18, 4, 8);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(28, 14, 4, 4); ctx.fillRect(34, 10, 4, 4); ctx.fillRect(40, 6, 4, 4);
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillRect(28, 28, 4, 4); ctx.fillRect(34, 32, 4, 4); ctx.fillRect(40, 36, 4, 4);
+      ctx.fillStyle = "#888";
+      ctx.fillRect(8, 22, 2, 2); ctx.fillRect(14, 22, 2, 2);
+      ctx.fillRect(26, 16, 2, 2); ctx.fillRect(32, 12, 2, 2);
+      ctx.fillRect(26, 30, 2, 2); ctx.fillRect(32, 34, 2, 2);
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(20, 4, 8, 2); ctx.fillRect(26, 6, 2, 4); ctx.fillRect(22, 10, 6, 2);
+      ctx.fillRect(22, 12, 2, 2); ctx.fillRect(22, 16, 2, 2);
+    }
+  },
+  "GOVERNANCE VOTE": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#444";
+      ctx.fillRect(10, 16, 28, 22);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(10, 16, 28, 4);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(18, 18, 12, 2);
+      const py = 6 + (f % 4);
+      ctx.fillStyle = "#eee";
+      ctx.fillRect(18, py, 12, 12);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(22, py + 2, 2, 2); ctx.fillRect(24, py + 4, 2, 2);
+      ctx.fillRect(26, py + 2, 2, 2); ctx.fillRect(28, py, 2, 2);
+      ctx.fillStyle = "#06b6d4";
+      ctx.font = "bold 5px monospace";
+      ctx.fillText("DAO", 17, 32);
+      ctx.fillStyle = "#888";
+      ctx.fillRect(4, 28, 4, 6); ctx.fillRect(5, 24, 2, 4);
+      ctx.fillRect(40, 28, 4, 6); ctx.fillRect(41, 24, 2, 4);
+    }
+  },
+  "CT DRAMA": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillRect(14, 14, 16, 12); ctx.fillRect(12, 16, 20, 8); ctx.fillRect(18, 8, 10, 8);
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(28, 14, 6, 4);
+      ctx.fillStyle = "#2563eb";
+      ctx.fillRect(10, 18, 6, 6);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(22, 10, 4, 4);
+      ctx.fillStyle = f % 2 === 0 ? "#ff0000" : "#cc0000";
+      ctx.fillRect(23, 11, 2, 2);
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillRect(16, 8, 6, 6);
+      ctx.fillStyle = "#666";
+      ctx.fillRect(14, 10, 4, 4);
+      ctx.fillRect(15, 11, 2, 2);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(32, 4, 12, 8);
+      ctx.fillStyle = "#333";
+      ctx.font = "bold 5px monospace";
+      ctx.fillText("BEEP", 33, 10);
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(6, 4, 4, 6); ctx.fillRect(6, 12, 4, 2);
+    }
+  },
+  "BOT VS BOT": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillRect(4, 12, 14, 12);
+      ctx.fillStyle = "#2563eb";
+      ctx.fillRect(6, 14, 10, 8);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(8, 16, 3, 3); ctx.fillRect(12, 16, 3, 3);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(9, 17, 2, 2); ctx.fillRect(13, 17, 2, 2);
+      ctx.fillStyle = "#3b82f6";
+      ctx.fillRect(10, 8, 2, 4);
+      ctx.fillStyle = f % 2 === 0 ? "#3b82f6" : "#1d4ed8";
+      ctx.fillRect(8, 6, 6, 3);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(30, 12, 14, 12);
+      ctx.fillStyle = "#dc2626";
+      ctx.fillRect(32, 14, 10, 8);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(33, 16, 3, 3); ctx.fillRect(37, 16, 3, 3);
+      ctx.fillStyle = "#000";
+      ctx.fillRect(33, 17, 2, 2); ctx.fillRect(37, 17, 2, 2);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(36, 8, 2, 4);
+      ctx.fillStyle = f % 2 === 0 ? "#ef4444" : "#b91c1c";
+      ctx.fillRect(34, 6, 6, 3);
+      ctx.fillStyle = "#ffd700";
+      ctx.fillRect(20, 14, 2, 2); ctx.fillRect(22, 16, 4, 2); ctx.fillRect(24, 18, 2, 2);
+      ctx.fillRect(22, 20, 4, 2);
+      ctx.fillRect(18, 18, 2, 4); ctx.fillRect(28, 18, 2, 4);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(4, 28, 18, 8); ctx.fillRect(26, 34, 18, 8);
+      ctx.fillStyle = "#888";
+      ctx.font = "bold 4px monospace";
+      ctx.fillText("NO U", 7, 33);
+      ctx.fillText("NO U!!", 28, 40);
+    }
+  },
+  "AI WRITES A WHITEPAPER": {
+    draw: (ctx, f) => {
+      ctx.fillStyle = "#eee";
+      ctx.fillRect(12, 4, 24, 34);
+      ctx.fillStyle = "#ccc";
+      ctx.fillRect(30, 4, 6, 6);
+      ctx.fillStyle = "#ddd";
+      ctx.fillRect(30, 4, 4, 4);
+      ctx.fillStyle = "#333";
+      ctx.fillRect(16, 10, 16, 2);
+      ctx.fillStyle = "#555";
+      ctx.fillRect(16, 14, 14, 1); ctx.fillRect(16, 17, 12, 1);
+      ctx.fillRect(16, 20, 16, 1); ctx.fillRect(16, 23, 10, 1);
+      ctx.fillRect(16, 26, 14, 1); ctx.fillRect(16, 29, 8, 1);
+      if (f % 3 < 2) { ctx.fillStyle = "#7c3aed"; ctx.fillRect(26, 29, 3, 2); }
+      ctx.fillStyle = "#666";
+      ctx.fillRect(34, 24, 8, 3); ctx.fillRect(40, 20, 3, 8);
+      ctx.fillStyle = "#7c3aed";
+      ctx.fillRect(38, 28, 2, 4);
+      ctx.fillStyle = "#10b981";
+      ctx.fillRect(10, 40, 28, 6);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 5px monospace";
+      ctx.fillText("$50M", 16, 45);
+    }
+  },
+};
+
+function PixelEventIcon({ eventTitle, animFrame }: { eventTitle: string; animFrame: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const draw = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, 48, 48);
+    ctx.fillStyle = "#0a0a12";
+    ctx.fillRect(0, 0, 48, 48);
+    const sprite = EVENT_SPRITES[eventTitle];
+    if (sprite) {
+      sprite.draw(ctx, animFrame);
+    } else {
+      ctx.fillStyle = "#555";
+      ctx.fillRect(16, 16, 16, 16);
+      ctx.fillStyle = "#888";
+      ctx.fillRect(20, 20, 8, 8);
+    }
+  }, [eventTitle, animFrame]);
+  useEffect(() => { draw(); }, [draw]);
+  return (
+    <canvas ref={canvasRef} width={48} height={48} style={{
+      width: "72px", height: "72px", imageRendering: "pixelated" as const,
+      display: "block", margin: "0 auto 8px",
+      border: "2px solid #1a1a2e", borderRadius: "4px",
+      background: "#0a0a12",
+    }} />
+  );
+}
+
 // ── PIXEL CANVAS COMPONENTS (inlined) ──
 
 function PixelTrailCanvas({ width = 600, height = 120, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor = "red" }: {
@@ -277,68 +955,241 @@ function PixelEventCanvas({ width = 400, height = 100, animFrame, eventType }: {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const W = width, H = height;
+    const W = width, H = height, f = animFrame;
     ctx.fillStyle = "#050508";
     ctx.fillRect(0, 0, W, H);
+
     if (eventType === "good") {
-      for (let i = 0; i < 12; i++) {
-        const cx = (i * 37 + 20) % W;
-        const cy = H - ((animFrame * 3 + i * 20) % (H + 20));
-        const sparkle = (animFrame + i) % 4;
-        ctx.fillStyle = sparkle < 2 ? "#ffd700" : "#ffaa00";
-        ctx.globalAlpha = 0.6 - (i % 4) * 0.1;
-        const s = 3;
+      // LAYER 1: Pulsing radial gradient burst
+      const pulseR = 40 + Math.sin(f * 0.4) * 20;
+      const grad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, pulseR);
+      grad.addColorStop(0, f % 6 < 3 ? "#10b98130" : "#ffd70025");
+      grad.addColorStop(0.5, "#10b98110");
+      grad.addColorStop(1, "transparent");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // LAYER 2: Gold coin rain
+      for (let i = 0; i < 20; i++) {
+        const cx = (i * 23 + f * 4) % (W + 40) - 20;
+        const cy = ((f * 3 + i * 31) % (H + 30)) - 15;
+        const sz = 3 + (i % 3);
+        const bright = (f + i) % 5;
+        ctx.fillStyle = bright < 2 ? "#ffd700" : bright < 4 ? "#ffaa00" : "#fff5cc";
+        ctx.globalAlpha = 0.7 - (i % 5) * 0.08;
+        ctx.fillRect(cx, cy, sz, sz);
+        ctx.fillStyle = "#fff";
+        ctx.globalAlpha = bright === 0 ? 0.8 : 0.15;
+        ctx.fillRect(cx, cy, 1, 1);
+      }
+      ctx.globalAlpha = 1;
+
+      // LAYER 3: Rising diamond sparkles
+      for (let i = 0; i < 16; i++) {
+        const cx = (i * 27 + 15) % W;
+        const cy = H - ((f * 4 + i * 18) % (H + 30));
+        const colors = ["#ffd700", "#10b981", "#06b6d4", "#fff", "#a855f7", "#22d3ee"];
+        ctx.fillStyle = colors[(f + i) % colors.length];
+        ctx.globalAlpha = 0.5 + Math.sin(f * 0.6 + i) * 0.3;
+        const s = 2 + (i % 2);
         ctx.fillRect(cx, cy - s, s, s);
         ctx.fillRect(cx - s, cy, s, s);
         ctx.fillRect(cx + s, cy, s, s);
         ctx.fillRect(cx, cy + s, s, s);
         ctx.fillRect(cx, cy, s, s);
-      }
-      ctx.globalAlpha = 1;
-      for (let x = 0; x < W; x += 2) {
-        const wave = Math.sin(x * 0.02 + animFrame * 0.3) * 10 + H * 0.5;
-        ctx.fillStyle = "#10b98122";
-        ctx.fillRect(x, wave, 2, 3);
-      }
-    } else if (eventType === "bad") {
-      for (let i = 0; i < 8; i++) {
-        const gy = ((animFrame * 7 + i * 29) % H);
-        const gw = 20 + (i * 13) % 60;
-        const gx = (i * 47 + animFrame * 3) % W;
-        ctx.fillStyle = i % 2 === 0 ? "#ff000033" : "#ff444422";
-        ctx.fillRect(gx, gy, gw, 2);
-      }
-      if (animFrame % 4 < 2) {
-        ctx.fillStyle = "#ff000008";
-        ctx.fillRect(0, 0, W, H);
-      }
-      for (let i = 0; i < 6; i++) {
-        const dx = (i * 71 + 10) % W;
-        const dy = ((animFrame * 4 + i * 30) % (H + 20)) - 10;
-        ctx.fillStyle = "#ff4444";
-        ctx.globalAlpha = 0.4;
-        ctx.fillRect(dx, dy, 2, 2);
-        ctx.fillRect(dx + 1, dy + 2, 2, 2);
-      }
-      ctx.globalAlpha = 1;
-    } else {
-      for (let i = 0; i < 15; i++) {
-        const col = (i * 31) % W;
-        for (let j = 0; j < 5; j++) {
-          const row = ((animFrame * 2 + i * 11 + j * 17) % H);
-          ctx.fillStyle = "#f59e0b";
-          ctx.globalAlpha = 0.15 - j * 0.02;
-          ctx.fillRect(col, row, 2, 4);
+        if (i % 3 === 0) {
+          ctx.fillRect(cx - s * 2, cy, s, s);
+          ctx.fillRect(cx + s * 2, cy, s, s);
+          ctx.fillRect(cx, cy - s * 2, s, s);
+          ctx.fillRect(cx, cy + s * 2, s, s);
         }
       }
       ctx.globalAlpha = 1;
-      const scanY = (animFrame * 3) % H;
-      ctx.fillStyle = "#f59e0b11";
-      ctx.fillRect(0, scanY, W, 4);
+
+      // LAYER 4: Horizontal energy wave
+      for (let x = 0; x < W; x += 2) {
+        const wave1 = Math.sin(x * 0.025 + f * 0.5) * 12 + H * 0.35;
+        const wave2 = Math.sin(x * 0.018 + f * 0.3 + 2) * 15 + H * 0.65;
+        ctx.fillStyle = "#10b981";
+        ctx.globalAlpha = 0.35 + Math.sin(x * 0.01 + f * 0.2) * 0.15;
+        ctx.fillRect(x, wave1, 3, 4);
+        ctx.fillStyle = "#ffd700";
+        ctx.globalAlpha = 0.25 + Math.sin(x * 0.015 + f * 0.25) * 0.1;
+        ctx.fillRect(x, wave2, 3, 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // LAYER 5: Starburst flashes
+      if (f % 8 < 3) {
+        const sx = (f * 37) % W, sy = (f * 23) % H;
+        ctx.fillStyle = "#fff";
+        ctx.globalAlpha = 0.6;
+        for (let d = 0; d < 8; d++) {
+          const angle = d * Math.PI / 4;
+          const len = 6 + (f % 3) * 2;
+          ctx.fillRect(sx + Math.cos(angle) * len, sy + Math.sin(angle) * len, 2, 2);
+          ctx.fillRect(sx + Math.cos(angle) * (len / 2), sy + Math.sin(angle) * (len / 2), 2, 2);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // LAYER 6: Floating ETH symbols
+      for (let i = 0; i < 6; i++) {
+        const ex = 20 + i * 65, ey = H - ((f * 2 + i * 25) % (H + 10));
+        ctx.fillStyle = "#7c3aed";
+        ctx.globalAlpha = 0.3 + (i % 3) * 0.1;
+        ctx.fillRect(ex + 2, ey, 2, 2);
+        ctx.fillRect(ex, ey + 2, 6, 2);
+        ctx.fillRect(ex + 2, ey + 4, 2, 2);
+      }
+      ctx.globalAlpha = 1;
+
+    } else if (eventType === "bad") {
+      // LAYER 1: Aggressive red flash strobe
+      const flashIntensity = f % 6 < 2 ? 0.15 : f % 6 < 4 ? 0.05 : 0.1;
+      ctx.fillStyle = "#ff0000";
+      ctx.globalAlpha = flashIntensity;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
+
+      // LAYER 2: Heavy glitch scanlines
+      for (let i = 0; i < 16; i++) {
+        const gy = ((f * 9 + i * 19) % H);
+        const gw = 30 + (i * 17 + f * 5) % 100;
+        const gx = (i * 37 + f * 7) % W;
+        const colors = ["#ff0000", "#ff2222", "#ff4444", "#cc0000", "#ff000088"];
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.globalAlpha = 0.3 + (i % 3) * 0.15;
+        ctx.fillRect(gx, gy, gw, 2 + (i % 2));
+        ctx.globalAlpha = 0.15;
+        ctx.fillRect(gx + (f % 2 === 0 ? 4 : -4), gy + 3, gw * 0.7, 1);
+      }
+      ctx.globalAlpha = 1;
+
+      // LAYER 3: Falling debris / shrapnel
+      for (let i = 0; i < 14; i++) {
+        const dx = (i * 31 + f * 5) % W;
+        const dy = ((f * 5 + i * 23) % (H + 20)) - 10;
+        const sz = 2 + (i % 3);
+        ctx.fillStyle = i % 3 === 0 ? "#ff4444" : i % 3 === 1 ? "#ff6b00" : "#ffaa00";
+        ctx.globalAlpha = 0.5 + Math.sin(f + i) * 0.2;
+        ctx.fillRect(dx, dy, sz, sz);
+        ctx.globalAlpha = 0.2;
+        ctx.fillRect(dx - 1, dy - 3, sz - 1, 3);
+      }
+      ctx.globalAlpha = 1;
+
+      // LAYER 4: Chromatic aberration
+      ctx.fillStyle = "#ff000018";
+      ctx.fillRect(f % 2 === 0 ? 2 : -2, 0, W, H);
+      ctx.fillStyle = "#0000ff10";
+      ctx.fillRect(f % 2 === 0 ? -2 : 2, 0, W, H);
+
+      // LAYER 5: Skull warning symbols
+      for (let i = 0; i < 4; i++) {
+        const sx = 40 + i * 90, sy = 10 + ((f * 3 + i * 20) % 30);
+        ctx.fillStyle = "#ff4444";
+        ctx.globalAlpha = 0.2 + Math.sin(f * 0.8 + i) * 0.15;
+        ctx.fillRect(sx, sy, 8, 6);
+        ctx.fillRect(sx + 1, sy + 6, 6, 2);
+        ctx.fillStyle = "#050508";
+        ctx.fillRect(sx + 1, sy + 2, 2, 2);
+        ctx.fillRect(sx + 5, sy + 2, 2, 2);
+        ctx.fillRect(sx + 3, sy + 4, 2, 1);
+      }
+      ctx.globalAlpha = 1;
+
+      // LAYER 6: Explosion shockwave rings
+      const ringR = (f * 4) % 60;
+      ctx.strokeStyle = "#ef4444";
+      ctx.globalAlpha = Math.max(0, 0.5 - ringR / 60);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, ringR, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, ringR * 0.6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // LAYER 7: Static noise
+      for (let i = 0; i < 40; i++) {
+        const nx = ((f * 13 + i * 53) * 7919) % W;
+        const ny = ((f * 7 + i * 41) * 6271) % H;
+        ctx.fillStyle = "#fff";
+        ctx.globalAlpha = 0.03 + (i % 5) * 0.01;
+        ctx.fillRect(nx, ny, 2, 2);
+      }
+      ctx.globalAlpha = 1;
+
+    } else {
+      // NEUTRAL: Digital data stream / Matrix-style
+
+      // LAYER 1: Background circuit pattern
+      ctx.fillStyle = "#f59e0b08";
+      for (let x = 0; x < W; x += 20) { ctx.fillRect(x, 0, 1, H); }
+      for (let y = 0; y < H; y += 20) { ctx.fillRect(0, y, W, 1); }
+
+      // LAYER 2: Falling data columns
+      for (let i = 0; i < 25; i++) {
+        const col = (i * 17 + 8) % W;
+        for (let j = 0; j < 8; j++) {
+          const row = ((f * 3 + i * 13 + j * 11) % (H + 20)) - 10;
+          const colors = ["#f59e0b", "#ffcc00", "#ffd700", "#f5a623", "#e8960a"];
+          ctx.fillStyle = colors[(i + j) % colors.length];
+          ctx.globalAlpha = 0.3 - j * 0.03;
+          ctx.fillRect(col, row, 2, 3);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // LAYER 3: Horizontal scan beam
+      const scanY1 = (f * 4) % (H + 20) - 10;
+      ctx.fillStyle = "#f59e0b";
+      ctx.globalAlpha = 0.2;
+      ctx.fillRect(0, scanY1, W, 3);
+      ctx.globalAlpha = 0.08;
+      ctx.fillRect(0, scanY1 - 5, W, 15);
+      ctx.globalAlpha = 1;
+
+      // LAYER 4: Data nodes with connections
+      for (let i = 0; i < 8; i++) {
+        const nx = 30 + (i * 47 + f * 2) % (W - 60);
+        const ny = 15 + (i * 23) % (H - 30);
+        ctx.fillStyle = "#f59e0b";
+        ctx.globalAlpha = 0.4 + Math.sin(f * 0.3 + i) * 0.2;
+        ctx.fillRect(nx - 2, ny - 2, 4, 4);
+        if (i < 7) {
+          const nx2 = 30 + ((i + 1) * 47 + f * 2) % (W - 60);
+          const ny2 = 15 + ((i + 1) * 23) % (H - 30);
+          ctx.globalAlpha = 0.1;
+          ctx.beginPath();
+          ctx.moveTo(nx, ny);
+          ctx.lineTo(nx2, ny2);
+          ctx.strokeStyle = "#f59e0b";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // LAYER 5: Hex text
+      ctx.fillStyle = "#f59e0b";
+      ctx.font = "bold 6px monospace";
+      ctx.globalAlpha = 0.12;
+      const hexChars = "0123456789ABCDEF";
+      for (let i = 0; i < 12; i++) {
+        const hx = (i * 35 + f * 2) % W;
+        const hy = ((f * 2 + i * 19) % (H + 10)) - 5;
+        const ch = hexChars[(f + i * 3) % 16] + hexChars[(f + i * 7) % 16];
+        ctx.fillText(ch, hx, hy);
+      }
+      ctx.globalAlpha = 1;
     }
+
     const glowColor = eventType === "good" ? "#10b981" : eventType === "bad" ? "#ef4444" : "#f59e0b";
     ctx.strokeStyle = glowColor;
-    ctx.globalAlpha = 0.3 + Math.sin(animFrame * 0.5) * 0.15;
+    ctx.globalAlpha = 0.3 + Math.sin(f * 0.5) * 0.15;
     ctx.lineWidth = 2;
     ctx.strokeRect(1, 1, W - 2, H - 2);
     ctx.globalAlpha = 1;
@@ -1697,6 +2548,7 @@ export default function CryptoTrail() {
         <div style={{ maxWidth: "500px", margin: "0 auto", padding: "60px 20px", textAlign: "center" }}>
           <EventPrompt type={currentEvent.type}>
             {/* Animated pixel art header */}
+            <PixelEventIcon eventTitle={currentEvent.title} animFrame={animFrame} />
             <div style={{ marginBottom: "16px" }}>
               <PixelEventCanvas animFrame={animFrame} eventType={currentEvent.type} />
             </div>
