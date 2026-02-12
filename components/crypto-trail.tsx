@@ -2277,9 +2277,6 @@ export default function CryptoTrail() {
         {scanlines}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "20px", textAlign: "center" }}>
 
-          <div style={{ fontSize: "11px", color: "#555", marginBottom: "12px", letterSpacing: "8px", textTransform: "uppercase", animation: "pixelFlicker 2s infinite" }}>
-            {'<'} A FARCASTER MINI APP {'>'}
-          </div>
           <h1 style={{
             fontSize: "clamp(32px, 8vw, 64px)", fontWeight: "900", margin: "0 0 4px",
             color: "#7c3aed",

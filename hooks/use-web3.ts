@@ -8,6 +8,18 @@ import { parseEther, formatEther } from "viem";
 const OWNER_WALLET = (process.env.NEXT_PUBLIC_OWNER_WALLET || "0x15E916FbAF9762F1344e0544ecdadA62d2Face15") as `0x${string}`;
 const ENTRY_FEE_USD = parseFloat(process.env.NEXT_PUBLIC_ENTRY_FEE_USD || "1.00");
 const NFT_CONTRACT = (process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS || "") as `0x${string}`;
+const PAYMENT_CONTRACT = (process.env.NEXT_PUBLIC_PAYMENT_CONTRACT_ADDRESS || "") as `0x${string}`;
+
+// ── CryptoTrailPayment ABI (minimal — only payEntry) ──
+export const CRYPTO_TRAIL_PAYMENT_ABI = [
+  {
+    inputs: [],
+    name: "payEntry",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+] as const;
 
 // ── CryptoTrailNFT ABI (minimal — only what we call from the frontend) ──
 export const CRYPTO_TRAIL_NFT_ABI = [
@@ -111,6 +123,8 @@ export function useEthPrice() {
 }
 
 // ── GAME ENTRY PAYMENT HOOK ──
+// Uses writeContract → payEntry() on the payment contract (not a raw ETH transfer)
+// so wallet transaction scanners don't flag it as "untrusted address"
 export function useGamePayment() {
   const { address, isConnected } = useAccount();
   const { ethPrice, entryFeeUsd, entryFeeEth, entryFeeEthWithBuffer, loading: priceLoading } = useEthPrice();
@@ -120,18 +134,30 @@ export function useGamePayment() {
   >("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Use writeContract for contract interaction (avoids "untrusted address" warning)
+  const {
+    writeContract,
+    data: txHash,
+    error: writeError,
+    reset: resetWrite,
+  } = useWriteContract();
+
+  // Fallback: raw sendTransaction if no payment contract is configured
   const {
     sendTransaction,
-    data: txHash,
+    data: fallbackTxHash,
     error: sendError,
     reset: resetSend,
   } = useSendTransaction();
+
+  const activeTxHash = txHash || fallbackTxHash;
+  const activeError = writeError || sendError;
 
   const {
     isLoading: isConfirming,
     isSuccess: isConfirmed,
     error: receiptError,
-  } = useWaitForTransactionReceipt({ hash: txHash });
+  } = useWaitForTransactionReceipt({ hash: activeTxHash });
 
   // Update state based on tx confirmation
   useEffect(() => {
@@ -147,15 +173,15 @@ export function useGamePayment() {
   }, [isConfirmed, paymentState]);
 
   useEffect(() => {
-    if (sendError || receiptError) {
-      const err = sendError || receiptError;
+    if (activeError || receiptError) {
+      const err = activeError || receiptError;
       setPaymentState("error");
       setErrorMsg(err?.message?.includes("User rejected")
         ? "Transaction rejected"
         : err?.message?.slice(0, 100) || "Transaction failed"
       );
     }
-  }, [sendError, receiptError]);
+  }, [activeError, receiptError]);
 
   const pay = useCallback(async () => {
     if (!isConnected || !address) {
@@ -172,27 +198,42 @@ export function useGamePayment() {
 
     setPaymentState("paying");
     setErrorMsg(null);
+    resetWrite();
     resetSend();
 
     try {
       // Convert to wei — use 18 decimal precision
       const weiAmount = parseEther(entryFeeEthWithBuffer.toFixed(18));
 
-      sendTransaction({
-        to: OWNER_WALLET,
-        value: weiAmount,
-      });
+      if (PAYMENT_CONTRACT && PAYMENT_CONTRACT.length >= 10) {
+        // Preferred: call payEntry() on the payment contract
+        // This is a contract interaction, not a raw ETH transfer,
+        // so Blockaid/wallet scanners won't show "untrusted address" warnings
+        writeContract({
+          address: PAYMENT_CONTRACT,
+          abi: CRYPTO_TRAIL_PAYMENT_ABI,
+          functionName: "payEntry",
+          value: weiAmount,
+        });
+      } else {
+        // Fallback: direct ETH transfer (will show "untrusted address" warning)
+        sendTransaction({
+          to: OWNER_WALLET,
+          value: weiAmount,
+        });
+      }
     } catch (err: any) {
       setPaymentState("error");
       setErrorMsg(err?.message?.slice(0, 100) || "Payment failed");
     }
-  }, [isConnected, address, entryFeeEthWithBuffer, sendTransaction, resetSend]);
+  }, [isConnected, address, entryFeeEthWithBuffer, writeContract, sendTransaction, resetWrite, resetSend]);
 
   const reset = useCallback(() => {
     setPaymentState("idle");
     setErrorMsg(null);
+    resetWrite();
     resetSend();
-  }, [resetSend]);
+  }, [resetWrite, resetSend]);
 
   return {
     address,
@@ -204,7 +245,7 @@ export function useGamePayment() {
     priceLoading,
     paymentState,
     errorMsg,
-    txHash,
+    txHash: activeTxHash,
     pay,
     reset,
   };
