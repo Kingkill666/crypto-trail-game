@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head><title>NFT Preview</title><style>body{background:#111;display:flex;flex-wrap:wrap;gap:24px;padding:24px;justify-content:center}canvas{border:1px solid #222;border-radius:4px}h3{color:#fff;font-family:monospace;text-align:center;width:100%;margin:0 0 8px}</style></head>
+<body>
+<h3>Crypto Trail NFT Preview — AI Sprites + Stats Overlay</h3>
+<script>
+const NFT_PALETTES = {
+  legendary: { neon1: "#ffd700", neon2: "#ff6b00", frame: "#ffd700", glow: "#ffd70060", sprite: "public/images/nft/legendary.png" },
+  epic:      { neon1: "#bf5af2", neon2: "#ff2d55", frame: "#a855f7", glow: "#bf5af260", sprite: "public/images/nft/epic.png" },
+  rare:      { neon1: "#00d4ff", neon2: "#0088ff", frame: "#06b6d4", glow: "#00d4ff50", sprite: "public/images/nft/rare.png" },
+  common:    { neon1: "#00ff88", neon2: "#00cc66", frame: "#555",    glow: "#00ff8840", sprite: "public/images/nft/common.png" },
+};
+
+function hashStats(str) { let h = 0; for (let i = 0; i < str.length; i++) { h = ((h << 5) - h + str.charCodeAt(i)) | 0; } return Math.abs(h); }
+function getRarityTier(score) { if (score >= 6000) return "legendary"; if (score >= 4000) return "epic"; if (score >= 2000) return "rare"; return "common"; }
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+async function generateNFTImage(gameData) {
+  const { classId, score, survivors, totalParty, days, eth, stables, tokens, morale, partyNames, playerClass } = gameData;
+  const canvas = document.createElement("canvas");
+  const W = 400, H = 400;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  const rarity = getRarityTier(score);
+  const pal = NFT_PALETTES[rarity];
+  const seed = hashStats(`${classId}-${score}-${survivors}-${days}-${partyNames.join("")}`);
+  const aliveParty = partyNames.filter((_, i) => i < survivors);
+
+  const px = (x, y, w, h, c, a) => {
+    if (a === undefined) a = 1;
+    ctx.globalAlpha = a; ctx.fillStyle = c; ctx.fillRect(x, y, w, h); ctx.globalAlpha = 1;
+  };
+
+  // Load and draw the AI-generated sprite
+  const spriteImg = await loadImage(pal.sprite);
+  ctx.drawImage(spriteImg, 0, 0, W, H);
+
+  // ── STATS OVERLAY AT BOTTOM ──
+  const panelH = 120;
+  const panelY = H - panelH;
+  const fadeGrad = ctx.createLinearGradient(0, panelY - 30, 0, panelY + 10);
+  fadeGrad.addColorStop(0, "rgba(0,0,0,0)");
+  fadeGrad.addColorStop(1, "rgba(0,0,0,0.85)");
+  ctx.fillStyle = fadeGrad;
+  ctx.fillRect(0, panelY - 30, W, 40);
+  px(0, panelY, W, panelH, "#000", 0.85);
+
+  // Top neon line
+  px(8, panelY, W - 16, 2, pal.neon1, 0.8);
+  // Corner brackets
+  const cb = 12;
+  px(8, panelY, cb, 2, pal.neon1, 1); px(8, panelY, 2, cb, pal.neon1, 1);
+  px(W - 8 - cb, panelY, cb, 2, pal.neon1, 1); px(W - 10, panelY, 2, cb, pal.neon1, 1);
+  px(8, H - 2, cb, 2, pal.neon1, 0.5); px(8, H - cb, 2, cb, pal.neon1, 0.5);
+  px(W - 8 - cb, H - 2, cb, 2, pal.neon1, 0.5); px(W - 10, H - cb, 2, cb, pal.neon1, 0.5);
+
+  // Rarity badge
+  ctx.textAlign = "center";
+  ctx.font = "bold 13px 'Courier New', monospace";
+  ctx.fillStyle = pal.neon1;
+  ctx.fillText("[ " + rarity.toUpperCase() + " ]", W / 2, panelY + 16);
+
+  // Class name
+  ctx.font = "bold 10px 'Courier New', monospace";
+  ctx.fillStyle = pal.neon2;
+  ctx.fillText((playerClass && playerClass.name) ? playerClass.name.toUpperCase() : classId.toUpperCase(), W / 2, panelY + 30);
+
+  // Score (big and bold)
+  ctx.font = "bold 22px 'Courier New', monospace";
+  ctx.fillStyle = "#fff";
+  ctx.fillText("SCORE: " + score.toLocaleString(), W / 2, panelY + 55);
+
+  // Stats grid
+  const sX = 20, sX2 = W / 2 + 10;
+  let sY = panelY + 72;
+  ctx.textAlign = "left";
+  ctx.font = "bold 11px 'Courier New', monospace";
+
+  ctx.fillStyle = pal.neon1; ctx.fillText("Survivors: " + survivors + "/" + totalParty, sX, sY);
+  ctx.fillStyle = pal.neon1; ctx.fillText("Days: " + days, sX2, sY);
+  sY += 14;
+  ctx.fillStyle = "#8899bb"; ctx.fillText("ETH: " + eth, sX, sY);
+  ctx.fillStyle = "#8899bb"; ctx.fillText("USDC: " + stables, sX2, sY);
+  sY += 14;
+  ctx.fillStyle = "#8899bb"; ctx.fillText("Tokens: " + tokens, sX, sY);
+  ctx.fillStyle = "#8899bb"; ctx.fillText("Morale: " + morale, sX2, sY);
+  sY += 14;
+
+  // Party names
+  ctx.fillStyle = pal.neon1; ctx.font = "bold 9px 'Courier New', monospace";
+  ctx.textAlign = "center";
+  const nameStr = aliveParty.join(" \u2022 ");
+  ctx.fillText(nameStr.length > 52 ? nameStr.slice(0, 49) + "..." : nameStr, W / 2, sY);
+
+  // Neon frame
+  const fw = rarity === "legendary" ? 3 : rarity === "epic" ? 2 : 1;
+  ctx.strokeStyle = pal.glow; ctx.lineWidth = fw + 6;
+  ctx.strokeRect(3, 3, W - 6, H - 6);
+  ctx.strokeStyle = pal.frame; ctx.lineWidth = fw;
+  ctx.strokeRect(fw, fw, W - fw * 2, H - fw * 2);
+
+  if (rarity === "legendary" || rarity === "epic") {
+    const cs = 20;
+    px(0, 0, cs, fw, pal.neon1, 0.7); px(0, 0, fw, cs, pal.neon1, 0.7);
+    px(W - cs, 0, cs, fw, pal.neon1, 0.7); px(W - fw, 0, fw, cs, pal.neon1, 0.7);
+    px(0, H - fw, cs, fw, pal.neon1, 0.5); px(0, H - cs, fw, cs, pal.neon1, 0.5);
+    px(W - cs, H - fw, cs, fw, pal.neon1, 0.5); px(W - fw, H - cs, fw, cs, pal.neon1, 0.5);
+  }
+
+  // Scanlines
+  for (let sl = 0; sl < H; sl += 3) px(0, sl, W, 1, "#000", 0.04);
+
+  // Serial
+  ctx.textAlign = "right"; ctx.fillStyle = "#333344";
+  ctx.font = "8px 'Courier New', monospace";
+  ctx.fillText("#" + (seed % 99999).toString().padStart(5, "0"), W - 14, H - 4);
+
+  return canvas;
+}
+
+const samples = [
+  { classId: "dev", score: 7500, survivors: 4, totalParty: 4, days: 82, eth: 1200, stables: 800, tokens: 50, morale: 90, partyNames: ["CryptoKing","DiamondDana","HODLer","BasedChad"], tombstones: [], playerClass: { name: "Solidity Dev" } },
+  { classId: "trader", score: 4800, survivors: 3, totalParty: 4, days: 95, eth: 600, stables: 400, tokens: 30, morale: 65, partyNames: ["DexTrader","Whale","PaperHands","RugInspector"], tombstones: ["PaperHands"], playerClass: { name: "Dex Trader" } },
+  { classId: "influencer", score: 2500, survivors: 2, totalParty: 4, days: 110, eth: 300, stables: 200, tokens: 15, morale: 40, partyNames: ["CryptoQueen","NFTMaxi","Anon","FOMOdan"], tombstones: ["Anon","FOMOdan"], playerClass: { name: "CT Influencer" } },
+  { classId: "vc", score: 1200, survivors: 1, totalParty: 4, days: 130, eth: 100, stables: 50, tokens: 5, morale: 20, partyNames: ["VCbro","Intern","Associate","Partner"], tombstones: ["Intern","Associate","Partner"], playerClass: { name: "VC Partner" } },
+];
+
+(async () => {
+  for (const data of samples) {
+    const canvas = await generateNFTImage(data);
+    const label = document.createElement("div");
+    label.style.cssText = "color:#888;font-family:monospace;font-size:12px;text-align:center;margin-top:6px";
+    label.textContent = getRarityTier(data.score).toUpperCase() + " \u2014 " + data.playerClass.name + " \u2014 Score: " + data.score;
+    const wrap = document.createElement("div");
+    wrap.appendChild(canvas);
+    wrap.appendChild(label);
+    document.body.appendChild(wrap);
+  }
+})();
+</script>
+</body>
+</html>

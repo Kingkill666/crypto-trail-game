@@ -48,7 +48,7 @@ async function uploadNftImage(base64DataUrl: string): Promise<string | null> {
   }
 }
 
-async function shareGameCast(text: string, nftImageDataUrl?: string | null) {
+async function shareGameCast(text: string, nftImageDataUrl?: string | null, staticImageUrl?: string | null) {
   const sdk = await farcasterSdkPromise;
   if (!sdk?.actions?.composeCast) return;
 
@@ -58,6 +58,8 @@ async function shareGameCast(text: string, nftImageDataUrl?: string | null) {
   if (nftImageDataUrl) {
     const imageUrl = await uploadNftImage(nftImageDataUrl);
     if (imageUrl) embeds.push(imageUrl);
+  } else if (staticImageUrl) {
+    embeds.push(staticImageUrl);
   }
 
   // Add the game URL as second embed (max 2 embeds per cast)
@@ -2775,7 +2777,7 @@ export default function CryptoTrail() {
               </div>
             )}
             <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-              <PixelBtn onClick={() => shareGameCast(`Got REKT on Crypto Trail after ${milesTraveled} miles in ${day} days. Can you survive the crypto frontier?`)} color="#7c3aed" fullWidth>
+              <PixelBtn onClick={() => shareGameCast(`Crypto Trail just REKT me 💀 ${milesTraveled} miles in ${day} days before I got rugged. Think you can make it to Mainnet? 👇`, null, `${APP_URL}/images/share/defeat.png`)} color="#7c3aed" fullWidth>
                 SHARE
               </PixelBtn>
               <PixelBtn onClick={() => window.location.reload()} color="#333" textColor="#888" fullWidth>
