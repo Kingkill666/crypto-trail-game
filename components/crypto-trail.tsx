@@ -757,6 +757,7 @@ const EVENT_IMAGES: Record<string, string> = {
   "BRND MINI APP WINNER": "/images/BRND-logo.png",
   "DAU CO-SPONSOR": "/images/DAU-logo.png",
   "FARCASTER MINI APP": "/images/Farcaster_logo.png",
+  "JESSE POLLAK APED IN": "/images/Jesse.png",
 };
 
 function PixelEventIcon({ eventTitle, animFrame }: { eventTitle: string; animFrame: number }) {
@@ -1408,6 +1409,7 @@ const TRAIL_EVENTS = [
   { type: "good" as const, title: "BRND MINI APP WINNER", message: "Your mini app beat out all the competition and placed 1st in BRND rankings! You earn 40,000 BRND tokens!", effect: (g: GameState) => ({ ...g, tokens: g.tokens + 400, morale: Math.min(100, g.morale + 20) }) },
   { type: "good" as const, title: "DAU CO-SPONSOR", message: "DAU came in and co-sponsored your project! They believe in your vision and back you with 1,000 DAU.", effect: (g: GameState) => ({ ...g, stables: g.stables + 300, morale: Math.min(100, g.morale + 15) }) },
   { type: "good" as const, title: "FARCASTER MINI APP", message: "Your mini app placed 1st on Farcaster! The community loves it. You earn $50 USDC in rewards!", effect: (g: GameState) => ({ ...g, stables: g.stables + 250, morale: Math.min(100, g.morale + 20) }) },
+  { type: "good" as const, title: "JESSE POLLAK APED IN", message: "Jesse Pollak saw your project and aped in! You just got an investment of 5 ETH. Based.", effect: (g: GameState) => ({ ...g, eth: g.eth + 500, morale: Math.min(100, g.morale + 25) }) },
   { type: "bad" as const, title: "RUG PULL!", message: "The dev team deleted their Twitter and drained the LP. Classic.", effect: (g: GameState) => ({ ...g, eth: Math.max(0, g.eth - 300 - Math.floor(Math.random() * 200)), morale: Math.max(0, g.morale - 20) }) },
   { type: "bad" as const, title: "GAS SPIKE!", message: "Gas fees are 500 gwei. Your transaction cost more than your rent.", effect: (g: GameState) => ({ ...g, eth: Math.max(0, g.eth - 200) }) },
   { type: "bad" as const, title: "BEAR MARKET", message: "Everything is down 40%. CT is dead. Even the AI bots stopped trading.", effect: (g: GameState) => ({ ...g, eth: Math.max(0, Math.floor(g.eth * 0.7)), morale: Math.max(0, g.morale - 15) }) },
