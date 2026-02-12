@@ -17,19 +17,19 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Crypto Trail - 8-Bit Degen Edition',
     description: 'Lead your party of 4 degens from Genesis Block to Mainnet. Trade memecoins, cross sketchy bridges, dodge rug pulls, and fight off rogue AI agents.',
-    images: ['https://i.postimg.cc/Y2d3rm4D/Crypto-Trail-share-URL.png'],
+    images: ['https://i.postimg.cc/K81LSBYB/Crypto_Trail_Start.jpg'],
   },
   other: {
     'fc:miniapp': JSON.stringify({
       version: "next",
-      imageUrl: "https://i.postimg.cc/Y2d3rm4D/Crypto-Trail-share-URL.png",
+      imageUrl: "https://i.postimg.cc/K81LSBYB/Crypto_Trail_Start.jpg",
       button: {
         title: "Play Crypto Trail",
         action: {
           type: "launch_miniapp",
           name: "Crypto Trail",
           url: APP_URL,
-          splashImageUrl: `${APP_URL}/images/CryptoTrail-Splash.png`,
+          splashImageUrl: "https://i.postimg.cc/JzK1q28q/hero-200-copy.jpg",
           splashBackgroundColor: "#0a0a0f",
         },
       },
