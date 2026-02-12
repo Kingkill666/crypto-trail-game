@@ -2352,7 +2352,7 @@ export default function CryptoTrail() {
           <div style={{
             marginTop: "24px", fontSize: "9px", color: "#fff", maxWidth: "400px", letterSpacing: "2px",
           }}>
-            INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * BASE MAINNET
+            INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * BASE MAINNET * CREATED BY VMFCOIN
           </div>
         </div>
       </div>
