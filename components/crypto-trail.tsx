@@ -2505,18 +2505,31 @@ export default function CryptoTrail() {
 
   const downloadNFT = () => {
     if (!nftImage) return;
-    const link = document.createElement("a");
-    link.download = `crypto-trail-nft-${calcScore()}.png`;
-    link.href = nftImage;
-    link.click();
+    // Convert data URL to blob for reliable download across browsers
+    fetch(nftImage).then(r => r.blob()).then(blob => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `crypto-trail-nft-${calcScore()}.png`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
   };
 
   const downloadDeathNFT = () => {
     if (!deathNftImage) return;
-    const link = document.createElement("a");
-    link.download = `crypto-trail-death-nft.png`;
-    link.href = deathNftImage;
-    link.click();
+    fetch(deathNftImage).then(r => r.blob()).then(blob => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `crypto-trail-death-nft.png`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -3388,15 +3401,17 @@ export default function CryptoTrail() {
     const deathMintSuccess = nftMint.mintState === "success";
     const deathMintError = nftMint.mintState === "error";
 
-    const handleMintDeathNft = () => {
+    const handleMintDeathNft = async () => {
       if (!deathNftImage) return;
       if (deathMintError) nftMint.reset();
+      // Upload image and use URL as tokenURI (base64 is too large for calldata)
+      const imageUrl = await uploadNftImage(deathNftImage);
       nftMint.mint({
         score: deathScore,
         classId: playerClass?.id || "dev",
         survivors: 0,
         days: day,
-        tokenURI: deathNftImage,
+        tokenURI: imageUrl || deathNftImage,
       });
     };
 
@@ -3495,7 +3510,7 @@ export default function CryptoTrail() {
                   {deathIsMinting
                     ? (nftMint.mintState === "minting" ? "CONFIRM IN WALLET..." : "MINTING ON BASE...")
                     : nftMint.nftContractConfigured
-                      ? "> MINT DEATH NFT (BASE) <"
+                      ? "> MINT DEATH NFT <"
                       : "> MINT NFT (CONTRACT PENDING) <"
                   }
                 </PixelBtn>
@@ -3662,15 +3677,17 @@ export default function CryptoTrail() {
     const mintSuccess = nftMint.mintState === "success";
     const mintError = nftMint.mintState === "error";
 
-    const handleMintNft = () => {
+    const handleMintNft = async () => {
       if (!nftImage) return;
       if (mintError) nftMint.reset();
+      // Upload image and use URL as tokenURI (base64 is too large for calldata)
+      const imageUrl = await uploadNftImage(nftImage);
       nftMint.mint({
         score,
         classId: playerClass?.id || "dev",
         survivors: aliveMemberCount,
         days: day,
-        tokenURI: nftImage, // base64 data URL — contract stores the URI
+        tokenURI: imageUrl || nftImage,
       });
     };
 
