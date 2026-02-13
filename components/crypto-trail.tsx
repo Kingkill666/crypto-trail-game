@@ -1479,6 +1479,8 @@ const NFT_PALETTES: Record<string, {
   common:    { neon1: "#00ff88", neon2: "#00cc66", frame: "#555",    glow: "#00ff8840", sprite: "/images/nft/common.png" },
 };
 
+const DEATH_PALETTE = { neon1: "#ef4444", neon2: "#991111", frame: "#ef4444", glow: "#ef444460", sprite: "/images/nft/death.png" };
+
 // ── HELPER FUNCTIONS ───────────────────────────────────────────
 
 const rng = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -1641,6 +1643,108 @@ async function generateNFTImage(gameData: {
   return canvas.toDataURL("image/png");
 }
 
+async function generateDeathNFTImage(gameData: {
+  classId: string;
+  score: number;
+  days: number;
+  miles: number;
+  eth: number;
+  stables: number;
+  tokens: number;
+  morale: number;
+  tombstones: Array<{ name: string; mile: number; day: number; epitaph: string }>;
+  playerClass: { name: string } | null;
+}): Promise<string> {
+  const { classId, score, days, miles, eth, stables, tokens, morale, tombstones, playerClass } = gameData;
+  const canvas = document.createElement("canvas");
+  const W = 400, H = 400;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+
+  const pal = DEATH_PALETTE;
+  const seed = hashStats(`death-${classId}-${score}-${days}-${miles}-${tombstones.map(t => t.name).join("")}`);
+
+  const px = (x: number, y: number, w: number, h: number, c: string, a = 1) => {
+    ctx.globalAlpha = a; ctx.fillStyle = c; ctx.fillRect(x, y, w, h); ctx.globalAlpha = 1;
+  };
+
+  // ── LOAD DEATH CHARACTER SPRITE ──
+  const spriteImg = await loadImage(pal.sprite);
+  ctx.drawImage(spriteImg, 0, 0, W, H);
+
+  // ── STATS OVERLAY AT BOTTOM ──
+  const panelH = 130;
+  const panelY = H - panelH;
+  const fadeGrad = ctx.createLinearGradient(0, panelY - 30, 0, panelY + 10);
+  fadeGrad.addColorStop(0, "rgba(0,0,0,0)");
+  fadeGrad.addColorStop(1, "rgba(0,0,0,0.9)");
+  ctx.fillStyle = fadeGrad;
+  ctx.fillRect(0, panelY - 30, W, 40);
+  px(0, panelY, W, panelH, "#000", 0.9);
+
+  // Top neon line
+  px(8, panelY, W - 16, 2, pal.neon1, 0.8);
+  // Corner brackets
+  const cb = 12;
+  px(8, panelY, cb, 2, pal.neon1, 1); px(8, panelY, 2, cb, pal.neon1, 1);
+  px(W - 8 - cb, panelY, cb, 2, pal.neon1, 1); px(W - 10, panelY, 2, cb, pal.neon1, 1);
+  px(8, H - 2, cb, 2, pal.neon1, 0.5); px(8, H - cb, 2, cb, pal.neon1, 0.5);
+  px(W - 8 - cb, H - 2, cb, 2, pal.neon1, 0.5); px(W - 10, H - cb, 2, cb, pal.neon1, 0.5);
+
+  // ── REKT BADGE ──
+  ctx.textAlign = "center";
+  ctx.font = "bold 13px 'Courier New', monospace";
+  ctx.fillStyle = pal.neon1;
+  ctx.fillText("[ REKT ]", W / 2, panelY + 16);
+
+  // ── CLASS NAME ──
+  ctx.font = "bold 10px 'Courier New', monospace";
+  ctx.fillStyle = pal.neon2;
+  ctx.fillText(playerClass?.name?.toUpperCase() || classId.toUpperCase(), W / 2, panelY + 30);
+
+  // ── SCORE ──
+  ctx.font = "bold 22px 'Courier New', monospace";
+  ctx.fillStyle = "#fff";
+  ctx.fillText(`SCORE: ${score.toLocaleString()}`, W / 2, panelY + 55);
+
+  // ── STATS GRID ──
+  const sX = 20, sX2 = W / 2 + 10;
+  let sY = panelY + 72;
+  ctx.textAlign = "left";
+  ctx.font = "bold 11px 'Courier New', monospace";
+
+  ctx.fillStyle = pal.neon1; ctx.fillText(`Miles: ${miles}`, sX, sY);
+  ctx.fillStyle = pal.neon1; ctx.fillText(`Days: ${days}`, sX2, sY);
+  sY += 14;
+  ctx.fillStyle = "#8899bb"; ctx.fillText(`ETH: ${eth}`, sX, sY);
+  ctx.fillStyle = "#8899bb"; ctx.fillText(`USDC: ${stables}`, sX2, sY);
+  sY += 14;
+  ctx.fillStyle = "#8899bb"; ctx.fillText(`Tokens: ${tokens}`, sX, sY);
+  ctx.fillStyle = "#8899bb"; ctx.fillText(`Morale: ${morale}`, sX2, sY);
+  sY += 14;
+
+  // ── TOMBSTONE NAMES ──
+  ctx.fillStyle = pal.neon1; ctx.font = "bold 9px 'Courier New', monospace";
+  ctx.textAlign = "center";
+  const tombStr = tombstones.map(t => t.name).join(" * ");
+  ctx.fillText(tombStr.length > 52 ? tombStr.slice(0, 49) + "..." : tombStr, W / 2, sY);
+
+  // ── RED NEON FRAME ──
+  ctx.strokeStyle = pal.glow; ctx.lineWidth = 7;
+  ctx.strokeRect(3, 3, W - 6, H - 6);
+  ctx.strokeStyle = pal.frame; ctx.lineWidth = 1;
+  ctx.strokeRect(1, 1, W - 2, H - 2);
+
+  // Scanlines for retro feel
+  for (let sl = 0; sl < H; sl += 3) px(0, sl, W, 1, "#000", 0.04);
+
+  // Serial number
+  ctx.textAlign = "right"; ctx.fillStyle = "#331111";
+  ctx.font = "8px 'Courier New', monospace";
+  ctx.fillText(`#${(seed % 99999).toString().padStart(5, "0")}`, W - 14, H - 4);
+
+  return canvas.toDataURL("image/png");
+}
 
 // ── LEADERBOARD HELPERS ──
 
@@ -1881,6 +1985,8 @@ export default function CryptoTrail() {
   const [flashColor, setFlashColor] = useState<string | null>(null);
   const [nftImage, setNftImage] = useState<string | null>(null);
   const [nftMintState, setNftMintState] = useState("idle");
+  const [deathNftImage, setDeathNftImage] = useState<string | null>(null);
+  const [deathNftMintState, setDeathNftMintState] = useState("idle");
   const [sharing, setSharing] = useState(false);
   const [eventAnimPhase, setEventAnimPhase] = useState(0); // 0 = intro, 1 = content, 2 = ready
   const [shopItems, setShopItems] = useState({ audits: 0, hardwareWallets: 0, vpn: 0, aiAgent: 0 });
@@ -1933,6 +2039,33 @@ export default function CryptoTrail() {
         setNftMintState("idle");
         setNftImage(null);
         setPhase("victory");
+      }
+      // DEBUG: Ctrl+Shift+D to jump to gameover/death screen with mock data
+      if (e.ctrlKey && e.shiftKey && e.key === "D") {
+        e.preventDefault();
+        setPlayerClass(CLASSES[1]);
+        setParty([
+          { id: 0, name: "Based Chad", health: 0, affliction: null, alive: false },
+          { id: 1, name: "Vitalik Jr.", health: 0, affliction: null, alive: false },
+          { id: 2, name: "Ser Moonboy", health: 0, affliction: null, alive: false },
+          { id: 3, name: "Anon Dev", health: 0, affliction: null, alive: false },
+        ]);
+        setPartyNames(["Based Chad", "Vitalik Jr.", "Ser Moonboy", "Anon Dev"]);
+        setDay(28);
+        setMilesTraveled(412);
+        setEth(3);
+        setStables(12);
+        setTokens(0);
+        setMorale(5);
+        setTombstones([
+          { name: "Ser Moonboy", mile: 180, day: 12, epitaph: "RIP Ser Moonboy — Day 12, Mile 180 — rugged by a memecoin" },
+          { name: "Vitalik Jr.", mile: 290, day: 19, epitaph: "RIP Vitalik Jr. — Day 19, Mile 290 — lost in a flash loan attack" },
+          { name: "Based Chad", mile: 380, day: 25, epitaph: "RIP Based Chad — Day 25, Mile 380 — rekt by a rug pull" },
+          { name: "Anon Dev", mile: 412, day: 28, epitaph: "RIP Anon Dev — Day 28, Mile 412 — liquidated on leverage" },
+        ]);
+        setDeathNftMintState("idle");
+        setDeathNftImage(null);
+        setPhase("gameover");
       }
     };
     window.addEventListener("keydown", handler);
@@ -2056,7 +2189,7 @@ export default function CryptoTrail() {
     const newDay = day + 1;
     const risk = paceRiskMap[pace];
 
-    let newStables = stables - Math.ceil(party.filter((p) => p.alive).length * 3 * paceStableMult[pace]);
+    let newStables = stables - Math.ceil(party.filter((p) => p.alive).length * 2.5 * paceStableMult[pace]);
     let newMorale = morale + paceMoraleCost[pace];
     const newEth = eth;
     let updatedParty = [...party];
@@ -2069,27 +2202,27 @@ export default function CryptoTrail() {
 
     // Difficulty scales with distance — the frontier gets harsher
     const progress = newMiles / totalMiles;
-    const dangerScale = 1 + progress * 1.4;
+    const dangerScale = 1 + progress * 0.6;
 
     updatedParty = updatedParty.map((member) => {
       if (!member.alive) return member;
       let hp = member.health;
 
       // Passive attrition — the trail wears everyone down
-      if (Math.random() < 0.12 * dangerScale) {
-        hp -= rng(2, 5);
+      if (Math.random() < 0.08 * dangerScale) {
+        hp -= rng(1, 4);
       }
 
       if (member.affliction) {
         hp -= member.affliction.severity * 5;
         // Recovery gets harder the further you go
-        if (Math.random() < 0.15 / dangerScale) {
+        if (Math.random() < 0.18 / dangerScale) {
           addLog(`${member.name} recovered from ${member.affliction.name}!`);
           return { ...member, health: Math.max(1, hp), affliction: null };
         }
       }
 
-      if (!member.affliction && Math.random() < 0.09 * risk * dangerScale) {
+      if (!member.affliction && Math.random() < 0.07 * risk * dangerScale) {
         const aff = pick(AFFLICTIONS);
         addLog(`${aff.emoji} ${member.name} has contracted ${aff.name}!`);
         return { ...member, health: hp, affliction: aff };
@@ -2141,10 +2274,10 @@ export default function CryptoTrail() {
       return;
     }
 
-    if (Math.random() < (0.35 + progress * 0.2) * risk) {
+    if (Math.random() < (0.35 + progress * 0.1) * risk) {
       // Events skew toward bad outcomes as the trail gets harder
       let eventPool = TRAIL_EVENTS;
-      if (Math.random() < progress * 0.4) {
+      if (Math.random() < progress * 0.25) {
         const badEvents = TRAIL_EVENTS.filter((e) => e.type === "bad");
         eventPool = badEvents.length > 0 ? badEvents : TRAIL_EVENTS;
       }
@@ -2308,11 +2441,48 @@ export default function CryptoTrail() {
     }
   }, [phase, nftImage, nftMintState, generateNFT]);
 
+  const generateDeathNFT = useCallback(() => {
+    setDeathNftMintState("generating");
+    setTimeout(async () => {
+      try {
+        const gameData = {
+          classId: playerClass?.id || "dev",
+          playerClass,
+          score: calcScore(),
+          days: day,
+          miles: milesTraveled,
+          eth, stables, tokens, morale,
+          tombstones,
+        };
+        const imgDataUrl = await generateDeathNFTImage(gameData);
+        setDeathNftImage(imgDataUrl);
+        setDeathNftMintState("ready");
+      } catch {
+        setDeathNftMintState("error");
+      }
+    }, 800);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerClass, day, milesTraveled, eth, stables, tokens, morale, tombstones]);
+
+  useEffect(() => {
+    if (phase === "gameover" && !deathNftImage && deathNftMintState === "idle") {
+      generateDeathNFT();
+    }
+  }, [phase, deathNftImage, deathNftMintState, generateDeathNFT]);
+
   const downloadNFT = () => {
     if (!nftImage) return;
     const link = document.createElement("a");
     link.download = `crypto-trail-nft-${calcScore()}.png`;
     link.href = nftImage;
+    link.click();
+  };
+
+  const downloadDeathNFT = () => {
+    if (!deathNftImage) return;
+    const link = document.createElement("a");
+    link.download = `crypto-trail-death-nft.png`;
+    link.href = deathNftImage;
     link.click();
   };
 
@@ -2838,62 +3008,270 @@ export default function CryptoTrail() {
 
   // ── GAME OVER ──
   if (phase === "gameover") {
+    const deathScore = calcScore();
+    const deathIsMinting = nftMint.mintState === "minting" || nftMint.mintState === "confirming";
+    const deathMintSuccess = nftMint.mintState === "success";
+    const deathMintError = nftMint.mintState === "error";
+
+    const handleMintDeathNft = () => {
+      if (!deathNftImage) return;
+      if (deathMintError) nftMint.reset();
+      nftMint.mint({
+        score: deathScore,
+        classId: playerClass?.id || "dev",
+        survivors: 0,
+        days: day,
+        tokenURI: deathNftImage,
+      });
+    };
+
     return (
       <div style={containerStyle}>
         <style>{CSS}</style>
         {scanlines}
-        <div style={{ maxWidth: "500px", margin: "0 auto", padding: "60px 20px", textAlign: "center" }}>
-          <EventPrompt type="bad">
-            <div style={{ fontSize: "64px", marginBottom: "16px", animation: "eventBounce 0.6s ease-out" }}>
-              💀
-            </div>
-            <h1 style={{
-              color: "#ef4444", fontSize: "32px", marginBottom: "8px", letterSpacing: "6px",
-              textShadow: "3px 3px 0px #991111",
-            }}>REKT</h1>
-            <p style={{ color: "#fff", fontSize: "13px", marginBottom: "6px", letterSpacing: "1px" }}>
-              YOUR ENTIRE PARTY HAS BEEN WIPED OUT.
-            </p>
-            <p style={{ color: "#fff", fontSize: "11px", marginBottom: "24px", letterSpacing: "1px" }}>
-              {milesTraveled} MILES IN {day} DAYS
-            </p>
-            {tombstones.length > 0 && (
-              <div style={{ marginBottom: "24px" }}>
-                <div style={{ fontSize: "10px", color: "#fff", marginBottom: "10px", letterSpacing: "2px" }}>TOMBSTONES</div>
-                {tombstones.map((t, i) => (
-                  <div key={i} style={{
-                    padding: "8px", background: "#0a0a12", border: "1px solid #1a1a2e",
-                    marginBottom: "4px", fontSize: "10px", color: "#fff", letterSpacing: "0.5px",
-                  }}>
-                    {t.epitaph}
-                  </div>
-                ))}
+        <div style={{ maxWidth: "500px", margin: "0 auto", padding: "40px 20px 120px", textAlign: "center" }}>
+          <div style={{ fontSize: "64px", marginBottom: "16px", animation: "eventBounce 0.6s ease-out" }}>
+            💀
+          </div>
+          <h1 style={{
+            color: "#ef4444", fontSize: "32px", marginBottom: "8px", letterSpacing: "6px",
+            textShadow: "3px 3px 0px #991111",
+          }}>REKT</h1>
+          <p style={{ color: "#fff", fontSize: "13px", marginBottom: "6px", letterSpacing: "1px" }}>
+            YOUR ENTIRE PARTY HAS BEEN WIPED OUT.
+          </p>
+          <p style={{ color: "#fff", fontSize: "11px", marginBottom: "24px", letterSpacing: "1px" }}>
+            {milesTraveled} MILES IN {day} DAYS
+          </p>
+
+          {/* Death NFT Preview */}
+          <div style={{
+            position: "relative", margin: "0 auto 24px", maxWidth: "320px",
+            overflow: "hidden",
+            border: "3px solid #ef4444",
+            boxShadow: "0 0 30px #ef444466",
+            background: "#0a0a0f",
+          }}>
+            {(deathNftMintState === "idle" || deathNftMintState === "generating") && (
+              <div style={{
+                width: "100%", aspectRatio: "1/1", display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center", background: "#0a0a12",
+              }}>
+                <div style={{ fontSize: "36px", marginBottom: "12px", animation: "spin 2s linear infinite" }}>💀</div>
+                <div style={{ color: "#fff", fontSize: "11px", letterSpacing: "2px" }}>GENERATING DEATH NFT...</div>
+                <div style={{
+                  marginTop: "12px", width: "100px", height: "4px", background: "#1a1a2e", overflow: "hidden",
+                }}>
+                  <div style={{
+                    height: "100%", background: "#ef4444",
+                    animation: "loading 1.5s ease-in-out infinite",
+                    width: "60%",
+                  }} />
+                </div>
               </div>
             )}
-            <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-              <PixelBtn onClick={() => shareGameCast(`Crypto Trail just REKT me 💀 ${milesTraveled} miles in ${day} days before I got rugged. Think you can make it to Mainnet? 👇`, null, `${APP_URL}/images/share/defeat.png`)} color="#7c3aed" fullWidth>
-                SHARE
-              </PixelBtn>
-              <PixelBtn onClick={() => window.location.reload()} color="#333" textColor="#888" fullWidth>
-                TRY AGAIN
-              </PixelBtn>
-            </div>
-            {leaderboard.length > 0 && (
-              <div style={{ marginTop: "12px", textAlign: "left" }}>
-                <div style={{ fontSize: "10px", color: "#fff", marginBottom: "8px", letterSpacing: "2px", textAlign: "center" }}>LEADERBOARD</div>
-                {leaderboard.slice(0, 5).map((e, i) => (
-                  <div key={i} style={{
-                    display: "flex", justifyContent: "space-between", padding: "4px 8px",
-                    background: i === 0 ? "#1a1a0a" : "#0a0a12", borderBottom: "1px solid #1a1a2e",
-                    fontSize: "10px", color: i === 0 ? "#ffd700" : "#fff",
-                  }}>
-                    <span>{i + 1}. {e.name}</span>
-                    <span>{e.score?.toLocaleString()} {e.survived ? "✓" : "💀"}</span>
-                  </div>
-                ))}
+
+            {deathNftImage && deathNftMintState !== "idle" && deathNftMintState !== "generating" && (
+              <div style={{ animation: "nftReveal 0.6s ease-out" }}>
+                <img src={deathNftImage} alt="Crypto Trail Death NFT" style={{ width: "100%", display: "block", imageRendering: "pixelated" }} />
               </div>
             )}
-          </EventPrompt>
+
+            {deathNftImage && deathNftMintState !== "generating" && (
+              <div style={{
+                position: "absolute", top: "6px", right: "6px",
+                padding: "2px 8px",
+                background: "#ef444422",
+                border: "2px solid #ef4444",
+                color: "#ef4444",
+                fontSize: "9px", fontWeight: "900", textTransform: "uppercase",
+                letterSpacing: "2px",
+              }}>
+                REKT
+              </div>
+            )}
+
+            {/* Minted badge overlay */}
+            {deathMintSuccess && (
+              <div style={{
+                position: "absolute", bottom: "6px", left: "6px",
+                padding: "2px 8px",
+                background: "#ef444433",
+                border: "2px solid #ef4444",
+                color: "#ef4444",
+                fontSize: "9px", fontWeight: "900", letterSpacing: "2px",
+              }}>
+                MINTED ON BASE
+              </div>
+            )}
+          </div>
+
+          {/* Mint Death NFT Button */}
+          {deathNftImage && deathNftMintState === "ready" && !deathMintSuccess && (
+            <div style={{ marginBottom: "16px" }}>
+              {isConnected ? (
+                <PixelBtn
+                  onClick={handleMintDeathNft}
+                  color={deathIsMinting ? "#333" : "#ef4444"}
+                  size="lg"
+                  fullWidth
+                  disabled={deathIsMinting}
+                >
+                  {deathIsMinting
+                    ? (nftMint.mintState === "minting" ? "CONFIRM IN WALLET..." : "MINTING ON BASE...")
+                    : nftMint.nftContractConfigured
+                      ? "> MINT DEATH NFT (BASE) <"
+                      : "> MINT NFT (CONTRACT PENDING) <"
+                  }
+                </PixelBtn>
+              ) : (
+                <PixelBtn onClick={() => connectWallet()} color="#7c3aed" size="lg" fullWidth>
+                  {'>'} CONNECT WALLET TO MINT {'<'}
+                </PixelBtn>
+              )}
+              <div style={{ fontSize: "9px", color: "#fff", marginTop: "6px", letterSpacing: "1px" }}>
+                FREE MINT — GAS ONLY (~$0.01 ON BASE)
+              </div>
+            </div>
+          )}
+
+          {/* Mint success + Share Mint button */}
+          {deathMintSuccess && (
+            <>
+              <div style={{
+                padding: "10px", background: "#1a0a0a", border: "2px solid #ef4444",
+                marginBottom: "12px", fontSize: "11px", color: "#ef4444", letterSpacing: "1px",
+              }}>
+                DEATH NFT MINTED ON BASE L2
+                {nftMint.txHash && (
+                  <div style={{ marginTop: "4px" }}>
+                    <a
+                      href={`https://basescan.org/tx/${nftMint.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#06b6d4", fontSize: "9px", letterSpacing: "1px" }}
+                    >
+                      VIEW ON BASESCAN
+                    </a>
+                  </div>
+                )}
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <PixelBtn
+                  onClick={async () => {
+                    setSharing(true);
+                    await shareGameCast(
+                      `I got REKT on Crypto Trail and minted my Death NFT on Base 💀 ${milesTraveled} miles in ${day} days. Score: ${deathScore.toLocaleString()}.\n\nThink you can make it to Mainnet?`,
+                      deathNftImage
+                    );
+                    setSharing(false);
+                  }}
+                  color="#7c3aed"
+                  size="lg"
+                  fullWidth
+                  disabled={sharing}
+                >
+                  {sharing ? "UPLOADING NFT..." : "> SHARE DEATH NFT ON FARCASTER <"}
+                </PixelBtn>
+              </div>
+            </>
+          )}
+
+          {/* Mint error */}
+          {deathMintError && (
+            <div style={{
+              padding: "8px", background: "#1a0a0a", border: "2px solid #ef4444",
+              marginBottom: "16px", fontSize: "10px", color: "#ef4444", letterSpacing: "1px",
+            }}>
+              {nftMint.errorMsg || "MINT FAILED"}
+              <div style={{ marginTop: "4px" }}>
+                <span
+                  onClick={handleMintDeathNft}
+                  style={{ color: "#fff", fontSize: "9px", cursor: "pointer", textDecoration: "underline" }}
+                >
+                  TAP TO RETRY
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Download button */}
+          {deathNftImage && deathNftMintState === "ready" && (
+            <div style={{ marginBottom: "16px" }}>
+              <PixelBtn onClick={downloadDeathNFT} color="#333" textColor="#888" fullWidth size="sm">
+                {'>'} DOWNLOAD IMAGE {'<'}
+              </PixelBtn>
+            </div>
+          )}
+
+          {/* Score panel */}
+          <div style={{
+            padding: "14px", background: "#0a0a12", border: "2px solid #1a1a2e",
+            marginBottom: "16px", textAlign: "left",
+          }}>
+            <div style={{
+              fontSize: "13px", fontWeight: "700", marginBottom: "10px", textAlign: "center",
+              color: "#ef4444", letterSpacing: "2px",
+            }}>
+              SCORE: {deathScore.toLocaleString()} -- REKT
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px", fontSize: "11px" }}>
+              <div style={{ color: "#fff" }}>ETH: <span style={{ color: "#ef4444" }}>{eth}</span></div>
+              <div style={{ color: "#fff" }}>USDC: <span style={{ color: "#ef4444" }}>{stables}</span></div>
+              <div style={{ color: "#fff" }}>TOKENS: <span style={{ color: "#ef4444" }}>{tokens}</span></div>
+              <div style={{ color: "#fff" }}>MORALE: <span style={{ color: "#ef4444" }}>{morale}</span></div>
+              <div style={{ color: "#fff" }}>MILES: <span style={{ color: "#ef4444" }}>{milesTraveled}</span></div>
+              <div style={{ color: "#fff" }}>DAYS: <span style={{ color: "#06b6d4" }}>{day}</span></div>
+            </div>
+          </div>
+
+          {tombstones.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ fontSize: "10px", color: "#fff", marginBottom: "6px", letterSpacing: "2px" }}>FALLEN DEGENS</div>
+              {tombstones.map((t, i) => (
+                <div key={i} style={{ fontSize: "9px", color: "#fff", marginBottom: "2px", letterSpacing: "0.5px" }}>
+                  {t.epitaph}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+            <PixelBtn
+              onClick={async () => {
+                setSharing(true);
+                await shareGameCast(
+                  `Crypto Trail just REKT me 💀 ${milesTraveled} miles in ${day} days before I got rugged. Think you can make it to Mainnet? 👇`,
+                  deathNftImage,
+                  `${APP_URL}/images/share/defeat.png`
+                );
+                setSharing(false);
+              }}
+              color="#7c3aed"
+              fullWidth
+              disabled={sharing}
+            >
+              {sharing ? "UPLOADING..." : "SHARE"}
+            </PixelBtn>
+            <PixelBtn onClick={() => window.location.reload()} color="#333" textColor="#888" fullWidth>
+              TRY AGAIN
+            </PixelBtn>
+          </div>
+          {leaderboard.length > 0 && (
+            <div style={{ marginTop: "12px", textAlign: "left" }}>
+              <div style={{ fontSize: "10px", color: "#fff", marginBottom: "8px", letterSpacing: "2px", textAlign: "center" }}>LEADERBOARD</div>
+              {leaderboard.slice(0, 5).map((e, i) => (
+                <div key={i} style={{
+                  display: "flex", justifyContent: "space-between", padding: "4px 8px",
+                  background: i === 0 ? "#1a1a0a" : "#0a0a12", borderBottom: "1px solid #1a1a2e",
+                  fontSize: "10px", color: i === 0 ? "#ffd700" : "#fff",
+                }}>
+                  <span>{i + 1}. {e.name}</span>
+                  <span>{e.score?.toLocaleString()} {e.survived ? "✓" : "💀"}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
