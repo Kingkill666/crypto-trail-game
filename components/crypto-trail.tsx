@@ -1998,8 +1998,18 @@ export default function CryptoTrail() {
     }
   }, [gamePayment.paymentState, phase]);
 
+  // Auto-trigger payment after wallet connects from "CONNECT & PLAY"
+  const pendingPayRef = useRef(false);
+  useEffect(() => {
+    if (isConnected && pendingPayRef.current && phase === "title" && gamePayment.paymentState === "idle") {
+      pendingPayRef.current = false;
+      gamePayment.pay();
+    }
+  }, [isConnected, phase, gamePayment]);
+
   const startGame = () => {
     if (!isConnected) {
+      pendingPayRef.current = true;
       connectWallet();
       return;
     }
