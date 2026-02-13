@@ -14,7 +14,7 @@ export async function GET() {
       version: "1",
       name: "Crypto Trail",
       iconUrl: "https://i.postimg.cc/K81LSBYB/Crypto_Trail_Start.jpg",
-      homeUrl: "https://farcaster.xyz/miniapps/epAAb14yQ5rs/crypto-trail",
+      homeUrl: DOMAIN,
       imageUrl: "https://i.postimg.cc/K81LSBYB/Crypto_Trail_Start.jpg",
       buttonTitle: "Go For It!",
       splashImageUrl: "https://i.postimg.cc/JzK1q28q/hero-200-copy.jpg",
@@ -30,7 +30,7 @@ export async function GET() {
       ogTitle: "Crypto Trail - Degen Edition",
       ogDescription: "A degen Oregon Trail for Farcaster. Dodge rug pulls and bridge exploits on your way to Mainnet.",
       ogImageUrl: "https://i.postimg.cc/K81LSBYB/Crypto_Trail_Start.jpg",
-      castShareUrl: "https://farcaster.xyz/miniapps/epAAb14yQ5rs/crypto-trail",
+      castShareUrl: DOMAIN,
     },
   });
 }
