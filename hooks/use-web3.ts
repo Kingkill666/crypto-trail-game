@@ -108,10 +108,9 @@ export function useEthPrice() {
     };
   }, []);
 
-  // Calculate ETH amount for the entry fee
+  // Calculate ETH amount for the entry fee (exact $1.00, no buffer)
   const entryFeeEth = ethPrice ? ENTRY_FEE_USD / ethPrice : null;
-  // Add 2% buffer for price slippage
-  const entryFeeEthWithBuffer = entryFeeEth ? entryFeeEth * 1.02 : null;
+  const entryFeeEthWithBuffer = entryFeeEth;
 
   return {
     ethPrice,
@@ -343,7 +342,7 @@ export function useNftMint() {
             gameData.tokenURI,
           ],
           // Mint is free (gas only) — lowest possible gas on Base
-          value: 0n,
+          value: BigInt(0),
         });
       } catch (err: any) {
         setMintState("error");
