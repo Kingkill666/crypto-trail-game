@@ -1848,6 +1848,10 @@ function EventPrompt({ children, type = "neutral" }: { children: React.ReactNode
 export default function CryptoTrail() {
   useFarcasterReady();
 
+  // Prevent hydration mismatch — wait for client mount before rendering
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   // ── WEB3 ──
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -2315,6 +2319,11 @@ export default function CryptoTrail() {
   // ═══════════════════════════════════════════════════════════════
   // RENDER
   // ═══════════════════════════════════════════════════════════════
+
+  // Wait for client mount to avoid hydration mismatch (React error #418)
+  if (!mounted) {
+    return <div style={{ minHeight: "100vh", background: "#0a0a0f" }} />;
+  }
 
   const containerStyle: React.CSSProperties = {
     minHeight: "100vh",
