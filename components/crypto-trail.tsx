@@ -2721,7 +2721,7 @@ export default function CryptoTrail() {
               </div>
 
               {profileLoading ? (
-                <div style={{ textAlign: "center", padding: "24px", color: "#888", fontSize: "11px", letterSpacing: "2px" }}>
+                <div style={{ textAlign: "center", padding: "24px", color: "#fff", fontSize: "11px", letterSpacing: "2px" }}>
                   LOADING PROFILE...
                 </div>
               ) : playerProfile ? (
@@ -2755,7 +2755,7 @@ export default function CryptoTrail() {
                         width: "48px", height: "48px", borderRadius: "50%",
                         background: "#1a1a2e", border: "2px solid #333",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "18px", color: "#555",
+                        fontSize: "18px", color: "#fff",
                       }}>
                         ?
                       </div>
@@ -2768,11 +2768,11 @@ export default function CryptoTrail() {
                         {playerProfile.stats.fc_display_name || playerProfile.stats.fc_username || "ANON"}
                       </div>
                       {playerProfile.stats.fc_username && (
-                        <div style={{ fontSize: "10px", color: "#888", letterSpacing: "1px" }}>
+                        <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "1px" }}>
                           @{playerProfile.stats.fc_username}
                         </div>
                       )}
-                      <div style={{ fontSize: "9px", color: "#555", marginTop: "2px", letterSpacing: "0.5px" }}>
+                      <div style={{ fontSize: "9px", color: "#fff", marginTop: "2px", letterSpacing: "0.5px" }}>
                         {selectedPlayer.slice(0, 6)}...{selectedPlayer.slice(-4)}
                       </div>
                       {playerProfile.stats.fc_fid && (
@@ -2789,7 +2789,7 @@ export default function CryptoTrail() {
                     marginBottom: "16px",
                   }}>
                     <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#888", letterSpacing: "2px", marginBottom: "4px" }}>BEST SCORE</div>
+                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>BEST SCORE</div>
                       <div style={{
                         fontSize: "16px", fontWeight: "900",
                         color: TIER_COLORS[playerProfile.stats.best_tier] || "#fff",
@@ -2798,7 +2798,7 @@ export default function CryptoTrail() {
                       </div>
                     </div>
                     <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#888", letterSpacing: "2px", marginBottom: "4px" }}>BEST TIER</div>
+                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>BEST TIER</div>
                       <div style={{
                         fontSize: "12px", fontWeight: "900",
                         color: TIER_COLORS[playerProfile.stats.best_tier] || "#fff",
@@ -2808,13 +2808,13 @@ export default function CryptoTrail() {
                       </div>
                     </div>
                     <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#888", letterSpacing: "2px", marginBottom: "4px" }}>GAMES</div>
+                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>GAMES</div>
                       <div style={{ fontSize: "16px", fontWeight: "900", color: "#fff" }}>
                         {playerProfile.stats.games_played}
                       </div>
                     </div>
                     <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#888", letterSpacing: "2px", marginBottom: "4px" }}>RANK</div>
+                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>RANK</div>
                       <div style={{ fontSize: "16px", fontWeight: "900", color: "#ffd700" }}>
                         {playerProfile.rank ? `#${playerProfile.rank}` : "\u2014"}
                       </div>
@@ -2825,7 +2825,7 @@ export default function CryptoTrail() {
                   {playerProfile.games.length > 0 && (
                     <div>
                       <div style={{
-                        fontSize: "10px", color: "#888", letterSpacing: "2px",
+                        fontSize: "10px", color: "#fff", letterSpacing: "2px",
                         marginBottom: "8px", textAlign: "center",
                       }}>
                         GAME HISTORY
@@ -2844,11 +2844,11 @@ export default function CryptoTrail() {
                               <span style={{ color: TIER_COLORS[g.tier] || "#fff", fontWeight: "700" }}>
                                 {g.score.toLocaleString()}
                               </span>
-                              <span style={{ color: "#555", marginLeft: "6px" }}>
+                              <span style={{ color: "#fff", marginLeft: "6px" }}>
                                 {g.survived ? "\u2713" : "\uD83D\uDC80"}
                               </span>
                             </div>
-                            <div style={{ color: "#555", fontSize: "9px" }}>
+                            <div style={{ color: "#fff", fontSize: "9px" }}>
                               {g.days}d {"\u00B7"} {g.miles}mi {"\u00B7"} {g.survivors}/4
                             </div>
                           </div>
