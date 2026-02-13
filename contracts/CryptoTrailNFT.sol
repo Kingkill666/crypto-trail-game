@@ -21,7 +21,7 @@ contract CryptoTrailNFT is
 {
     // ── STORAGE ──────────────────────────────────────────────
     uint256 private _nextTokenId;
-    uint256 public maxMintsPerWallet;
+    uint256 public maxMintsPerWallet; // 0 = unlimited
     bool public mintingEnabled;
 
     struct GameResult {
@@ -67,7 +67,7 @@ contract CryptoTrailNFT is
         __ERC721Enumerable_init();
         __Ownable_init(owner_);
         _nextTokenId = 1;
-        maxMintsPerWallet = 10;
+        maxMintsPerWallet = 0; // 0 = unlimited
         mintingEnabled = true;
     }
 
@@ -88,7 +88,7 @@ contract CryptoTrailNFT is
         string calldata tokenURI_
     ) external returns (uint256) {
         if (!mintingEnabled) revert MintingDisabled();
-        if (mintCount[msg.sender] >= maxMintsPerWallet) revert MaxMintsReached();
+        if (maxMintsPerWallet > 0 && mintCount[msg.sender] >= maxMintsPerWallet) revert MaxMintsReached();
         if (classId > 3) revert InvalidClassId();
         if (survivors > 4) revert InvalidSurvivors();
 
