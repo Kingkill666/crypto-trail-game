@@ -2382,7 +2382,7 @@ export default function CryptoTrail() {
               onClick={() => shareGameCast(
                 `The year is 2026. AI took your job. Your portfolio is rekt. Now you must lead 4 degens from Genesis Block to Mainnet.\n\nDodge rug pulls. Cross sketchy bridges. Fight rogue AI agents.\n\nCan you survive the Crypto Trail? 👇`,
                 null,
-                `${APP_URL}/images/share/hero.png`
+                `${APP_URL}/images/share/homepageShare.png`
               )}
               color="#7c3aed"
               fullWidth
