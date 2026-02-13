@@ -1898,6 +1898,35 @@ export default function CryptoTrail() {
     loadLeaderboard().then(setLeaderboard);
   }, []);
 
+  // DEBUG: Ctrl+Shift+V to jump to victory screen with mock data
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "V") {
+        e.preventDefault();
+        setPlayerClass(CLASSES[0]);
+        setParty([
+          { id: 0, name: "Based Chad", health: 90, affliction: null, alive: true },
+          { id: 1, name: "Vitalik Jr.", health: 70, affliction: null, alive: true },
+          { id: 2, name: "Ser Moonboy", health: 0, affliction: null, alive: false },
+          { id: 3, name: "Anon Dev", health: 50, affliction: null, alive: true },
+        ]);
+        setPartyNames(["Based Chad", "Vitalik Jr.", "Ser Moonboy", "Anon Dev"]);
+        setDay(42);
+        setMilesTraveled(900);
+        setEth(1337);
+        setStables(420);
+        setTokens(69);
+        setMorale(85);
+        setTombstones([{ name: "Ser Moonboy", mile: 612, day: 28, epitaph: "RIP Ser Moonboy — Day 28, Mile 612 — rugged by a memecoin" }]);
+        setNftMintState("idle");
+        setNftImage(null);
+        setPhase("victory");
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   // Submit score on victory/gameover
   useEffect(() => {
     if ((phase === "victory" || phase === "gameover") && !scoreSubmitted) {
