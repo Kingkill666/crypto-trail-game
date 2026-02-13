@@ -66,8 +66,6 @@ contract CryptoTrailNFT is
         __ERC721URIStorage_init();
         __ERC721Enumerable_init();
         __Ownable_init(owner_);
-        __UUPSUpgradeable_init();
-
         _nextTokenId = 1;
         maxMintsPerWallet = 10;
         mintingEnabled = true;

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAccount, useConnect } from "wagmi";
 import { useGamePayment, useNftMint } from "@/hooks/use-web3";
+import { useLeaderboard, usePlayerProfile, submitScore } from "@/hooks/use-leaderboard";
 
 // ═══════════════════════════════════════════════════════════════
 // CRYPTO TRAIL - A Degen Oregon Trail for Farcaster (8-BIT EDITION)
@@ -1512,6 +1513,22 @@ function getRarityTier(score: number) {
   return "common";
 }
 
+const TIER_COLORS: Record<string, string> = {
+  legendary: "#ffd700",
+  epic: "#a855f7",
+  rare: "#06b6d4",
+  common: "#10b981",
+  dead: "#ef4444",
+};
+
+const TIER_LABELS: Record<string, string> = {
+  legendary: "LEGENDARY",
+  epic: "EPIC",
+  rare: "RARE",
+  common: "COMMON",
+  dead: "DEAD",
+};
+
 // Load an image from a URL and return it as an HTMLImageElement
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -1992,6 +2009,9 @@ export default function CryptoTrail() {
   const [shopItems, setShopItems] = useState({ audits: 0, hardwareWallets: 0, vpn: 0, aiAgent: 0 });
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const { leaderboard: globalLeaderboard, loading: lbLoading, error: lbError, fetchLeaderboard } = useLeaderboard();
+  const { profile: playerProfile, loading: profileLoading, fetchProfile, clearProfile } = usePlayerProfile();
   const logRef = useRef<HTMLDivElement>(null);
 
   const totalMiles = 900;
@@ -2085,11 +2105,24 @@ export default function CryptoTrail() {
         survived: phase === "victory",
         timestamp: Date.now(),
       };
+      // Keep localStorage leaderboard as local fallback
       loadLeaderboard().then((lb: any[]) => {
         const updated = [...lb, entry].sort((a, b) => b.score - a.score).slice(0, 20);
         saveLeaderboard(updated);
         setLeaderboard(updated);
       });
+      // Submit to global leaderboard (fire-and-forget)
+      if (address) {
+        submitScore({
+          wallet: address,
+          score,
+          classId: playerClass?.id || "dev",
+          survivors: party.filter((p) => p.alive).length,
+          days: day,
+          miles: milesTraveled,
+          survived: phase === "victory",
+        });
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
@@ -2603,18 +2636,32 @@ export default function CryptoTrail() {
             </div>
           )}
 
-          <div style={{ marginTop: "16px" }}>
-            <PixelBtn
-              onClick={() => shareGameCast(
-                `The year is 2026. AI took your job. Your portfolio is rekt. Now you must lead 4 degens from Genesis Block to Mainnet.\n\nDodge rug pulls. Cross sketchy bridges. Fight rogue AI agents.\n\nCan you survive the Crypto Trail? 👇`,
-                null,
-                `${APP_URL}/images/share/homepageShare.png`
-              )}
-              color="#7c3aed"
-              fullWidth
-            >
-              SHARE
-            </PixelBtn>
+          <div style={{ display: "flex", gap: "8px", marginTop: "16px", width: "100%", maxWidth: "500px" }}>
+            <div style={{ flex: 1 }}>
+              <PixelBtn
+                onClick={() => shareGameCast(
+                  `The year is 2026. AI took your job. Your portfolio is rekt. Now you must lead 4 degens from Genesis Block to Mainnet.\n\nDodge rug pulls. Cross sketchy bridges. Fight rogue AI agents.\n\nCan you survive the Crypto Trail? 👇`,
+                  null,
+                  `${APP_URL}/images/share/homepageShare.png`
+                )}
+                color="#7c3aed"
+                fullWidth
+              >
+                SHARE
+              </PixelBtn>
+            </div>
+            <div style={{ flex: 1 }}>
+              <PixelBtn
+                onClick={() => {
+                  fetchLeaderboard();
+                  setPhase("leaderboard");
+                }}
+                color="#06b6d4"
+                fullWidth
+              >
+                LEADERBOARD
+              </PixelBtn>
+            </div>
           </div>
 
           <div style={{
@@ -2622,6 +2669,316 @@ export default function CryptoTrail() {
           }}>
             INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * BASE MAINNET * CREATED BY VMFCOIN
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── LEADERBOARD SCREEN ──
+  if (phase === "leaderboard") {
+    return (
+      <div style={containerStyle}>
+        <style>{CSS}</style>
+        {scanlines}
+        <div style={{ maxWidth: "500px", margin: "0 auto", padding: "20px 16px 120px" }}>
+
+          {/* Header with back button */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            marginBottom: "16px", borderBottom: "2px solid #1a1a2e", paddingBottom: "12px",
+          }}>
+            <PixelBtn
+              onClick={() => {
+                setSelectedPlayer(null);
+                clearProfile();
+                setPhase("title");
+              }}
+              color="#333"
+              textColor="#888"
+              size="sm"
+            >
+              BACK
+            </PixelBtn>
+            <div style={{
+              fontSize: "18px", fontWeight: "900", color: "#06b6d4",
+              letterSpacing: "3px", textAlign: "center",
+            }}>
+              LEADERBOARD
+            </div>
+            <div style={{ width: "60px" }} />
+          </div>
+
+          {/* Player Profile View */}
+          {selectedPlayer && (
+            <div style={{
+              marginBottom: "16px", padding: "16px", background: "#0a0a12",
+              border: "2px solid #1a1a2e",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                <PixelBtn onClick={() => { setSelectedPlayer(null); clearProfile(); }} color="#333" textColor="#888" size="sm">
+                  CLOSE
+                </PixelBtn>
+              </div>
+
+              {profileLoading ? (
+                <div style={{ textAlign: "center", padding: "24px", color: "#888", fontSize: "11px", letterSpacing: "2px" }}>
+                  LOADING PROFILE...
+                </div>
+              ) : playerProfile ? (
+                <div>
+                  {/* Profile header: pfp + name */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                    {playerProfile.stats.fc_pfp ? (
+                      <img
+                        src={playerProfile.stats.fc_pfp}
+                        alt=""
+                        style={{
+                          width: "48px", height: "48px", borderRadius: "50%",
+                          border: `2px solid ${TIER_COLORS[playerProfile.stats.best_tier] || "#888"}`,
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: "48px", height: "48px", borderRadius: "50%",
+                        background: "#1a1a2e", border: "2px solid #333",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "18px", color: "#555",
+                      }}>
+                        ?
+                      </div>
+                    )}
+                    <div>
+                      <div style={{
+                        fontSize: "14px", fontWeight: "900", color: "#fff",
+                        letterSpacing: "1px",
+                      }}>
+                        {playerProfile.stats.fc_display_name || playerProfile.stats.fc_username || "ANON"}
+                      </div>
+                      {playerProfile.stats.fc_username && (
+                        <div style={{ fontSize: "10px", color: "#888", letterSpacing: "1px" }}>
+                          @{playerProfile.stats.fc_username}
+                        </div>
+                      )}
+                      <div style={{ fontSize: "9px", color: "#555", marginTop: "2px", letterSpacing: "0.5px" }}>
+                        {selectedPlayer.slice(0, 6)}...{selectedPlayer.slice(-4)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats grid */}
+                  <div style={{
+                    display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px",
+                    marginBottom: "16px",
+                  }}>
+                    <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", color: "#888", letterSpacing: "2px", marginBottom: "4px" }}>BEST SCORE</div>
+                      <div style={{
+                        fontSize: "16px", fontWeight: "900",
+                        color: TIER_COLORS[playerProfile.stats.best_tier] || "#fff",
+                      }}>
+                        {playerProfile.stats.best_score.toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", color: "#888", letterSpacing: "2px", marginBottom: "4px" }}>BEST TIER</div>
+                      <div style={{
+                        fontSize: "12px", fontWeight: "900",
+                        color: TIER_COLORS[playerProfile.stats.best_tier] || "#fff",
+                        letterSpacing: "2px",
+                      }}>
+                        {TIER_LABELS[playerProfile.stats.best_tier] || "NONE"}
+                      </div>
+                    </div>
+                    <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", color: "#888", letterSpacing: "2px", marginBottom: "4px" }}>GAMES</div>
+                      <div style={{ fontSize: "16px", fontWeight: "900", color: "#fff" }}>
+                        {playerProfile.stats.games_played}
+                      </div>
+                    </div>
+                    <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", color: "#888", letterSpacing: "2px", marginBottom: "4px" }}>RANK</div>
+                      <div style={{ fontSize: "16px", fontWeight: "900", color: "#ffd700" }}>
+                        {playerProfile.rank ? `#${playerProfile.rank}` : "\u2014"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Game history */}
+                  {playerProfile.games.length > 0 && (
+                    <div>
+                      <div style={{
+                        fontSize: "10px", color: "#888", letterSpacing: "2px",
+                        marginBottom: "8px", textAlign: "center",
+                      }}>
+                        GAME HISTORY
+                      </div>
+                      <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                        {playerProfile.games.map((g, i) => (
+                          <div key={i} style={{
+                            display: "flex", justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "6px 8px",
+                            background: i % 2 === 0 ? "#0a0a0f" : "#0d0d16",
+                            borderBottom: "1px solid #1a1a2e",
+                            fontSize: "10px",
+                          }}>
+                            <div>
+                              <span style={{ color: TIER_COLORS[g.tier] || "#fff", fontWeight: "700" }}>
+                                {g.score.toLocaleString()}
+                              </span>
+                              <span style={{ color: "#555", marginLeft: "6px" }}>
+                                {g.survived ? "\u2713" : "\uD83D\uDC80"}
+                              </span>
+                            </div>
+                            <div style={{ color: "#555", fontSize: "9px" }}>
+                              {g.days}d \u00B7 {g.miles}mi \u00B7 {g.survivors}/4
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "24px", color: "#ef4444", fontSize: "11px" }}>
+                  PLAYER NOT FOUND
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Leaderboard Table */}
+          {!selectedPlayer && (
+            <>
+              {lbLoading ? (
+                <div style={{ textAlign: "center", padding: "40px", color: "#888", fontSize: "11px", letterSpacing: "2px" }}>
+                  LOADING LEADERBOARD...
+                </div>
+              ) : lbError ? (
+                <div style={{ textAlign: "center", padding: "40px" }}>
+                  <div style={{ color: "#ef4444", fontSize: "11px", letterSpacing: "1px", marginBottom: "12px" }}>
+                    {lbError}
+                  </div>
+                  <PixelBtn onClick={fetchLeaderboard} color="#333" textColor="#888" size="sm">
+                    RETRY
+                  </PixelBtn>
+                </div>
+              ) : globalLeaderboard.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px", color: "#888", fontSize: "11px", letterSpacing: "2px" }}>
+                  NO GAMES PLAYED YET
+                  <div style={{ marginTop: "8px", fontSize: "10px", color: "#555" }}>
+                    BE THE FIRST TO CONQUER THE TRAIL
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {/* Column headers */}
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "28px 32px 1fr 70px 50px",
+                    alignItems: "center",
+                    gap: "4px",
+                    padding: "6px 8px",
+                    borderBottom: "2px solid #1a1a2e",
+                    fontSize: "9px",
+                    color: "#555",
+                    letterSpacing: "1px",
+                  }}>
+                    <span>#</span>
+                    <span></span>
+                    <span>PLAYER</span>
+                    <span style={{ textAlign: "right" }}>SCORE</span>
+                    <span style={{ textAlign: "right" }}>GAMES</span>
+                  </div>
+
+                  {/* Player rows */}
+                  <div style={{ maxHeight: "480px", overflowY: "auto" }}>
+                    {globalLeaderboard.map((row, i) => (
+                      <div
+                        key={row.wallet}
+                        onClick={() => {
+                          setSelectedPlayer(row.wallet);
+                          fetchProfile(row.wallet);
+                        }}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "28px 32px 1fr 70px 50px",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "8px",
+                          cursor: "pointer",
+                          background: i === 0 ? "#1a1a0a" : i % 2 === 0 ? "#0a0a0f" : "#0d0d16",
+                          borderBottom: "1px solid #1a1a2e",
+                        }}
+                      >
+                        {/* Rank */}
+                        <span style={{
+                          fontSize: "11px", fontWeight: "900",
+                          color: i === 0 ? "#ffd700" : i === 1 ? "#c0c0c0" : i === 2 ? "#cd7f32" : "#555",
+                        }}>
+                          {row.rank}
+                        </span>
+
+                        {/* PFP */}
+                        {row.fc_pfp ? (
+                          <img
+                            src={row.fc_pfp}
+                            alt=""
+                            loading="lazy"
+                            style={{
+                              width: "24px", height: "24px", borderRadius: "50%",
+                              border: `1px solid ${TIER_COLORS[row.best_tier] || "#333"}`,
+                            }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: "24px", height: "24px", borderRadius: "50%",
+                            background: "#1a1a2e", border: "1px solid #333",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: "10px", color: "#555",
+                          }}>
+                            ?
+                          </div>
+                        )}
+
+                        {/* Name + tier badge */}
+                        <div style={{ overflow: "hidden" }}>
+                          <div style={{
+                            fontSize: "11px", fontWeight: "700", color: "#fff",
+                            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                          }}>
+                            {row.fc_display_name || row.fc_username || `${row.wallet.slice(0, 6)}...${row.wallet.slice(-4)}`}
+                          </div>
+                          <div style={{
+                            fontSize: "8px", fontWeight: "900",
+                            color: TIER_COLORS[row.best_tier] || "#888",
+                            letterSpacing: "1px",
+                          }}>
+                            {TIER_LABELS[row.best_tier] || ""}
+                          </div>
+                        </div>
+
+                        {/* Score */}
+                        <div style={{
+                          fontSize: "11px", fontWeight: "700", textAlign: "right",
+                          color: TIER_COLORS[row.best_tier] || "#fff",
+                        }}>
+                          {row.best_score.toLocaleString()}
+                        </div>
+
+                        {/* Games played */}
+                        <div style={{
+                          fontSize: "10px", textAlign: "right", color: "#888",
+                        }}>
+                          {row.games_played}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     );
