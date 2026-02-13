@@ -35,23 +35,7 @@ export const metadata: Metadata = {
       },
     }),
   },
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
+  icons: {},
 }
 
 export default async function RootLayout({
@@ -63,8 +47,8 @@ export default async function RootLayout({
   const cookies = hdrs.get('cookie')
 
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`font-sans antialiased`} suppressHydrationWarning>
         <Web3Provider cookies={cookies}>
           {children}
         </Web3Provider>
