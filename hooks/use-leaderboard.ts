@@ -10,6 +10,7 @@ export interface LeaderboardRow {
   best_score: number;
   best_tier: string;
   games_played: number;
+  fc_fid?: string;
   fc_username?: string;
   fc_display_name?: string;
   fc_pfp?: string;

@@ -34,6 +34,7 @@ export interface LeaderboardRow {
   best_score: number;
   best_tier: string;
   games_played: number;
+  fc_fid?: string;
   fc_username?: string;
   fc_display_name?: string;
   fc_pfp?: string;
@@ -180,6 +181,7 @@ export async function getLeaderboard(limit: number = 50): Promise<LeaderboardRow
     if (stats) {
       rows[i].best_tier = stats.best_tier || "common";
       rows[i].games_played = stats.games_played || 0;
+      rows[i].fc_fid = stats.fc_fid;
       rows[i].fc_username = stats.fc_username;
       rows[i].fc_display_name = stats.fc_display_name;
       rows[i].fc_pfp = stats.fc_pfp;

@@ -2644,7 +2644,7 @@ export default function CryptoTrail() {
                   null,
                   `${APP_URL}/images/share/homepageShare.png`
                 )}
-                color="#7c3aed"
+                color="#06b6d4"
                 fullWidth
               >
                 SHARE
@@ -2726,8 +2726,21 @@ export default function CryptoTrail() {
                 </div>
               ) : playerProfile ? (
                 <div>
-                  {/* Profile header: pfp + name */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+                  {/* Profile header: pfp + name — clickable to open Farcaster profile */}
+                  <div
+                    onClick={async () => {
+                      if (playerProfile.stats.fc_fid) {
+                        const sdk = await farcasterSdkPromise;
+                        if (sdk?.actions?.viewProfile) {
+                          sdk.actions.viewProfile({ fid: Number(playerProfile.stats.fc_fid) }).catch(() => {});
+                        }
+                      }
+                    }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px",
+                      cursor: playerProfile.stats.fc_fid ? "pointer" : "default",
+                    }}
+                  >
                     {playerProfile.stats.fc_pfp ? (
                       <img
                         src={playerProfile.stats.fc_pfp}
@@ -2762,6 +2775,11 @@ export default function CryptoTrail() {
                       <div style={{ fontSize: "9px", color: "#555", marginTop: "2px", letterSpacing: "0.5px" }}>
                         {selectedPlayer.slice(0, 6)}...{selectedPlayer.slice(-4)}
                       </div>
+                      {playerProfile.stats.fc_fid && (
+                        <div style={{ fontSize: "8px", color: "#06b6d4", marginTop: "2px", letterSpacing: "1px" }}>
+                          TAP TO VIEW PROFILE
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -2831,7 +2849,7 @@ export default function CryptoTrail() {
                               </span>
                             </div>
                             <div style={{ color: "#555", fontSize: "9px" }}>
-                              {g.days}d \u00B7 {g.miles}mi \u00B7 {g.survivors}/4
+                              {g.days}d {"\u00B7"} {g.miles}mi {"\u00B7"} {g.survivors}/4
                             </div>
                           </div>
                         ))}
