@@ -22,18 +22,17 @@ function useFarcasterReady() {
   useEffect(() => {
     if (!called.current) {
       called.current = true;
-      farcasterSdkPromise.then(async (sdk) => {
+      farcasterSdkPromise.then((sdk) => {
         if (sdk?.actions?.ready) {
           sdk.actions.ready();
         }
-        // Auto-prompt user to add mini app if not already added
-        try {
-          const ctx = await sdk?.context;
-          if (ctx?.client && !ctx.client.added && sdk?.actions?.addMiniApp) {
-            await sdk.actions.addMiniApp();
-          }
-        } catch {
-          // User rejected or domain mismatch — ignore
+        // Auto-prompt user to add mini app (non-blocking, runs independently)
+        if (sdk?.context && sdk?.actions?.addMiniApp) {
+          sdk.context.then((ctx: any) => {
+            if (ctx?.client && !ctx.client.added) {
+              sdk.actions.addMiniApp().catch(() => {});
+            }
+          }).catch(() => {});
         }
       });
     }
