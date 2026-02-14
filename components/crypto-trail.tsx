@@ -2644,12 +2644,15 @@ export default function CryptoTrail() {
           }}>
             {freePlay.hasFreePlay
               ? "★ FREE PLAY AVAILABLE ★"
-              : <>ENTRY: ${gamePayment.entryFeeUsd.toFixed(2)} USD
+              : <>
+                ENTRY: ${gamePayment.entryFeeUsd.toFixed(2)} USD
                 {gamePayment.entryFeeEth && (
                   <span style={{ color: "#fff" }}>
                     {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
                   </span>
                 )}
+                <br />
+                <span style={{ color: "#f59e0b", fontSize: "9px" }}>Paid entry gives a Death or Victory NFT</span>
               </>
             }
           </div>
