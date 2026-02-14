@@ -250,6 +250,62 @@ export function useGamePayment() {
   };
 }
 
+// ── FREE PLAY HOOK ──
+// Checks if the connected wallet has admin-granted free plays available
+export function useFreePlay() {
+  const { address, isConnected } = useAccount();
+  const [freePlays, setFreePlays] = useState(0);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    if (!isConnected || !address) {
+      setFreePlays(0);
+      setChecked(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function check() {
+      try {
+        const res = await fetch(`/api/free-play?wallet=${address}`);
+        if (!res.ok) throw new Error("Check failed");
+        const data = await res.json();
+        if (!cancelled) {
+          setFreePlays(data.freePlays ?? 0);
+          setChecked(true);
+        }
+      } catch {
+        if (!cancelled) {
+          setFreePlays(0);
+          setChecked(true);
+        }
+      }
+    }
+
+    check();
+    return () => { cancelled = true; };
+  }, [isConnected, address]);
+
+  const consume = useCallback(async (): Promise<boolean> => {
+    if (!address || freePlays <= 0) return false;
+    try {
+      const res = await fetch("/api/free-play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "consume", wallet: address }),
+      });
+      if (!res.ok) return false;
+      setFreePlays((p) => Math.max(0, p - 1));
+      return true;
+    } catch {
+      return false;
+    }
+  }, [address, freePlays]);
+
+  return { freePlays, hasFreePlay: freePlays > 0, checked, consume };
+}
+
 // ── NFT MINT HOOK ──
 export function useNftMint() {
   const { address, isConnected } = useAccount();
