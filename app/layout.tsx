@@ -49,6 +49,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="base:app_id" content="69910b417ca07f5750bbd9ea" />
+      </head>
       <body className={`font-sans antialiased`} suppressHydrationWarning>
         <Web3Provider cookies={cookies}>
           {children}
