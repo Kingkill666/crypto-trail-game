@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAccount, useConnect } from "wagmi";
-import { useGamePayment, useNftMint } from "@/hooks/use-web3";
+import { useGamePayment, useNftMint, useFreePlay } from "@/hooks/use-web3";
 import { useLeaderboard, usePlayerProfile, submitScore } from "@/hooks/use-leaderboard";
 
 // ═══════════════════════════════════════════════════════════════
@@ -42,16 +42,29 @@ function useFarcasterReady() {
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://crypto-trail-game.vercel.app";
 
-async function uploadNftImage(base64DataUrl: string): Promise<string | null> {
+async function uploadNftImage(
+  base64DataUrl: string,
+  metadata?: {
+    type: "victory" | "death";
+    score: number;
+    classId: string;
+    survivors: number;
+    days: number;
+    miles?: number;
+  }
+): Promise<{ metadataUrl: string; imageUrl: string } | null> {
   try {
     const res = await fetch("/api/nft-image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: base64DataUrl }),
+      body: JSON.stringify({ image: base64DataUrl, metadata }),
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return data.url || null;
+    return {
+      metadataUrl: data.url || null,
+      imageUrl: data.imageUrl || data.url || null,
+    };
   } catch {
     return null;
   }
@@ -65,8 +78,8 @@ async function shareGameCast(text: string, nftImageDataUrl?: string | null, stat
 
   // Upload NFT image and add as first embed
   if (nftImageDataUrl) {
-    const imageUrl = await uploadNftImage(nftImageDataUrl);
-    if (imageUrl) embeds.push(imageUrl);
+    const result = await uploadNftImage(nftImageDataUrl);
+    if (result?.imageUrl) embeds.push(result.imageUrl);
   } else if (staticImageUrl) {
     embeds.push(staticImageUrl);
   }
@@ -1979,6 +1992,7 @@ export default function CryptoTrail() {
   const connectWallet = () => connect({ connector: connectors[0] });
   const gamePayment = useGamePayment();
   const nftMint = useNftMint();
+  const freePlay = useFreePlay();
 
   const [phase, setPhase] = useState("title");
   const [playerClass, setPlayerClass] = useState<typeof CLASSES[0] | null>(null);
@@ -2173,14 +2187,30 @@ export default function CryptoTrail() {
   useEffect(() => {
     if (isConnected && pendingPayRef.current && phase === "title" && gamePayment.paymentState === "idle") {
       pendingPayRef.current = false;
-      gamePayment.pay();
+      // Check for free play first
+      if (freePlay.hasFreePlay) {
+        freePlay.consume().then((ok) => {
+          if (ok) setPhase("class_select");
+          else gamePayment.pay();
+        });
+      } else {
+        gamePayment.pay();
+      }
     }
-  }, [isConnected, phase, gamePayment]);
+  }, [isConnected, phase, gamePayment, freePlay]);
 
   const startGame = () => {
     if (!isConnected) {
       pendingPayRef.current = true;
       connectWallet();
+      return;
+    }
+    // Check for free play before requiring payment
+    if (freePlay.hasFreePlay) {
+      freePlay.consume().then((ok) => {
+        if (ok) setPhase("class_select");
+        else gamePayment.pay(); // Fallback to payment if consume fails
+      });
       return;
     }
     // Initiate $1 USD payment
@@ -2607,14 +2637,18 @@ export default function CryptoTrail() {
 
           {/* Entry fee info */}
           <div style={{
-            fontSize: "10px", color: "#fff", marginBottom: "12px", letterSpacing: "2px",
+            fontSize: "10px", color: freePlay.hasFreePlay ? "#10b981" : "#fff", marginBottom: "12px", letterSpacing: "2px",
           }}>
-            ENTRY: ${gamePayment.entryFeeUsd.toFixed(2)} USD
-            {gamePayment.entryFeeEth && (
-              <span style={{ color: "#fff" }}>
-                {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
-              </span>
-            )}
+            {freePlay.hasFreePlay
+              ? "★ FREE PLAY AVAILABLE ★"
+              : <>ENTRY: ${gamePayment.entryFeeUsd.toFixed(2)} USD
+                {gamePayment.entryFeeEth && (
+                  <span style={{ color: "#fff" }}>
+                    {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
+                  </span>
+                )}
+              </>
+            }
           </div>
 
           <PixelBtn
@@ -2630,7 +2664,9 @@ export default function CryptoTrail() {
               ? "> CONNECT & PLAY <"
               : isPaying
                 ? "PROCESSING..."
-                : "> BEGIN JOURNEY <"
+                : freePlay.hasFreePlay
+                  ? "> FREE PLAY <"
+                  : "> BEGIN JOURNEY <"
             }
           </PixelBtn>
 
@@ -3404,14 +3440,21 @@ export default function CryptoTrail() {
     const handleMintDeathNft = async () => {
       if (!deathNftImage) return;
       if (deathMintError) nftMint.reset();
-      // Upload image and use URL as tokenURI (base64 is too large for calldata)
-      const imageUrl = await uploadNftImage(deathNftImage);
+      // Upload image + metadata and use returned metadata URL as tokenURI
+      const result = await uploadNftImage(deathNftImage, {
+        type: "death",
+        score: deathScore,
+        classId: playerClass?.id || "dev",
+        survivors: 0,
+        days: day,
+        miles: milesTraveled,
+      });
       nftMint.mint({
         score: deathScore,
         classId: playerClass?.id || "dev",
         survivors: 0,
         days: day,
-        tokenURI: imageUrl || deathNftImage,
+        tokenURI: result?.metadataUrl || deathNftImage,
       });
     };
 
@@ -3680,14 +3723,21 @@ export default function CryptoTrail() {
     const handleMintNft = async () => {
       if (!nftImage) return;
       if (mintError) nftMint.reset();
-      // Upload image and use URL as tokenURI (base64 is too large for calldata)
-      const imageUrl = await uploadNftImage(nftImage);
+      // Upload image + metadata and use returned metadata URL as tokenURI
+      const result = await uploadNftImage(nftImage, {
+        type: "victory",
+        score,
+        classId: playerClass?.id || "dev",
+        survivors: aliveMemberCount,
+        days: day,
+        miles: milesTraveled,
+      });
       nftMint.mint({
         score,
         classId: playerClass?.id || "dev",
         survivors: aliveMemberCount,
         days: day,
-        tokenURI: imageUrl || nftImage,
+        tokenURI: result?.metadataUrl || nftImage,
       });
     };
 

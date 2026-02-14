@@ -240,3 +240,127 @@ export function needsFarcasterRefresh(stats: PlayerStats | null): boolean {
   if (!stats.fc_resolved_at) return true;
   return Date.now() - stats.fc_resolved_at > NEYNAR_CACHE_TTL_MS;
 }
+
+// ── FREE PLAY OPERATIONS ──
+
+const FREE_PLAY_PREFIX = "freeplay:";
+
+function freePlayKey(address: string): string {
+  return `${FREE_PLAY_PREFIX}${address.toLowerCase()}`;
+}
+
+export async function grantFreePlay(
+  address: string,
+  reason: string,
+  grantedBy: string
+): Promise<{ granted: boolean; plays: number }> {
+  const redis = getRedis();
+  const key = freePlayKey(address);
+  const existing = await redis.get<number>(key);
+  const newCount = (existing ?? 0) + 1;
+  await redis.set(key, newCount);
+  // Log the grant for audit
+  const logKey = `${FREE_PLAY_PREFIX}log:${address.toLowerCase()}`;
+  await redis.lpush(logKey, JSON.stringify({
+    action: "grant",
+    reason,
+    grantedBy,
+    timestamp: Date.now(),
+  }));
+  return { granted: true, plays: newCount };
+}
+
+export async function checkFreePlay(address: string): Promise<number> {
+  const redis = getRedis();
+  const key = freePlayKey(address);
+  const count = await redis.get<number>(key);
+  return count ?? 0;
+}
+
+export async function consumeFreePlay(address: string): Promise<boolean> {
+  const redis = getRedis();
+  const key = freePlayKey(address);
+  const count = await redis.get<number>(key);
+  if (!count || count <= 0) return false;
+  const newCount = count - 1;
+  if (newCount <= 0) {
+    await redis.del(key);
+  } else {
+    await redis.set(key, newCount);
+  }
+  // Log the consumption
+  const logKey = `${FREE_PLAY_PREFIX}log:${address.toLowerCase()}`;
+  await redis.lpush(logKey, JSON.stringify({
+    action: "consume",
+    timestamp: Date.now(),
+  }));
+  return true;
+}
+
+// ── NFT IMAGE STORAGE ──
+// Store NFT images + metadata in KV so they persist (Vercel /tmp is ephemeral)
+
+const NFT_IMAGE_PREFIX = "nft:img:";
+const NFT_META_PREFIX = "nft:meta:";
+
+export interface NftMetadata {
+  name: string;
+  description: string;
+  image: string; // URL to the image endpoint
+  external_url?: string;
+  attributes: Array<{
+    trait_type: string;
+    value: string | number;
+    display_type?: string;
+  }>;
+}
+
+/**
+ * Store an NFT image (base64 PNG data, without the data: prefix) in KV.
+ */
+export async function storeNftImage(
+  hash: string,
+  base64Data: string,
+  metadata: Omit<NftMetadata, "image">,
+  origin: string
+): Promise<{ imageUrl: string; metadataUrl: string }> {
+  const redis = getRedis();
+
+  const imageUrl = `${origin}/api/nft-image/${hash}/image`;
+  const metadataUrl = `${origin}/api/nft-image/${hash}`;
+
+  const fullMetadata: NftMetadata = {
+    ...metadata,
+    image: imageUrl,
+  };
+
+  // Store both image data and metadata in Redis
+  const pipe = redis.pipeline();
+  pipe.set(`${NFT_IMAGE_PREFIX}${hash}`, base64Data);
+  pipe.set(`${NFT_META_PREFIX}${hash}`, JSON.stringify(fullMetadata));
+  await pipe.exec();
+
+  return { imageUrl, metadataUrl };
+}
+
+/**
+ * Retrieve raw base64 PNG data for an NFT image.
+ */
+export async function getNftImage(hash: string): Promise<string | null> {
+  const redis = getRedis();
+  return redis.get<string>(`${NFT_IMAGE_PREFIX}${hash}`);
+}
+
+/**
+ * Retrieve ERC-721 metadata JSON for an NFT.
+ */
+export async function getNftMetadata(hash: string): Promise<NftMetadata | null> {
+  const redis = getRedis();
+  const raw = await redis.get<string>(`${NFT_META_PREFIX}${hash}`);
+  if (!raw) return null;
+  try {
+    return typeof raw === "string" ? JSON.parse(raw) : raw as unknown as NftMetadata;
+  } catch {
+    return null;
+  }
+}
