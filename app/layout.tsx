@@ -34,6 +34,7 @@ export const metadata: Metadata = {
         },
       },
     }),
+    'base:app_id': '69910b417ca07f5750bbd9ea',
   },
   icons: {},
 }
