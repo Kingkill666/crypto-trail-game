@@ -2377,6 +2377,9 @@ export default function CryptoTrail() {
   const resolveEvent = () => {
     if (currentEvent) {
       applyEffect(currentEvent.effect);
+      if (currentEvent.title === "JESSE POLLAK APED IN") {
+        setParty((prev) => prev.map((p) => p.alive ? { ...p, health: Math.min(100, p.health + (100 - p.health) * 0.5) } : p));
+      }
       if (currentEvent.type === "good") triggerFlash("#00ff88");
       if (currentEvent.type === "bad") { triggerShake(); triggerFlash("#ff4444"); }
       addLog(`${currentEvent.title} -- ${currentEvent.message}`);
