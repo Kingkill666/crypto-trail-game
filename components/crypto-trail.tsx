@@ -2652,7 +2652,7 @@ export default function CryptoTrail() {
                   </span>
                 )}
                 <br />
-                <span style={{ color: "#f59e0b", fontSize: "9px" }}>Paid entry gives a Death or Victory NFT</span>
+                <span style={{ color: "#fff", fontSize: "9px" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
               </>
             }
           </div>
