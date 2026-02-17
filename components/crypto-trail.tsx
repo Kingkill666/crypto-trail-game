@@ -2781,7 +2781,7 @@ export default function CryptoTrail() {
           }} />
 
           <div style={{
-            fontSize: "clamp(12px, 2.5vw, 14px)", color: "#94a3b8", marginBottom: "24px", maxWidth: "420px",
+            fontSize: "clamp(12px, 2.5vw, 14px)", color: "#fff", marginBottom: "24px", maxWidth: "420px",
             lineHeight: "1.7", letterSpacing: "0.5px",
           }}>
             The year is 2026. AI took your job, your portfolio is rekt, and you are heading to Mainnet.
@@ -2811,12 +2811,12 @@ export default function CryptoTrail() {
                 : <>
                   <span style={{ color: "#f43f5e" }}>ENTRY:</span> ${gamePayment.entryFeeUsd.toFixed(2)} USD
                   {gamePayment.entryFeeEth && (
-                    <span style={{ color: "#94a3b8" }}>
+                    <span style={{ color: "#fff" }}>
                       {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
                     </span>
                   )}
                   <br />
-                  <span style={{ color: "#94a3b8", fontSize: "10px", whiteSpace: "nowrap" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
+                  <span style={{ color: "#fff", fontSize: "10px", whiteSpace: "nowrap" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
                   <br />
                   <span style={{ color: "#fbbf24", fontSize: "9px", letterSpacing: "1.5px" }}>REAL REWARD TOKENS FROM PIZZA, BETR, BRND, JESSE, QR, DAU, USDC... AND MORE!!</span>
                 </>
@@ -2854,7 +2854,7 @@ export default function CryptoTrail() {
             <div style={{ marginTop: "12px", fontSize: "10px", color: "#ef4444", letterSpacing: "1px", maxWidth: "350px", textShadow: "0 0 6px #ef444444" }}>
               {gamePayment.errorMsg || "TRANSACTION FAILED"}
               <br />
-              <span style={{ color: "#94a3b8", fontSize: "9px" }}>TAP ABOVE TO TRY AGAIN</span>
+              <span style={{ color: "#fff", fontSize: "9px" }}>TAP ABOVE TO TRY AGAIN</span>
             </div>
           )}
 
@@ -2892,7 +2892,7 @@ export default function CryptoTrail() {
             background: "linear-gradient(90deg, transparent, #1e1e3a, transparent)",
           }} />
           <div style={{
-            fontSize: "9px", color: "#475569", maxWidth: "400px", letterSpacing: "2px",
+            fontSize: "9px", color: "#fff", maxWidth: "400px", letterSpacing: "2px",
           }}>
             INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * BASE MAINNET * CREATED BY VMFCOIN
           </div>
@@ -2923,7 +2923,7 @@ export default function CryptoTrail() {
                 setPhase("title");
               }}
               color="#1e1e3a"
-              textColor="#94a3b8"
+              textColor="#fff"
               size="sm"
             >
               BACK
@@ -2948,13 +2948,13 @@ export default function CryptoTrail() {
               boxShadow: "0 0 12px rgba(6, 182, 212, 0.08)",
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
-                <PixelBtn onClick={() => { setSelectedPlayer(null); clearProfile(); }} color="#1e1e3a" textColor="#94a3b8" size="sm">
+                <PixelBtn onClick={() => { setSelectedPlayer(null); clearProfile(); }} color="#1e1e3a" textColor="#fff" size="sm">
                   CLOSE
                 </PixelBtn>
               </div>
 
               {profileLoading ? (
-                <div style={{ textAlign: "center", padding: "24px", color: "#94a3b8", fontSize: "11px", letterSpacing: "2px" }}>
+                <div style={{ textAlign: "center", padding: "24px", color: "#fff", fontSize: "11px", letterSpacing: "2px" }}>
                   LOADING PROFILE...
                 </div>
               ) : playerProfile ? (
@@ -2989,7 +2989,7 @@ export default function CryptoTrail() {
                         width: "48px", height: "48px", borderRadius: "50%",
                         background: "#0a0a18", border: "2px solid #1e1e3a",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "18px", color: "#64748b",
+                        fontSize: "18px", color: "#fff",
                       }}>
                         ?
                       </div>
@@ -3002,11 +3002,11 @@ export default function CryptoTrail() {
                         {playerProfile.stats.fc_display_name || playerProfile.stats.fc_username || "ANON"}
                       </div>
                       {playerProfile.stats.fc_username && (
-                        <div style={{ fontSize: "10px", color: "#94a3b8", letterSpacing: "1px" }}>
+                        <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "1px" }}>
                           @{playerProfile.stats.fc_username}
                         </div>
                       )}
-                      <div style={{ fontSize: "9px", color: "#64748b", marginTop: "2px", letterSpacing: "0.5px" }}>
+                      <div style={{ fontSize: "9px", color: "#fff", marginTop: "2px", letterSpacing: "0.5px" }}>
                         {selectedPlayer.slice(0, 6)}...{selectedPlayer.slice(-4)}
                       </div>
                       {playerProfile.stats.fc_fid && (
@@ -3023,7 +3023,7 @@ export default function CryptoTrail() {
                     marginBottom: "16px",
                   }}>
                     <div style={{ padding: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", borderRadius: "4px", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#64748b", letterSpacing: "2px", marginBottom: "4px" }}>BEST SCORE</div>
+                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>BEST SCORE</div>
                       <div style={{
                         fontSize: "16px", fontWeight: "900",
                         color: TIER_COLORS[playerProfile.stats.best_tier] || "#e2e8f0",
@@ -3033,7 +3033,7 @@ export default function CryptoTrail() {
                       </div>
                     </div>
                     <div style={{ padding: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", borderRadius: "4px", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#64748b", letterSpacing: "2px", marginBottom: "4px" }}>BEST TIER</div>
+                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>BEST TIER</div>
                       <div style={{
                         fontSize: "12px", fontWeight: "900",
                         color: TIER_COLORS[playerProfile.stats.best_tier] || "#e2e8f0",
@@ -3044,13 +3044,13 @@ export default function CryptoTrail() {
                       </div>
                     </div>
                     <div style={{ padding: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", borderRadius: "4px", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#64748b", letterSpacing: "2px", marginBottom: "4px" }}>GAMES</div>
+                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>GAMES</div>
                       <div style={{ fontSize: "16px", fontWeight: "900", color: "#e2e8f0" }}>
                         {playerProfile.stats.games_played}
                       </div>
                     </div>
                     <div style={{ padding: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", borderRadius: "4px", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#64748b", letterSpacing: "2px", marginBottom: "4px" }}>RANK</div>
+                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>RANK</div>
                       <div style={{ fontSize: "16px", fontWeight: "900", color: "#fbbf24", textShadow: "0 0 6px #fbbf2444" }}>
                         {playerProfile.rank ? `#${playerProfile.rank}` : "\u2014"}
                       </div>
@@ -3080,11 +3080,11 @@ export default function CryptoTrail() {
                               <span style={{ color: TIER_COLORS[g.tier] || "#e2e8f0", fontWeight: "700" }}>
                                 {g.score.toLocaleString()}
                               </span>
-                              <span style={{ color: "#94a3b8", marginLeft: "6px" }}>
+                              <span style={{ color: "#fff", marginLeft: "6px" }}>
                                 {g.survived ? "\u2713" : "\uD83D\uDC80"}
                               </span>
                             </div>
-                            <div style={{ color: "#64748b", fontSize: "9px" }}>
+                            <div style={{ color: "#fff", fontSize: "9px" }}>
                               {g.days}d {"\u00B7"} {g.miles}mi {"\u00B7"} {g.survivors}/4
                             </div>
                           </div>
@@ -3105,7 +3105,7 @@ export default function CryptoTrail() {
           {!selectedPlayer && (
             <>
               {lbLoading ? (
-                <div style={{ textAlign: "center", padding: "40px", color: "#64748b", fontSize: "11px", letterSpacing: "2px" }}>
+                <div style={{ textAlign: "center", padding: "40px", color: "#fff", fontSize: "11px", letterSpacing: "2px" }}>
                   LOADING LEADERBOARD...
                 </div>
               ) : lbError ? (
@@ -3113,14 +3113,14 @@ export default function CryptoTrail() {
                   <div style={{ color: "#f87171", fontSize: "11px", letterSpacing: "1px", marginBottom: "12px" }}>
                     {lbError}
                   </div>
-                  <PixelBtn onClick={fetchLeaderboard} color="#1e1e3a" textColor="#94a3b8" size="sm">
+                  <PixelBtn onClick={fetchLeaderboard} color="#1e1e3a" textColor="#fff" size="sm">
                     RETRY
                   </PixelBtn>
                 </div>
               ) : globalLeaderboard.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px", color: "#64748b", fontSize: "11px", letterSpacing: "2px" }}>
+                <div style={{ textAlign: "center", padding: "40px", color: "#fff", fontSize: "11px", letterSpacing: "2px" }}>
                   NO GAMES PLAYED YET
-                  <div style={{ marginTop: "8px", fontSize: "10px", color: "#475569" }}>
+                  <div style={{ marginTop: "8px", fontSize: "10px", color: "#fff" }}>
                     BE THE FIRST TO CONQUER THE TRAIL
                   </div>
                 </div>
@@ -3135,7 +3135,7 @@ export default function CryptoTrail() {
                     padding: "6px 8px",
                     borderBottom: "2px solid #1e1e3a",
                     fontSize: "9px",
-                    color: "#475569",
+                    color: "#fff",
                     letterSpacing: "1px",
                   }}>
                     <span>#</span>
@@ -3163,15 +3163,15 @@ export default function CryptoTrail() {
                           cursor: "pointer",
                           background: i === 0 ? "linear-gradient(90deg, #1a1a0f, #0c0c1a)" : i % 2 === 0 ? "#0a0a18" : "#0c0c1a",
                           borderBottom: "1px solid #1e1e3a",
-                          borderLeft: i < 3 ? `3px solid ${i === 0 ? "#fbbf24" : i === 1 ? "#94a3b8" : "#cd7f32"}` : "3px solid transparent",
+                          borderLeft: i < 3 ? `3px solid ${i === 0 ? "#fbbf24" : i === 1 ? "#c0c0c0" : "#cd7f32"}` : "3px solid transparent",
                           transition: "background 0.15s",
                         }}
                       >
                         {/* Rank */}
                         <span style={{
                           fontSize: "11px", fontWeight: "900",
-                          color: i === 0 ? "#fbbf24" : i === 1 ? "#94a3b8" : i === 2 ? "#cd7f32" : "#475569",
-                          textShadow: i < 3 ? `0 0 6px ${i === 0 ? "#fbbf2444" : i === 1 ? "#94a3b844" : "#cd7f3244"}` : "none",
+                          color: i === 0 ? "#fbbf24" : i === 1 ? "#c0c0c0" : i === 2 ? "#cd7f32" : "#fff",
+                          textShadow: i < 3 ? `0 0 6px ${i === 0 ? "#fbbf2444" : i === 1 ? "#c0c0c044" : "#cd7f3244"}` : "none",
                         }}>
                           {row.rank}
                         </span>
@@ -3192,7 +3192,7 @@ export default function CryptoTrail() {
                             width: "24px", height: "24px", borderRadius: "50%",
                             background: "#0a0a18", border: "1px solid #1e1e3a",
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "10px", color: "#475569",
+                            fontSize: "10px", color: "#fff",
                           }}>
                             ?
                           </div>
@@ -3208,7 +3208,7 @@ export default function CryptoTrail() {
                           </div>
                           <div style={{
                             fontSize: "8px", fontWeight: "900",
-                            color: TIER_COLORS[row.best_tier] || "#64748b",
+                            color: TIER_COLORS[row.best_tier] || "#fff",
                             letterSpacing: "1px",
                           }}>
                             {TIER_LABELS[row.best_tier] || ""}
@@ -3225,7 +3225,7 @@ export default function CryptoTrail() {
 
                         {/* Games played */}
                         <div style={{
-                          fontSize: "10px", textAlign: "right", color: "#64748b",
+                          fontSize: "10px", textAlign: "right", color: "#fff",
                         }}>
                           {row.games_played}
                         </div>
@@ -4333,7 +4333,7 @@ export default function CryptoTrail() {
           boxShadow: "0 0 10px rgba(124, 58, 237, 0.1)",
         }}>
           <div style={{ fontSize: "14px", fontWeight: "900", color: "#c4b5fd", letterSpacing: "2px", textShadow: "0 0 8px #7c3aed66" }}>CRYPTO TRAIL</div>
-          <div style={{ fontSize: "10px", color: "#94a3b8", letterSpacing: "1px" }}>
+          <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "1px" }}>
             DAY {day} | {market.emoji} <span style={{ color: market.color, textShadow: `0 0 6px ${market.color}44` }}>{market.name.toUpperCase()}</span>
           </div>
         </div>
@@ -4341,7 +4341,7 @@ export default function CryptoTrail() {
         {/* PROGRESS BAR */}
         <div style={{ marginBottom: "10px" }}>
           <div style={{
-            display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#94a3b8", marginBottom: "4px", letterSpacing: "1px",
+            display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#fff", marginBottom: "4px", letterSpacing: "1px",
           }}>
             <span>MILE {milesTraveled}/{totalMiles}</span>
             <span>NEXT: {nextLandmarkInfo.emoji} {nextLandmarkInfo.name.toUpperCase()} ({milesToNext}MI)</span>
@@ -4393,14 +4393,14 @@ export default function CryptoTrail() {
               textAlign: "center",
             }}>
               <div style={{ fontSize: "16px", fontWeight: "900", color: r.color, fontFamily: "monospace", textShadow: `0 0 8px ${r.color}44` }}>{r.value}</div>
-              <div style={{ fontSize: "8px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", marginTop: "2px" }}>{r.label}</div>
+              <div style={{ fontSize: "8px", color: "#fff", textTransform: "uppercase", letterSpacing: "2px", marginTop: "2px" }}>{r.label}</div>
             </div>
           ))}
         </div>
 
         {/* ITEMS */}
         <div style={{
-          display: "flex", gap: "8px", marginBottom: "12px", fontSize: "9px", color: "#94a3b8",
+          display: "flex", gap: "8px", marginBottom: "12px", fontSize: "9px", color: "#fff",
           padding: "6px 10px",
           background: "linear-gradient(180deg, #0c0c1a 0%, #080812 100%)",
           border: "1px solid #1e1e3a", borderRadius: "4px",
@@ -4474,7 +4474,7 @@ export default function CryptoTrail() {
               <button key={p} onClick={() => setPace(p)} style={{
                 padding: "6px 2px", fontSize: "9px", fontWeight: pace === p ? "700" : "400",
                 background: pace === p ? "linear-gradient(180deg, #7c3aed, #6d28d9)" : "linear-gradient(180deg, #0c0c1a, #080812)",
-                color: pace === p ? "white" : "#64748b",
+                color: pace === p ? "white" : "#fff",
                 border: `2px solid ${pace === p ? "#a855f7" : "#1e1e3a"}`,
                 borderBottom: pace === p ? "2px solid #5b21b6" : "4px solid #0a0a12",
                 borderRadius: "4px",
@@ -4496,10 +4496,10 @@ export default function CryptoTrail() {
             fontSize: "10px", lineHeight: "1.6",
           }}>
             {log.length === 0 ? (
-              <div style={{ color: "#64748b", letterSpacing: "1px" }}>{'>'} AWAITING INPUT...</div>
+              <div style={{ color: "#fff", letterSpacing: "1px" }}>{'>'} AWAITING INPUT...</div>
             ) : (
               log.map((entry, i) => (
-                <div key={i} style={{ color: "#94a3b8" }}>
+                <div key={i} style={{ color: "#fff" }}>
                   <span style={{ color: "#7c3aed" }}>[D{entry.day}]</span> {entry.text}
                 </div>
               ))
