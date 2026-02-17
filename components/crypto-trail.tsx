@@ -926,10 +926,10 @@ function PixelTrailCanvas({ width = 600, height = 300, animFrame, milesTraveled,
     });
 
     // ── LAMBO driving left to right ──
-    const lamboW = 140;
-    const lamboH = 70;
+    const lamboW = 210;
+    const lamboH = 105;
     const lamboX = ((animFrame * 3) % (W + lamboW * 2)) - lamboW;
-    const lamboYPos = roadY - lamboH + 8;
+    const lamboYPos = roadY - lamboH * 0.45;
     const bounce = animFrame % 3 === 0 ? -1 : 0;
 
     if (lamboLoadedRef.current && lamboImgRef.current) {
@@ -1066,12 +1066,12 @@ function PixelTitleCanvas({ width = 600, height = 300, animFrame }: { width?: nu
     }
     ctx.globalAlpha = 1;
 
-    // ── Lambo driving across left to right (flipped to face left) ──
-    const lamboW = 160;
-    const lamboH = 80;
+    // ── Lambo driving across left to right ──
+    const lamboW = 240;
+    const lamboH = 120;
     const roadY = H * 0.72;
     const lamboX = ((animFrame * 4) % (W + lamboW * 2)) - lamboW;
-    const lamboYPos = roadY - lamboH + 10;
+    const lamboYPos = roadY - lamboH * 0.45;
     const bounce = animFrame % 3 === 0 ? -1 : 0;
 
     if (lamboLoadedRef.current && lamboImgRef.current) {
