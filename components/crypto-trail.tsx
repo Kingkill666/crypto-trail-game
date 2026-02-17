@@ -2684,7 +2684,7 @@ export default function CryptoTrail() {
                 <br />
                 <span style={{ color: "#fff", fontSize: "10px" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
                 <br />
-                <span style={{ color: "#fbbf24", fontSize: "9px", letterSpacing: "1.5px" }}>REAL REWARD TOKENS FROM PIZZA, BETR, BRND, JESSE, QR, DAU... AND MORE!!</span>
+                <span style={{ color: "#fbbf24", fontSize: "9px", letterSpacing: "1.5px" }}>REAL REWARD TOKENS FROM PIZZA, BETR, BRND, JESSE, QR, DAU, USDC... AND MORE!!</span>
               </>
             }
           </div>
