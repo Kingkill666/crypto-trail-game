@@ -97,35 +97,44 @@ async function shareGameCast(text: string, nftImageDataUrl?: string | null, stat
   });
 }
 
-// ── 8-BIT LAMBORGHINI SPRITE (32x12 pixels) ──
+// ── 8-BIT LAMBORGHINI SPRITE (40x16 pixels) ── Red Exotic Lambo ──
+// 0=transparent, 1=outline/dark, 2=body main, 3=body highlight, 4=wheel/tire,
+// 5=wheel hub, 6=headlight, 7=window/glass, 8=intake/grille, 9=undercarriage
 const LAMBO_SPRITE = [
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,2,2,2,2,1,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,3,3,3,3,3,2,2,1,1,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,1,1,1,2,2,2,2,2,3,3,3,3,3,3,3,3,2,2,2,1,1,0,0,0,0,0],
-  [0,0,0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,0,0,0,0],
-  [0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,0,0],
-  [0,1,4,4,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,4,4,1,0],
-  [1,4,4,4,4,4,2,5,5,5,2,2,2,2,2,2,2,2,2,2,2,2,5,5,5,2,4,4,4,4,4,1],
-  [1,4,4,4,4,4,2,5,6,5,2,2,2,2,2,2,2,2,2,2,2,2,5,6,5,2,4,4,4,4,4,1],
-  [0,1,4,4,4,2,2,5,5,5,2,2,2,2,2,2,2,2,2,2,2,2,5,5,5,2,2,4,4,4,1,0],
-  [0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,7,7,7,7,7,1,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,3,3,7,7,7,7,7,7,3,3,1,1,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,1,1,1,1,2,2,3,3,3,3,3,3,7,7,7,3,3,3,2,2,2,1,1,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,1,1,0,0,0,0,0,0],
+  [0,0,0,0,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,0,0,0,0],
+  [0,0,1,1,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,1,1,0,0],
+  [0,1,6,8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,8,6,1,0,0],
+  [1,1,6,1,9,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,9,1,1,6,1,0,0],
+  [1,9,1,4,4,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,4,4,9,1,9,1,0,0,0],
+  [0,1,4,4,5,4,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,4,5,4,4,1,0,0,0,0,0],
+  [0,1,4,5,5,5,4,2,2,2,2,2,2,2,9,9,9,9,9,9,9,9,9,9,2,2,2,2,2,4,5,5,5,4,1,0,0,0,0,0],
+  [0,1,4,5,5,5,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,5,5,5,4,1,0,0,0,0,0],
+  [0,1,4,4,5,4,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,4,5,4,4,1,0,0,0,0,0],
+  [0,0,1,4,4,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,4,4,1,0,0,0,0,0,0],
+  [0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
 ];
 
 const LAMBO_COLORS: Record<string, Record<number, string>> = {
-  red: { 1: "#1a0a0a", 2: "#cc1111", 3: "#ff3333", 4: "#222222", 5: "#333333", 6: "#ffff44" },
-  yellow: { 1: "#1a1a0a", 2: "#ccaa00", 3: "#ffdd00", 4: "#222222", 5: "#333333", 6: "#ffffff" },
-  blue: { 1: "#0a0a1a", 2: "#1155cc", 3: "#3388ff", 4: "#222222", 5: "#333333", 6: "#ffff44" },
-  green: { 1: "#0a1a0a", 2: "#11aa33", 3: "#33ff66", 4: "#222222", 5: "#333333", 6: "#ffff44" },
-  purple: { 1: "#0f0a1a", 2: "#7c3aed", 3: "#a855f7", 4: "#222222", 5: "#333333", 6: "#ffff44" },
-  neon: { 1: "#0a1a1a", 2: "#06b6d4", 3: "#22d3ee", 4: "#222222", 5: "#333333", 6: "#ff44ff" },
+  red: { 1: "#1a0808", 2: "#cc1111", 3: "#ff2a2a", 4: "#1a1a1a", 5: "#444444", 6: "#ffee44", 7: "#1a3355", 8: "#880808", 9: "#0a0a0a" },
+  yellow: { 1: "#1a1a08", 2: "#ccaa00", 3: "#ffdd00", 4: "#1a1a1a", 5: "#444444", 6: "#ffffff", 7: "#1a3355", 8: "#886600", 9: "#0a0a0a" },
+  blue: { 1: "#08081a", 2: "#1155cc", 3: "#3388ff", 4: "#1a1a1a", 5: "#444444", 6: "#ffee44", 7: "#0a1a33", 8: "#0a3388", 9: "#0a0a0a" },
+  green: { 1: "#081a08", 2: "#11aa33", 3: "#33ff66", 4: "#1a1a1a", 5: "#444444", 6: "#ffee44", 7: "#0a331a", 8: "#086622", 9: "#0a0a0a" },
+  purple: { 1: "#0f081a", 2: "#7c3aed", 3: "#a855f7", 4: "#1a1a1a", 5: "#444444", 6: "#ffee44", 7: "#1a0a33", 8: "#5b21b6", 9: "#0a0a0a" },
+  neon: { 1: "#081a1a", 2: "#06b6d4", 3: "#22d3ee", 4: "#1a1a1a", 5: "#444444", 6: "#ff44ff", 7: "#0a1a2a", 8: "#0a8899", 9: "#0a0a0a" },
 };
 
+// ── CYBERPUNK BUILDINGS (varied skyline) ──
 const BUILDINGS = [
-  { pixels: [[1,1,1,1],[1,0,1,0],[1,1,1,1],[1,0,1,0],[1,1,1,1],[1,0,1,0],[1,1,1,1]], color: "#1a2244" },
-  { pixels: [[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]], color: "#1a1a33" },
-  { pixels: [[0,1,0],[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]], color: "#222244" },
+  { pixels: [[0,0,1,0,0],[0,1,1,1,0],[1,1,1,1,1],[1,0,1,0,1],[1,1,1,1,1],[1,0,1,0,1],[1,1,1,1,1],[1,0,1,0,1],[1,1,1,1,1],[1,0,1,0,1],[1,1,1,1,1]], color: "#0f1535", accent: "#7c3aed" },
+  { pixels: [[1,1,1,1],[1,0,1,0],[1,1,1,1],[1,0,1,0],[1,1,1,1],[1,0,1,0],[1,1,1,1]], color: "#0d1230", accent: "#06b6d4" },
+  { pixels: [[0,1,1,0],[1,1,1,1],[1,0,0,1],[1,1,1,1],[1,0,0,1],[1,1,1,1],[1,0,0,1],[1,1,1,1],[1,0,0,1]], color: "#121840", accent: "#f43f5e" },
+  { pixels: [[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]], color: "#0a0f25", accent: "#10b981" },
+  { pixels: [[0,0,1,1,0,0],[0,1,1,1,1,0],[1,1,0,0,1,1],[1,0,1,1,0,1],[1,1,0,0,1,1],[1,0,1,1,0,1],[1,1,1,1,1,1]], color: "#151a3d", accent: "#f59e0b" },
 ];
 
 // ── 8-BIT EVENT ICON SPRITES (unique per event) ──
@@ -833,7 +842,7 @@ function PixelEventIcon({ eventTitle, animFrame }: { eventTitle: string; animFra
 
 // ── PIXEL CANVAS COMPONENTS (inlined) ──
 
-function PixelTrailCanvas({ width = 600, height = 120, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor = "red" }: {
+function PixelTrailCanvas({ width = 600, height = 160, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor = "red" }: {
   width?: number; height?: number; animFrame: number; milesTraveled: number; totalMiles: number;
   tombstones: Array<{ mile: number }>; nextLandmarkEmoji: string; lamboColor?: string;
 }) {
@@ -844,59 +853,121 @@ function PixelTrailCanvas({ width = 600, height = 120, animFrame, milesTraveled,
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const W = width, H = height;
-    ctx.fillStyle = "#0a0a12";
-    ctx.fillRect(0, 0, W, H);
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.5);
-    skyGrad.addColorStop(0, "#050510");
-    skyGrad.addColorStop(1, "#0a0a1e");
+
+    // ── SKY: Deep purple-blue gradient like reference ──
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+    skyGrad.addColorStop(0, "#0a0015");
+    skyGrad.addColorStop(0.3, "#15082e");
+    skyGrad.addColorStop(0.6, "#1a1045");
+    skyGrad.addColorStop(1, "#0d1a3a");
     ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, W, H * 0.5);
+    ctx.fillRect(0, 0, W, H * 0.55);
+
+    // ── MOUNTAINS/HILLS in background ──
+    ctx.fillStyle = "#0a0f2a";
+    for (let x = 0; x < W; x += 2) {
+      const mh = Math.sin(x * 0.008 + 1) * 12 + Math.sin(x * 0.02 + 3) * 6 + 20;
+      ctx.fillRect(x, H * 0.35 - mh, 2, mh + H * 0.2);
+    }
+    ctx.fillStyle = "#0d1233";
+    for (let x = 0; x < W; x += 2) {
+      const mh = Math.sin(x * 0.012 + 5) * 8 + Math.sin(x * 0.025) * 4 + 12;
+      ctx.fillRect(x, H * 0.42 - mh, 2, mh + H * 0.15);
+    }
+
+    // ── STARS ──
     const starSeed = 42;
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 30; i++) {
       const sx = ((starSeed * (i + 1) * 7) % W);
-      const sy = ((starSeed * (i + 1) * 3) % (H * 0.4));
-      const twinkle = (animFrame + i) % 4;
-      ctx.fillStyle = twinkle < 2 ? "#ffffff" : "#666666";
-      ctx.globalAlpha = twinkle === 0 ? 0.9 : twinkle === 1 ? 0.4 : twinkle === 2 ? 0.7 : 0.3;
-      const size = i % 3 === 0 ? 2 : 1;
-      ctx.fillRect(sx, sy, size, size);
+      const sy = ((starSeed * (i + 1) * 3) % (H * 0.3));
+      const twinkle = (animFrame + i) % 5;
+      ctx.fillStyle = "#ffffff";
+      ctx.globalAlpha = twinkle === 0 ? 0.9 : twinkle < 3 ? 0.3 : 0.6;
+      ctx.fillRect(sx, sy, twinkle === 0 ? 2 : 1, twinkle === 0 ? 2 : 1);
     }
     ctx.globalAlpha = 1;
-    const scroll = (animFrame * 4) % W;
-    for (let bi = 0; bi < 12; bi++) {
-      const bx = ((bi * 55 - scroll + W * 2) % (W + 100)) - 50;
+
+    // ── CYBERPUNK CITYSCAPE with neon accents ──
+    const scroll = (animFrame * 3) % W;
+    for (let bi = 0; bi < 16; bi++) {
+      const bx = ((bi * 45 - scroll + W * 2) % (W + 100)) - 50;
       const bldg = BUILDINGS[bi % BUILDINGS.length];
       const px = 3;
-      const by = H * 0.55 - bldg.pixels.length * px;
-      ctx.globalAlpha = 0.3;
+      const bh = bldg.pixels.length * px;
+      const by = H * 0.50 - bh;
+      ctx.globalAlpha = 0.6;
       bldg.pixels.forEach((row, ry) => {
         row.forEach((p, rx) => {
           if (p) {
             ctx.fillStyle = bldg.color;
             ctx.fillRect(bx + rx * px, by + ry * px, px, px);
           } else {
-            if ((animFrame + bi + ry) % 5 < 2) {
-              ctx.fillStyle = "#ffff0033";
+            // Neon-lit windows with building accent color
+            const windowOn = (animFrame + bi + ry * 3 + rx) % 7 < 3;
+            if (windowOn) {
+              ctx.fillStyle = (bldg as any).accent || "#ffff0044";
+              ctx.globalAlpha = 0.4 + ((animFrame + bi) % 3) * 0.1;
               ctx.fillRect(bx + rx * px, by + ry * px, px, px);
+              ctx.globalAlpha = 0.6;
             }
           }
         });
       });
+      // Neon accent strip on top of some buildings
+      if (bi % 3 === 0) {
+        ctx.fillStyle = (bldg as any).accent || "#7c3aed";
+        ctx.globalAlpha = 0.5 + Math.sin(animFrame * 0.2 + bi) * 0.2;
+        ctx.fillRect(bx, by - 1, bldg.pixels[0].length * px, 2);
+      }
     }
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#111122";
-    ctx.fillRect(0, H * 0.6, W, H * 0.4);
-    const roadY = H * 0.65;
-    ctx.fillStyle = "#1a1a2a";
-    ctx.fillRect(0, roadY, W, 20);
+
+    // ── FENCE / BARRIER like reference ──
+    const fenceY = H * 0.52;
+    ctx.fillStyle = "#222244";
+    for (let fi = 0; fi < 40; fi++) {
+      const fx = ((fi * 20 - animFrame * 4 + W * 3) % (W + 40)) - 20;
+      ctx.fillRect(fx + 2, fenceY - 8, 2, 10); // vertical post
+    }
+    ctx.fillStyle = "#333355";
+    ctx.fillRect(0, fenceY - 6, W, 1); // top wire
+    ctx.fillRect(0, fenceY - 2, W, 1); // bottom wire
+
+    // ── GROUND ──
+    ctx.fillStyle = "#0a0e1e";
+    ctx.fillRect(0, H * 0.55, W, H * 0.45);
+
+    // ── ROAD with wet reflections ──
+    const roadY = H * 0.60;
+    const roadH = 24;
+    const roadGrad = ctx.createLinearGradient(0, roadY, 0, roadY + roadH);
+    roadGrad.addColorStop(0, "#1a1a2e");
+    roadGrad.addColorStop(0.5, "#151525");
+    roadGrad.addColorStop(1, "#1a1a2e");
+    ctx.fillStyle = roadGrad;
+    ctx.fillRect(0, roadY, W, roadH);
+    // Road edge lines
     ctx.fillStyle = "#333355";
     ctx.fillRect(0, roadY, W, 1);
-    ctx.fillRect(0, roadY + 19, W, 1);
-    ctx.fillStyle = "#555533";
+    ctx.fillRect(0, roadY + roadH - 1, W, 1);
+    // Center line dashes
+    ctx.fillStyle = "#555544";
     for (let di = 0; di < 30; di++) {
       const dx = ((di * 25 - animFrame * 6 + W * 3) % (W + 50)) - 25;
-      ctx.fillRect(dx, roadY + 9, 12, 2);
+      ctx.fillRect(dx, roadY + 11, 12, 2);
     }
+
+    // ── WET ROAD REFLECTIONS (neon color spills) ──
+    for (let ri = 0; ri < 8; ri++) {
+      const rx = ((ri * 80 + animFrame * 2) % (W + 60)) - 30;
+      const reflectColors = ["#7c3aed", "#06b6d4", "#f43f5e", "#10b981", "#f59e0b"];
+      ctx.fillStyle = reflectColors[ri % reflectColors.length];
+      ctx.globalAlpha = 0.06 + Math.sin(animFrame * 0.15 + ri) * 0.03;
+      ctx.fillRect(rx, roadY + 2, 30, roadH - 4);
+    }
+    ctx.globalAlpha = 1;
+
+    // ── TOMBSTONES ──
     const nearTombs = tombstones.filter((t) => t.mile <= milesTraveled && t.mile > milesTraveled - 200);
     nearTombs.forEach((t, i) => {
       const tx = W * 0.1 + (i * W * 0.12);
@@ -908,11 +979,13 @@ function PixelTrailCanvas({ width = 600, height = 120, animFrame, milesTraveled,
       ctx.font = "bold 5px monospace";
       ctx.fillText("RIP", tx - 1, ty - 2);
     });
+
+    // ── LAMBO with bounce and ground reflection ──
     const colors = LAMBO_COLORS[lamboColor] || LAMBO_COLORS.red;
     const pxSize = 3;
-    const lamboX = W * 0.35;
-    const lamboY = roadY - LAMBO_SPRITE.length * pxSize + 6;
-    const bounce = animFrame % 3 === 0 ? -1 : animFrame % 3 === 1 ? 0 : -1;
+    const lamboX = W * 0.32;
+    const lamboY = roadY - LAMBO_SPRITE.length * pxSize + 10;
+    const bounce = animFrame % 3 === 0 ? -1 : 0;
     LAMBO_SPRITE.forEach((row, ry) => {
       row.forEach((p, rx) => {
         if (p > 0) {
@@ -921,42 +994,63 @@ function PixelTrailCanvas({ width = 600, height = 120, animFrame, milesTraveled,
         }
       });
     });
-    for (let ei = 0; ei < 4; ei++) {
+
+    // ── Lambo REFLECTION on wet road ──
+    ctx.globalAlpha = 0.12;
+    LAMBO_SPRITE.forEach((row, ry) => {
+      row.forEach((p, rx) => {
+        if (p > 0) {
+          ctx.fillStyle = colors[p] || "#ff0000";
+          const reflY = roadY + roadH - 2 - ry * pxSize * 0.5;
+          ctx.fillRect(lamboX + rx * pxSize, reflY + bounce, pxSize, Math.max(1, pxSize * 0.5));
+        }
+      });
+    });
+    ctx.globalAlpha = 1;
+
+    // ── Exhaust particles ──
+    for (let ei = 0; ei < 5; ei++) {
       const ex = lamboX - 8 - ei * 6 - ((animFrame * 3 + ei * 7) % 20);
-      const ey = lamboY + LAMBO_SPRITE.length * pxSize * 0.6 + bounce + Math.sin(animFrame + ei) * 2;
-      ctx.globalAlpha = 0.3 - ei * 0.07;
-      ctx.fillStyle = "#aaaaaa";
-      ctx.fillRect(ex, ey, 3 - (ei > 1 ? 1 : 0), 2);
+      const ey = lamboY + LAMBO_SPRITE.length * pxSize * 0.65 + bounce + Math.sin(animFrame + ei) * 2;
+      ctx.globalAlpha = 0.25 - ei * 0.04;
+      ctx.fillStyle = "#aaaacc";
+      ctx.fillRect(ex, ey, 3 - (ei > 2 ? 1 : 0), 2);
     }
     ctx.globalAlpha = 1;
-    if (animFrame % 2 === 0) {
-      ctx.globalAlpha = 0.15;
-      ctx.fillStyle = "#ffffff";
-      for (let sl = 0; sl < 3; sl++) {
-        const sly = roadY + 3 + sl * 5;
-        const slx = lamboX - 20 - sl * 30 - (animFrame * 4 % 30);
-        ctx.fillRect(slx, sly, 15, 1);
-      }
-      ctx.globalAlpha = 1;
-    }
+
+    // ── Headlight beam ──
+    const beamX = lamboX + LAMBO_SPRITE[0].length * pxSize;
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = "#ffee44";
+    ctx.fillRect(beamX, lamboY + LAMBO_SPRITE.length * pxSize * 0.4 + bounce, W - beamX, 6);
+    ctx.globalAlpha = 0.03;
+    ctx.fillRect(beamX, lamboY + LAMBO_SPRITE.length * pxSize * 0.3 + bounce, W - beamX, 12);
+    ctx.globalAlpha = 1;
+
+    // ── Next landmark icon ──
     ctx.font = "16px serif";
     ctx.globalAlpha = 0.25 + Math.sin(animFrame * 0.3) * 0.1;
     ctx.fillText(nextLandmarkEmoji, W * 0.85, roadY - 2);
     ctx.globalAlpha = 1;
+
+    // ── Progress bar ──
     const barY = H - 8;
     ctx.fillStyle = "#111133";
     ctx.fillRect(10, barY, W - 20, 4);
     const pct = milesTraveled / totalMiles;
-    ctx.fillStyle = "#7c3aed";
+    const barGrad = ctx.createLinearGradient(10, barY, 10 + (W - 20) * pct, barY);
+    barGrad.addColorStop(0, "#7c3aed");
+    barGrad.addColorStop(1, "#06b6d4");
+    ctx.fillStyle = barGrad;
     ctx.fillRect(10, barY, (W - 20) * pct, 4);
     ctx.fillStyle = "#ff3333";
     ctx.fillRect(10 + (W - 20) * pct - 2, barY - 1, 4, 6);
   }, [width, height, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor]);
   useEffect(() => { draw(); }, [draw]);
-  return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "8px", border: "2px solid #1a1a2e" }} />;
+  return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "4px", border: "2px solid #1e1e3a", boxShadow: "0 0 20px rgba(124, 58, 237, 0.15)" }} />;
 }
 
-function PixelTitleCanvas({ width = 500, height = 140, animFrame }: { width?: number; height?: number; animFrame: number }) {
+function PixelTitleCanvas({ width = 600, height = 200, animFrame }: { width?: number; height?: number; animFrame: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -964,48 +1058,122 @@ function PixelTitleCanvas({ width = 500, height = 140, animFrame }: { width?: nu
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const W = width, H = height;
-    ctx.fillStyle = "#050508";
-    ctx.fillRect(0, 0, W, H);
-    for (let i = 0; i < 40; i++) {
+
+    // ── SKY: Rich purple-blue cyberpunk gradient ──
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+    skyGrad.addColorStop(0, "#05001a");
+    skyGrad.addColorStop(0.25, "#1a0a3d");
+    skyGrad.addColorStop(0.5, "#1a1055");
+    skyGrad.addColorStop(0.75, "#0d1a4a");
+    skyGrad.addColorStop(1, "#081530");
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H * 0.55);
+
+    // ── DISTANT MOUNTAINS ──
+    ctx.fillStyle = "#0a0f2e";
+    for (let x = 0; x < W; x += 2) {
+      const mh = Math.sin(x * 0.006 + 2) * 18 + Math.sin(x * 0.018 + 5) * 8 + 25;
+      ctx.fillRect(x, H * 0.30 - mh, 2, mh + H * 0.25);
+    }
+    ctx.fillStyle = "#0d1238";
+    for (let x = 0; x < W; x += 2) {
+      const mh = Math.sin(x * 0.01 + 7) * 10 + Math.sin(x * 0.03) * 5 + 15;
+      ctx.fillRect(x, H * 0.38 - mh, 2, mh + H * 0.20);
+    }
+
+    // ── STARS with twinkle ──
+    for (let i = 0; i < 50; i++) {
       const sx = (i * 137 + 23) % W;
-      const sy = (i * 89 + 11) % (H * 0.5);
+      const sy = (i * 89 + 11) % (H * 0.3);
       const twinkle = (animFrame + i * 3) % 6;
       ctx.fillStyle = "#ffffff";
-      ctx.globalAlpha = twinkle < 2 ? 0.8 : twinkle < 4 ? 0.3 : 0.6;
+      ctx.globalAlpha = twinkle < 2 ? 0.9 : twinkle < 4 ? 0.25 : 0.5;
       ctx.fillRect(sx, sy, twinkle === 0 ? 2 : 1, twinkle === 0 ? 2 : 1);
     }
     ctx.globalAlpha = 1;
-    const scroll = (animFrame * 3) % W;
-    for (let bi = 0; bi < 15; bi++) {
-      const bx = ((bi * 40 - scroll + W * 2) % (W + 80)) - 40;
-      const bh = 15 + (bi * 7) % 30;
-      const by = H * 0.55 - bh;
-      ctx.fillStyle = `hsl(${240 + bi * 5}, 30%, ${8 + (bi % 3) * 3}%)`;
-      ctx.fillRect(bx, by, 20, bh);
-      for (let wy = 0; wy < bh - 4; wy += 5) {
-        for (let wx = 2; wx < 18; wx += 6) {
-          ctx.fillStyle = (animFrame + bi + wy) % 7 < 3 ? "#ffff0044" : "#00000000";
-          ctx.fillRect(bx + wx, by + wy + 2, 3, 3);
-        }
+
+    // ── CYBERPUNK SKYLINE with neon accents ──
+    const scroll = (animFrame * 2) % W;
+    for (let bi = 0; bi < 20; bi++) {
+      const bx = ((bi * 38 - scroll + W * 2) % (W + 80)) - 40;
+      const bldg = BUILDINGS[bi % BUILDINGS.length];
+      const px = 3;
+      const bh = bldg.pixels.length * px;
+      const by = H * 0.48 - bh;
+      ctx.globalAlpha = 0.65;
+      bldg.pixels.forEach((row, ry) => {
+        row.forEach((p, rx) => {
+          if (p) {
+            ctx.fillStyle = bldg.color;
+            ctx.fillRect(bx + rx * px, by + ry * px, px, px);
+          } else {
+            const windowOn = (animFrame + bi * 3 + ry * 5 + rx * 2) % 8 < 3;
+            if (windowOn) {
+              ctx.fillStyle = (bldg as any).accent || "#ffff00";
+              ctx.globalAlpha = 0.35 + ((animFrame + bi) % 4) * 0.08;
+              ctx.fillRect(bx + rx * px, by + ry * px, px, px);
+              ctx.globalAlpha = 0.65;
+            }
+          }
+        });
+      });
+      // Neon rooftop strip
+      if (bi % 2 === 0) {
+        ctx.fillStyle = (bldg as any).accent || "#7c3aed";
+        ctx.globalAlpha = 0.6 + Math.sin(animFrame * 0.15 + bi) * 0.25;
+        ctx.fillRect(bx, by - 1, bldg.pixels[0].length * px, 2);
       }
     }
-    ctx.fillStyle = "#0a0a18";
-    ctx.fillRect(0, H * 0.6, W, H * 0.4);
-    const roadY = H * 0.65;
-    ctx.fillStyle = "#15152a";
-    ctx.fillRect(0, roadY, W, 24);
-    ctx.fillStyle = "#222244";
+    ctx.globalAlpha = 1;
+
+    // ── FENCE ──
+    const fenceY = H * 0.50;
+    ctx.fillStyle = "#1e1e44";
+    for (let fi = 0; fi < 50; fi++) {
+      const fx = ((fi * 16 - animFrame * 3 + W * 3) % (W + 40)) - 20;
+      ctx.fillRect(fx + 1, fenceY - 10, 2, 12);
+    }
+    ctx.fillStyle = "#2a2a55";
+    ctx.fillRect(0, fenceY - 8, W, 1);
+    ctx.fillRect(0, fenceY - 3, W, 1);
+
+    // ── GROUND ──
+    ctx.fillStyle = "#080c1a";
+    ctx.fillRect(0, H * 0.52, W, H * 0.48);
+
+    // ── ROAD ──
+    const roadY = H * 0.58;
+    const roadH = 28;
+    const roadGrad = ctx.createLinearGradient(0, roadY, 0, roadY + roadH);
+    roadGrad.addColorStop(0, "#1e1e35");
+    roadGrad.addColorStop(0.5, "#151528");
+    roadGrad.addColorStop(1, "#1e1e35");
+    ctx.fillStyle = roadGrad;
+    ctx.fillRect(0, roadY, W, roadH);
+    ctx.fillStyle = "#333366";
     ctx.fillRect(0, roadY, W, 1);
-    ctx.fillRect(0, roadY + 23, W, 1);
-    ctx.fillStyle = "#444422";
+    ctx.fillRect(0, roadY + roadH - 1, W, 1);
+    ctx.fillStyle = "#555544";
     for (let di = 0; di < 30; di++) {
       const dx = ((di * 25 - animFrame * 8 + W * 3) % (W + 50)) - 25;
-      ctx.fillRect(dx, roadY + 11, 12, 2);
+      ctx.fillRect(dx, roadY + 13, 12, 2);
     }
+
+    // ── WET ROAD REFLECTIONS ──
+    for (let ri = 0; ri < 10; ri++) {
+      const rx = ((ri * 65 + animFrame * 2) % (W + 40)) - 20;
+      const reflColors = ["#7c3aed", "#06b6d4", "#f43f5e", "#10b981"];
+      ctx.fillStyle = reflColors[ri % reflColors.length];
+      ctx.globalAlpha = 0.05 + Math.sin(animFrame * 0.1 + ri * 2) * 0.025;
+      ctx.fillRect(rx, roadY + 2, 25, roadH - 4);
+    }
+    ctx.globalAlpha = 1;
+
+    // ── LAMBO driving across (animated position) ──
     const colors = LAMBO_COLORS.red;
     const pxSize = 3;
-    const lamboX = ((animFrame * 5) % (W + 120)) - 120;
-    const lamboYPos = roadY - LAMBO_SPRITE.length * pxSize + 8;
+    const lamboX = ((animFrame * 4) % (W + 200)) - 160;
+    const lamboYPos = roadY - LAMBO_SPRITE.length * pxSize + 14;
     const bounce = animFrame % 3 === 0 ? -1 : 0;
     LAMBO_SPRITE.forEach((row, ry) => {
       row.forEach((p, rx) => {
@@ -1015,21 +1183,56 @@ function PixelTitleCanvas({ width = 500, height = 140, animFrame }: { width?: nu
         }
       });
     });
-    for (let ei = 0; ei < 5; ei++) {
-      const ex = lamboX - 6 - ei * 5 - ((animFrame * 4 + ei * 5) % 15);
-      const ey = lamboYPos + 20 + bounce + Math.sin(animFrame * 0.5 + ei) * 2;
-      ctx.globalAlpha = 0.25 - ei * 0.04;
-      ctx.fillStyle = "#aaaaaa";
+
+    // ── Lambo reflection on wet road ──
+    ctx.globalAlpha = 0.10;
+    LAMBO_SPRITE.forEach((row, ry) => {
+      row.forEach((p, rx) => {
+        if (p > 0) {
+          ctx.fillStyle = colors[p] || "#ff0000";
+          const reflY = roadY + roadH - 4 - ry * pxSize * 0.4;
+          ctx.fillRect(lamboX + rx * pxSize, reflY + bounce, pxSize, Math.max(1, pxSize * 0.4));
+        }
+      });
+    });
+    ctx.globalAlpha = 1;
+
+    // ── Headlight beam ──
+    const beamX = lamboX + LAMBO_SPRITE[0].length * pxSize;
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = "#ffee44";
+    ctx.fillRect(beamX, lamboYPos + LAMBO_SPRITE.length * pxSize * 0.4 + bounce, Math.max(0, W - beamX + 20), 8);
+    ctx.globalAlpha = 0.04;
+    ctx.fillRect(beamX, lamboYPos + LAMBO_SPRITE.length * pxSize * 0.25 + bounce, Math.max(0, W - beamX + 20), 16);
+    ctx.globalAlpha = 1;
+
+    // ── Exhaust smoke ──
+    for (let ei = 0; ei < 6; ei++) {
+      const ex = lamboX - 6 - ei * 5 - ((animFrame * 4 + ei * 5) % 18);
+      const ey = lamboYPos + LAMBO_SPRITE.length * pxSize * 0.6 + bounce + Math.sin(animFrame * 0.5 + ei) * 2;
+      ctx.globalAlpha = 0.2 - ei * 0.03;
+      ctx.fillStyle = "#aaaacc";
       ctx.fillRect(ex, ey, 3, 2);
     }
     ctx.globalAlpha = 1;
-    ctx.globalAlpha = 0.08;
-    ctx.fillStyle = "#ff3333";
-    ctx.fillRect(lamboX, roadY + 10, LAMBO_SPRITE[0].length * pxSize, 14);
+
+    // ── Tail light glow ──
+    ctx.globalAlpha = 0.15 + Math.sin(animFrame * 0.3) * 0.05;
+    ctx.fillStyle = "#ff2222";
+    ctx.fillRect(lamboX - 4, lamboYPos + LAMBO_SPRITE.length * pxSize * 0.4, 8, 4);
     ctx.globalAlpha = 1;
+
+    // ── Scanline overlay ──
+    ctx.globalAlpha = 0.04;
+    ctx.fillStyle = "#000000";
+    for (let sy = 0; sy < H; sy += 3) {
+      ctx.fillRect(0, sy, W, 1);
+    }
+    ctx.globalAlpha = 1;
+
   }, [width, height, animFrame]);
   useEffect(() => { draw(); }, [draw]);
-  return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "8px", border: "2px solid #1a1a2e" }} />;
+  return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "4px", border: "2px solid #1e1e3a", boxShadow: "0 0 30px rgba(124, 58, 237, 0.2), 0 0 60px rgba(6, 182, 212, 0.08)" }} />;
 }
 
 function PixelEventCanvas({ width = 400, height = 100, animFrame, eventType }: { width?: number; height?: number; animFrame: number; eventType: "good" | "bad" | "neutral" }) {
@@ -1826,9 +2029,9 @@ function formatTimeAgo(ts: number) {
 
 const CSS = `
   @keyframes pixelFadeIn {
-    0% { opacity: 0; transform: scale(0.95) translateY(8px); }
+    0% { opacity: 0; transform: scale(0.95) translateY(8px); filter: brightness(1.5); }
     40% { opacity: 0.5; transform: scale(1.01) translateY(-2px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); }
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
   }
   @keyframes pixelSlideUp {
     0% { opacity: 0; transform: translateY(20px); }
@@ -1836,7 +2039,9 @@ const CSS = `
   }
   @keyframes pixelFlicker {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.85; }
+    33% { opacity: 0.92; }
+    66% { opacity: 0.97; }
+    50% { opacity: 0.88; }
   }
   @keyframes glitchShift {
     0% { transform: translateX(0); }
@@ -1861,8 +2066,8 @@ const CSS = `
     to { transform: rotate(360deg); }
   }
   @keyframes nftReveal {
-    0% { opacity: 0; transform: scale(0.9); }
-    100% { opacity: 1; transform: scale(1); }
+    0% { opacity: 0; transform: scale(0.9); filter: brightness(1.8); }
+    100% { opacity: 1; transform: scale(1); filter: brightness(1); }
   }
   @keyframes loading {
     0% { transform: translateX(-100%); }
@@ -1873,6 +2078,10 @@ const CSS = `
     50% { transform: scale(1.1) rotate(2deg); opacity: 1; }
     70% { transform: scale(0.95) rotate(-1deg); }
     100% { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes neonPulse {
+    0%, 100% { box-shadow: 0 0 5px currentColor, 0 0 10px currentColor; }
+    50% { box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor; }
   }
   @keyframes textTypewriter {
     from { max-width: 0; }
@@ -1912,17 +2121,20 @@ function PixelBtn({
         padding: pad,
         fontSize: font,
         fontWeight: "700",
-        background: disabled ? "#222" : color,
-        color: disabled ? "#555" : textColor,
-        border: `2px solid ${disabled ? "#333" : color}`,
-        borderBottom: `4px solid ${disabled ? "#1a1a1a" : adjustColor(color, -40)}`,
+        background: disabled ? "#1e1e3a" : `linear-gradient(180deg, ${color}, ${adjustColor(color, -25)})`,
+        color: disabled ? "#475569" : textColor,
+        border: `2px solid ${disabled ? "#1e1e3a" : adjustColor(color, 20)}`,
+        borderBottom: `4px solid ${disabled ? "#0a0a18" : adjustColor(color, -50)}`,
+        borderRadius: "4px",
         cursor: disabled ? "not-allowed" : "pointer",
         fontFamily: "'Courier New', monospace",
-        letterSpacing: "1px",
+        letterSpacing: "1.5px",
         textTransform: "uppercase" as const,
         width: fullWidth ? "100%" : "auto",
         transition: "all 0.1s",
         imageRendering: "pixelated" as const,
+        boxShadow: disabled ? "none" : `0 0 12px ${color}33, inset 0 1px 0 ${adjustColor(color, 40)}44`,
+        textShadow: disabled ? "none" : `0 0 6px ${color}66`,
       }}
       onMouseDown={(e) => {
         if (!disabled) {
@@ -1954,27 +2166,28 @@ function adjustColor(hex: string, amount: number) {
 
 // ── EVENT PROMPT WRAPPER ──
 function EventPrompt({ children, type = "neutral" }: { children: React.ReactNode; type?: string }) {
-  const borderColor = type === "good" ? "#10b981" : type === "bad" ? "#ef4444" : "#f59e0b";
+  const borderColor = type === "good" ? "#34d399" : type === "bad" ? "#f87171" : "#fbbf24";
+  const glowColor = type === "good" ? "#10b981" : type === "bad" ? "#ef4444" : "#f59e0b";
   return (
     <div style={{
       animation: "crtOn 0.4s ease-out, borderPulse 2s ease-in-out infinite",
       border: `3px solid ${borderColor}`,
       borderRadius: "4px",
-      background: "#0a0a0f",
+      background: "linear-gradient(180deg, #0c0c1a 0%, #080812 100%)",
       padding: "24px",
       position: "relative",
       overflow: "hidden",
-      boxShadow: `0 0 30px ${borderColor}22, inset 0 0 60px #00000088`,
+      boxShadow: `0 0 30px ${glowColor}22, 0 0 60px ${glowColor}08, inset 0 0 60px #00000088`,
     }}>
       {/* CRT corner brackets */}
-      <div style={{ position: "absolute", top: 4, left: 4, width: 12, height: 12, borderTop: `2px solid ${borderColor}`, borderLeft: `2px solid ${borderColor}`, opacity: 0.6 }} />
-      <div style={{ position: "absolute", top: 4, right: 4, width: 12, height: 12, borderTop: `2px solid ${borderColor}`, borderRight: `2px solid ${borderColor}`, opacity: 0.6 }} />
-      <div style={{ position: "absolute", bottom: 4, left: 4, width: 12, height: 12, borderBottom: `2px solid ${borderColor}`, borderLeft: `2px solid ${borderColor}`, opacity: 0.6 }} />
-      <div style={{ position: "absolute", bottom: 4, right: 4, width: 12, height: 12, borderBottom: `2px solid ${borderColor}`, borderRight: `2px solid ${borderColor}`, opacity: 0.6 }} />
+      <div style={{ position: "absolute", top: 4, left: 4, width: 14, height: 14, borderTop: `2px solid ${borderColor}`, borderLeft: `2px solid ${borderColor}`, opacity: 0.7 }} />
+      <div style={{ position: "absolute", top: 4, right: 4, width: 14, height: 14, borderTop: `2px solid ${borderColor}`, borderRight: `2px solid ${borderColor}`, opacity: 0.7 }} />
+      <div style={{ position: "absolute", bottom: 4, left: 4, width: 14, height: 14, borderBottom: `2px solid ${borderColor}`, borderLeft: `2px solid ${borderColor}`, opacity: 0.5 }} />
+      <div style={{ position: "absolute", bottom: 4, right: 4, width: 14, height: 14, borderBottom: `2px solid ${borderColor}`, borderRight: `2px solid ${borderColor}`, opacity: 0.5 }} />
       {/* Inner scanlines */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
-        background: "repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.06) 1px, rgba(0,0,0,0.06) 2px)",
+        background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px)",
       }} />
       <div style={{ position: "relative", zIndex: 1 }}>
         {children}
@@ -2606,7 +2819,7 @@ export default function CryptoTrail() {
 
   const containerStyle: React.CSSProperties = {
     minHeight: "100vh",
-    background: "#0a0a0f",
+    background: "linear-gradient(180deg, #05000f 0%, #0a0a18 30%, #080c1a 100%)",
     color: "#e0e0e0",
     fontFamily: "'Courier New', 'Lucida Console', monospace",
     position: "relative",
@@ -2625,7 +2838,7 @@ export default function CryptoTrail() {
   const scanlines = (
     <div style={{
       position: "fixed", inset: 0, pointerEvents: "none", zIndex: 998,
-      background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px)",
+      background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px)",
     }} />
   );
 
@@ -2640,53 +2853,75 @@ export default function CryptoTrail() {
         {scanlines}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "20px", textAlign: "center" }}>
 
+          {/* Neon title with layered glow */}
           <h1 style={{
-            fontSize: "clamp(48px, 12vw, 96px)", fontWeight: "900", margin: "0 0 4px",
-            color: "#7c3aed",
-            textShadow: "3px 3px 0px #06b6d4, 6px 6px 0px #10b981",
+            fontSize: "clamp(42px, 11vw, 88px)", fontWeight: "900", margin: "0 0 4px",
+            color: "#c4b5fd",
+            textShadow: "0 0 10px #7c3aed, 0 0 20px #7c3aed88, 0 0 40px #7c3aed44, 3px 3px 0px #06b6d4, 6px 6px 0px #0f172a",
             lineHeight: 1.1,
-            letterSpacing: "4px",
+            letterSpacing: "6px",
             fontFamily: "'Courier New', monospace",
+            animation: "pixelFlicker 3s ease-in-out infinite",
           }}>
             CRYPTO TRAIL
           </h1>
           <div style={{
-            fontSize: "10px", color: "#f59e0b", letterSpacing: "6px", marginBottom: "24px",
+            fontSize: "11px", color: "#f43f5e", letterSpacing: "8px", marginBottom: "8px",
             textTransform: "uppercase",
+            textShadow: "0 0 8px #f43f5e88",
           }}>
             8-BIT DEGEN EDITION
           </div>
+
+          {/* Decorative neon divider */}
           <div style={{
-            fontSize: "clamp(12px, 2.5vw, 15px)", color: "#fff", marginBottom: "32px", maxWidth: "450px",
-            lineHeight: "1.6",
+            width: "200px", height: "2px", marginBottom: "20px",
+            background: "linear-gradient(90deg, transparent, #7c3aed, #06b6d4, #7c3aed, transparent)",
+            boxShadow: "0 0 8px #7c3aed66",
+          }} />
+
+          <div style={{
+            fontSize: "clamp(12px, 2.5vw, 14px)", color: "#94a3b8", marginBottom: "24px", maxWidth: "420px",
+            lineHeight: "1.7", letterSpacing: "0.5px",
           }}>
             The year is 2026. AI took your job, your portfolio is rekt, and you are heading to Mainnet.
             Can you survive rug pulls, rogue AI agents, and bridge exploits?
           </div>
 
-          <div style={{ width: "100%", maxWidth: "500px", marginBottom: "32px" }}>
+          {/* Canvas scene */}
+          <div style={{ width: "100%", maxWidth: "600px", marginBottom: "24px" }}>
             <PixelTitleCanvas animFrame={animFrame} />
           </div>
 
-          {/* Entry fee info */}
+          {/* Entry fee info - styled card */}
           <div style={{
-            fontSize: "10px", color: freePlay.hasFreePlay ? "#10b981" : "#fff", marginBottom: "12px", letterSpacing: "2px",
+            padding: "12px 20px",
+            background: "linear-gradient(180deg, #0c0c1a 0%, #080812 100%)",
+            border: "2px solid #1e1e3a",
+            borderRadius: "4px",
+            marginBottom: "16px",
+            maxWidth: "420px",
+            boxShadow: "0 0 12px rgba(124, 58, 237, 0.1)",
           }}>
-            {freePlay.hasFreePlay
-              ? "★ FREE PLAY AVAILABLE ★"
-              : <>
-                ENTRY: ${gamePayment.entryFeeUsd.toFixed(2)} USD
-                {gamePayment.entryFeeEth && (
-                  <span style={{ color: "#fff" }}>
-                    {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
-                  </span>
-                )}
-                <br />
-                <span style={{ color: "#fff", fontSize: "10px" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
-                <br />
-                <span style={{ color: "#fbbf24", fontSize: "9px", letterSpacing: "1.5px" }}>REAL REWARD TOKENS FROM PIZZA, BETR, BRND, JESSE, QR, DAU, USDC... AND MORE!!</span>
-              </>
-            }
+            <div style={{
+              fontSize: "11px", color: freePlay.hasFreePlay ? "#10b981" : "#c4b5fd", letterSpacing: "2px",
+            }}>
+              {freePlay.hasFreePlay
+                ? "★ FREE PLAY AVAILABLE ★"
+                : <>
+                  <span style={{ color: "#f43f5e" }}>ENTRY:</span> ${gamePayment.entryFeeUsd.toFixed(2)} USD
+                  {gamePayment.entryFeeEth && (
+                    <span style={{ color: "#94a3b8" }}>
+                      {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
+                    </span>
+                  )}
+                  <br />
+                  <span style={{ color: "#94a3b8", fontSize: "10px" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
+                  <br />
+                  <span style={{ color: "#fbbf24", fontSize: "9px", letterSpacing: "1.5px" }}>REAL REWARD TOKENS FROM PIZZA, BETR, BRND, JESSE, QR, DAU, USDC... AND MORE!!</span>
+                </>
+              }
+            </div>
           </div>
 
           <PixelBtn
@@ -2694,7 +2929,7 @@ export default function CryptoTrail() {
               if (payError) gamePayment.reset();
               startGame();
             }}
-            color={isPaying ? "#333" : "#7c3aed"}
+            color={isPaying ? "#1e1e3a" : "#7c3aed"}
             size="lg"
             disabled={isPaying}
           >
@@ -2710,16 +2945,16 @@ export default function CryptoTrail() {
 
           {/* Payment status messages */}
           {isPaying && (
-            <div style={{ marginTop: "12px", fontSize: "10px", color: "#f59e0b", letterSpacing: "1px" }}>
+            <div style={{ marginTop: "12px", fontSize: "10px", color: "#f59e0b", letterSpacing: "1px", textShadow: "0 0 6px #f59e0b44" }}>
               {gamePayment.paymentState === "paying" ? "CONFIRM IN YOUR WALLET..." : "CONFIRMING ON BASE..."}
             </div>
           )}
 
           {payError && (
-            <div style={{ marginTop: "12px", fontSize: "10px", color: "#ef4444", letterSpacing: "1px", maxWidth: "350px" }}>
+            <div style={{ marginTop: "12px", fontSize: "10px", color: "#ef4444", letterSpacing: "1px", maxWidth: "350px", textShadow: "0 0 6px #ef444444" }}>
               {gamePayment.errorMsg || "TRANSACTION FAILED"}
               <br />
-              <span style={{ color: "#fff", fontSize: "9px" }}>TAP ABOVE TO TRY AGAIN</span>
+              <span style={{ color: "#94a3b8", fontSize: "9px" }}>TAP ABOVE TO TRY AGAIN</span>
             </div>
           )}
 
@@ -2751,8 +2986,13 @@ export default function CryptoTrail() {
             </div>
           </div>
 
+          {/* Footer divider */}
           <div style={{
-            marginTop: "24px", fontSize: "9px", color: "#fff", maxWidth: "400px", letterSpacing: "2px",
+            width: "150px", height: "1px", margin: "20px 0 12px",
+            background: "linear-gradient(90deg, transparent, #1e1e3a, transparent)",
+          }} />
+          <div style={{
+            fontSize: "9px", color: "#475569", maxWidth: "400px", letterSpacing: "2px",
           }}>
             INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * BASE MAINNET * CREATED BY VMFCOIN
           </div>
@@ -2772,7 +3012,9 @@ export default function CryptoTrail() {
           {/* Header with back button */}
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            marginBottom: "16px", borderBottom: "2px solid #1a1a2e", paddingBottom: "12px",
+            marginBottom: "16px",
+            paddingBottom: "12px",
+            borderBottom: "2px solid #1e1e3a",
           }}>
             <PixelBtn
               onClick={() => {
@@ -2780,15 +3022,16 @@ export default function CryptoTrail() {
                 clearProfile();
                 setPhase("title");
               }}
-              color="#333"
-              textColor="#888"
+              color="#1e1e3a"
+              textColor="#94a3b8"
               size="sm"
             >
               BACK
             </PixelBtn>
             <div style={{
-              fontSize: "18px", fontWeight: "900", color: "#06b6d4",
+              fontSize: "18px", fontWeight: "900", color: "#22d3ee",
               letterSpacing: "3px", textAlign: "center",
+              textShadow: "0 0 10px #06b6d466, 0 0 20px #06b6d422",
             }}>
               LEADERBOARD
             </div>
@@ -2798,17 +3041,20 @@ export default function CryptoTrail() {
           {/* Player Profile View */}
           {selectedPlayer && (
             <div style={{
-              marginBottom: "16px", padding: "16px", background: "#0a0a12",
-              border: "2px solid #1a1a2e",
+              marginBottom: "16px", padding: "16px",
+              background: "linear-gradient(180deg, #0c0c1a 0%, #080812 100%)",
+              border: "2px solid #1e1e3a",
+              borderRadius: "4px",
+              boxShadow: "0 0 12px rgba(6, 182, 212, 0.08)",
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
-                <PixelBtn onClick={() => { setSelectedPlayer(null); clearProfile(); }} color="#333" textColor="#888" size="sm">
+                <PixelBtn onClick={() => { setSelectedPlayer(null); clearProfile(); }} color="#1e1e3a" textColor="#94a3b8" size="sm">
                   CLOSE
                 </PixelBtn>
               </div>
 
               {profileLoading ? (
-                <div style={{ textAlign: "center", padding: "24px", color: "#fff", fontSize: "11px", letterSpacing: "2px" }}>
+                <div style={{ textAlign: "center", padding: "24px", color: "#94a3b8", fontSize: "11px", letterSpacing: "2px" }}>
                   LOADING PROFILE...
                 </div>
               ) : playerProfile ? (
@@ -2834,36 +3080,37 @@ export default function CryptoTrail() {
                         alt=""
                         style={{
                           width: "48px", height: "48px", borderRadius: "50%",
-                          border: `2px solid ${TIER_COLORS[playerProfile.stats.best_tier] || "#888"}`,
+                          border: `2px solid ${TIER_COLORS[playerProfile.stats.best_tier] || "#1e1e3a"}`,
+                          boxShadow: `0 0 8px ${TIER_COLORS[playerProfile.stats.best_tier] || "#000"}44`,
                         }}
                       />
                     ) : (
                       <div style={{
                         width: "48px", height: "48px", borderRadius: "50%",
-                        background: "#1a1a2e", border: "2px solid #333",
+                        background: "#0a0a18", border: "2px solid #1e1e3a",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "18px", color: "#fff",
+                        fontSize: "18px", color: "#64748b",
                       }}>
                         ?
                       </div>
                     )}
                     <div>
                       <div style={{
-                        fontSize: "14px", fontWeight: "900", color: "#fff",
+                        fontSize: "14px", fontWeight: "900", color: "#e2e8f0",
                         letterSpacing: "1px",
                       }}>
                         {playerProfile.stats.fc_display_name || playerProfile.stats.fc_username || "ANON"}
                       </div>
                       {playerProfile.stats.fc_username && (
-                        <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "1px" }}>
+                        <div style={{ fontSize: "10px", color: "#94a3b8", letterSpacing: "1px" }}>
                           @{playerProfile.stats.fc_username}
                         </div>
                       )}
-                      <div style={{ fontSize: "9px", color: "#fff", marginTop: "2px", letterSpacing: "0.5px" }}>
+                      <div style={{ fontSize: "9px", color: "#64748b", marginTop: "2px", letterSpacing: "0.5px" }}>
                         {selectedPlayer.slice(0, 6)}...{selectedPlayer.slice(-4)}
                       </div>
                       {playerProfile.stats.fc_fid && (
-                        <div style={{ fontSize: "8px", color: "#06b6d4", marginTop: "2px", letterSpacing: "1px" }}>
+                        <div style={{ fontSize: "8px", color: "#22d3ee", marginTop: "2px", letterSpacing: "1px", textShadow: "0 0 4px #06b6d444" }}>
                           TAP TO VIEW PROFILE
                         </div>
                       )}
@@ -2875,34 +3122,36 @@ export default function CryptoTrail() {
                     display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px",
                     marginBottom: "16px",
                   }}>
-                    <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>BEST SCORE</div>
+                    <div style={{ padding: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", borderRadius: "4px", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", color: "#64748b", letterSpacing: "2px", marginBottom: "4px" }}>BEST SCORE</div>
                       <div style={{
                         fontSize: "16px", fontWeight: "900",
-                        color: TIER_COLORS[playerProfile.stats.best_tier] || "#fff",
+                        color: TIER_COLORS[playerProfile.stats.best_tier] || "#e2e8f0",
+                        textShadow: `0 0 6px ${TIER_COLORS[playerProfile.stats.best_tier] || "#fff"}44`,
                       }}>
                         {playerProfile.stats.best_score.toLocaleString()}
                       </div>
                     </div>
-                    <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>BEST TIER</div>
+                    <div style={{ padding: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", borderRadius: "4px", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", color: "#64748b", letterSpacing: "2px", marginBottom: "4px" }}>BEST TIER</div>
                       <div style={{
                         fontSize: "12px", fontWeight: "900",
-                        color: TIER_COLORS[playerProfile.stats.best_tier] || "#fff",
+                        color: TIER_COLORS[playerProfile.stats.best_tier] || "#e2e8f0",
                         letterSpacing: "2px",
+                        textShadow: `0 0 6px ${TIER_COLORS[playerProfile.stats.best_tier] || "#fff"}44`,
                       }}>
                         {TIER_LABELS[playerProfile.stats.best_tier] || "NONE"}
                       </div>
                     </div>
-                    <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>GAMES</div>
-                      <div style={{ fontSize: "16px", fontWeight: "900", color: "#fff" }}>
+                    <div style={{ padding: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", borderRadius: "4px", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", color: "#64748b", letterSpacing: "2px", marginBottom: "4px" }}>GAMES</div>
+                      <div style={{ fontSize: "16px", fontWeight: "900", color: "#e2e8f0" }}>
                         {playerProfile.stats.games_played}
                       </div>
                     </div>
-                    <div style={{ padding: "8px", background: "#0a0a0f", border: "1px solid #1a1a2e", textAlign: "center" }}>
-                      <div style={{ fontSize: "9px", color: "#fff", letterSpacing: "2px", marginBottom: "4px" }}>RANK</div>
-                      <div style={{ fontSize: "16px", fontWeight: "900", color: "#ffd700" }}>
+                    <div style={{ padding: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", borderRadius: "4px", textAlign: "center" }}>
+                      <div style={{ fontSize: "9px", color: "#64748b", letterSpacing: "2px", marginBottom: "4px" }}>RANK</div>
+                      <div style={{ fontSize: "16px", fontWeight: "900", color: "#fbbf24", textShadow: "0 0 6px #fbbf2444" }}>
                         {playerProfile.rank ? `#${playerProfile.rank}` : "\u2014"}
                       </div>
                     </div>
@@ -2912,30 +3161,30 @@ export default function CryptoTrail() {
                   {playerProfile.games.length > 0 && (
                     <div>
                       <div style={{
-                        fontSize: "10px", color: "#fff", letterSpacing: "2px",
+                        fontSize: "10px", color: "#c4b5fd", letterSpacing: "2px",
                         marginBottom: "8px", textAlign: "center",
                       }}>
                         GAME HISTORY
                       </div>
-                      <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+                      <div style={{ maxHeight: "200px", overflowY: "auto", borderRadius: "4px", overflow: "hidden" }}>
                         {playerProfile.games.map((g, i) => (
                           <div key={i} style={{
                             display: "flex", justifyContent: "space-between",
                             alignItems: "center",
                             padding: "6px 8px",
-                            background: i % 2 === 0 ? "#0a0a0f" : "#0d0d16",
-                            borderBottom: "1px solid #1a1a2e",
+                            background: i % 2 === 0 ? "#0a0a18" : "#0c0c1a",
+                            borderBottom: "1px solid #1e1e3a",
                             fontSize: "10px",
                           }}>
                             <div>
-                              <span style={{ color: TIER_COLORS[g.tier] || "#fff", fontWeight: "700" }}>
+                              <span style={{ color: TIER_COLORS[g.tier] || "#e2e8f0", fontWeight: "700" }}>
                                 {g.score.toLocaleString()}
                               </span>
-                              <span style={{ color: "#fff", marginLeft: "6px" }}>
+                              <span style={{ color: "#94a3b8", marginLeft: "6px" }}>
                                 {g.survived ? "\u2713" : "\uD83D\uDC80"}
                               </span>
                             </div>
-                            <div style={{ color: "#fff", fontSize: "9px" }}>
+                            <div style={{ color: "#64748b", fontSize: "9px" }}>
                               {g.days}d {"\u00B7"} {g.miles}mi {"\u00B7"} {g.survivors}/4
                             </div>
                           </div>
@@ -2945,7 +3194,7 @@ export default function CryptoTrail() {
                   )}
                 </div>
               ) : (
-                <div style={{ textAlign: "center", padding: "24px", color: "#ef4444", fontSize: "11px" }}>
+                <div style={{ textAlign: "center", padding: "24px", color: "#f87171", fontSize: "11px" }}>
                   PLAYER NOT FOUND
                 </div>
               )}
@@ -2956,22 +3205,22 @@ export default function CryptoTrail() {
           {!selectedPlayer && (
             <>
               {lbLoading ? (
-                <div style={{ textAlign: "center", padding: "40px", color: "#888", fontSize: "11px", letterSpacing: "2px" }}>
+                <div style={{ textAlign: "center", padding: "40px", color: "#64748b", fontSize: "11px", letterSpacing: "2px" }}>
                   LOADING LEADERBOARD...
                 </div>
               ) : lbError ? (
                 <div style={{ textAlign: "center", padding: "40px" }}>
-                  <div style={{ color: "#ef4444", fontSize: "11px", letterSpacing: "1px", marginBottom: "12px" }}>
+                  <div style={{ color: "#f87171", fontSize: "11px", letterSpacing: "1px", marginBottom: "12px" }}>
                     {lbError}
                   </div>
-                  <PixelBtn onClick={fetchLeaderboard} color="#333" textColor="#888" size="sm">
+                  <PixelBtn onClick={fetchLeaderboard} color="#1e1e3a" textColor="#94a3b8" size="sm">
                     RETRY
                   </PixelBtn>
                 </div>
               ) : globalLeaderboard.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px", color: "#888", fontSize: "11px", letterSpacing: "2px" }}>
+                <div style={{ textAlign: "center", padding: "40px", color: "#64748b", fontSize: "11px", letterSpacing: "2px" }}>
                   NO GAMES PLAYED YET
-                  <div style={{ marginTop: "8px", fontSize: "10px", color: "#555" }}>
+                  <div style={{ marginTop: "8px", fontSize: "10px", color: "#475569" }}>
                     BE THE FIRST TO CONQUER THE TRAIL
                   </div>
                 </div>
@@ -2984,9 +3233,9 @@ export default function CryptoTrail() {
                     alignItems: "center",
                     gap: "4px",
                     padding: "6px 8px",
-                    borderBottom: "2px solid #1a1a2e",
+                    borderBottom: "2px solid #1e1e3a",
                     fontSize: "9px",
-                    color: "#555",
+                    color: "#475569",
                     letterSpacing: "1px",
                   }}>
                     <span>#</span>
@@ -3012,14 +3261,17 @@ export default function CryptoTrail() {
                           gap: "4px",
                           padding: "8px",
                           cursor: "pointer",
-                          background: i === 0 ? "#1a1a0a" : i % 2 === 0 ? "#0a0a0f" : "#0d0d16",
-                          borderBottom: "1px solid #1a1a2e",
+                          background: i === 0 ? "linear-gradient(90deg, #1a1a0f, #0c0c1a)" : i % 2 === 0 ? "#0a0a18" : "#0c0c1a",
+                          borderBottom: "1px solid #1e1e3a",
+                          borderLeft: i < 3 ? `3px solid ${i === 0 ? "#fbbf24" : i === 1 ? "#94a3b8" : "#cd7f32"}` : "3px solid transparent",
+                          transition: "background 0.15s",
                         }}
                       >
                         {/* Rank */}
                         <span style={{
                           fontSize: "11px", fontWeight: "900",
-                          color: i === 0 ? "#ffd700" : i === 1 ? "#c0c0c0" : i === 2 ? "#cd7f32" : "#555",
+                          color: i === 0 ? "#fbbf24" : i === 1 ? "#94a3b8" : i === 2 ? "#cd7f32" : "#475569",
+                          textShadow: i < 3 ? `0 0 6px ${i === 0 ? "#fbbf2444" : i === 1 ? "#94a3b844" : "#cd7f3244"}` : "none",
                         }}>
                           {row.rank}
                         </span>
@@ -3032,15 +3284,15 @@ export default function CryptoTrail() {
                             loading="lazy"
                             style={{
                               width: "24px", height: "24px", borderRadius: "50%",
-                              border: `1px solid ${TIER_COLORS[row.best_tier] || "#333"}`,
+                              border: `1px solid ${TIER_COLORS[row.best_tier] || "#1e1e3a"}`,
                             }}
                           />
                         ) : (
                           <div style={{
                             width: "24px", height: "24px", borderRadius: "50%",
-                            background: "#1a1a2e", border: "1px solid #333",
+                            background: "#0a0a18", border: "1px solid #1e1e3a",
                             display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: "10px", color: "#555",
+                            fontSize: "10px", color: "#475569",
                           }}>
                             ?
                           </div>
@@ -3049,14 +3301,14 @@ export default function CryptoTrail() {
                         {/* Name + tier badge */}
                         <div style={{ overflow: "hidden" }}>
                           <div style={{
-                            fontSize: "11px", fontWeight: "700", color: "#fff",
+                            fontSize: "11px", fontWeight: "700", color: "#e2e8f0",
                             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                           }}>
                             {row.fc_display_name || row.fc_username || `${row.wallet.slice(0, 6)}...${row.wallet.slice(-4)}`}
                           </div>
                           <div style={{
                             fontSize: "8px", fontWeight: "900",
-                            color: TIER_COLORS[row.best_tier] || "#888",
+                            color: TIER_COLORS[row.best_tier] || "#64748b",
                             letterSpacing: "1px",
                           }}>
                             {TIER_LABELS[row.best_tier] || ""}
@@ -3066,14 +3318,14 @@ export default function CryptoTrail() {
                         {/* Score */}
                         <div style={{
                           fontSize: "11px", fontWeight: "700", textAlign: "right",
-                          color: TIER_COLORS[row.best_tier] || "#fff",
+                          color: TIER_COLORS[row.best_tier] || "#e2e8f0",
                         }}>
                           {row.best_score.toLocaleString()}
                         </div>
 
                         {/* Games played */}
                         <div style={{
-                          fontSize: "10px", textAlign: "right", color: "#888",
+                          fontSize: "10px", textAlign: "right", color: "#64748b",
                         }}>
                           {row.games_played}
                         </div>
@@ -4174,33 +4426,38 @@ export default function CryptoTrail() {
         {/* HEADER BAR */}
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          padding: "8px 0", borderBottom: "2px solid #1a1a2e", marginBottom: "10px",
+          padding: "10px 12px", marginBottom: "10px",
+          background: "linear-gradient(90deg, #0c0c1a, #0a0a18, #0c0c1a)",
+          border: "2px solid #1e1e3a",
+          borderRadius: "4px",
+          boxShadow: "0 0 10px rgba(124, 58, 237, 0.1)",
         }}>
-          <div style={{ fontSize: "14px", fontWeight: "900", color: "#7c3aed", letterSpacing: "2px" }}>CRYPTO TRAIL</div>
-          <div style={{ fontSize: "10px", color: "#fff", letterSpacing: "1px" }}>
-            DAY {day} | {market.emoji} <span style={{ color: market.color }}>{market.name.toUpperCase()}</span>
+          <div style={{ fontSize: "14px", fontWeight: "900", color: "#c4b5fd", letterSpacing: "2px", textShadow: "0 0 8px #7c3aed66" }}>CRYPTO TRAIL</div>
+          <div style={{ fontSize: "10px", color: "#94a3b8", letterSpacing: "1px" }}>
+            DAY {day} | {market.emoji} <span style={{ color: market.color, textShadow: `0 0 6px ${market.color}44` }}>{market.name.toUpperCase()}</span>
           </div>
         </div>
 
         {/* PROGRESS BAR */}
         <div style={{ marginBottom: "10px" }}>
           <div style={{
-            display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#fff", marginBottom: "4px", letterSpacing: "1px",
+            display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#94a3b8", marginBottom: "4px", letterSpacing: "1px",
           }}>
             <span>MILE {milesTraveled}/{totalMiles}</span>
             <span>NEXT: {nextLandmarkInfo.emoji} {nextLandmarkInfo.name.toUpperCase()} ({milesToNext}MI)</span>
           </div>
-          <div style={{ height: "8px", background: "#0a0a12", border: "1px solid #1a1a2e", overflow: "hidden", position: "relative" }}>
+          <div style={{ height: "8px", background: "#0a0a18", border: "1px solid #1e1e3a", overflow: "hidden", position: "relative", borderRadius: "2px" }}>
             <div style={{
               height: "100%", width: `${progressPct}%`,
-              background: "#7c3aed",
+              background: "linear-gradient(90deg, #7c3aed, #06b6d4)",
+              boxShadow: "0 0 6px #7c3aed66",
               transition: "width 0.5s ease",
             }} />
             {LANDMARKS.filter((l) => l.miles > 0).map((l) => (
               <div key={l.miles} style={{
                 position: "absolute", top: 0, bottom: 0, left: `${(l.miles / totalMiles) * 100}%`,
                 width: "2px",
-                background: milesTraveled >= l.miles ? "#10b981" : "#222",
+                background: milesTraveled >= l.miles ? "#10b981" : "#1e1e3a",
               }} />
             ))}
           </div>
@@ -4223,66 +4480,74 @@ export default function CryptoTrail() {
           display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px", marginBottom: "12px",
         }}>
           {[
-            { label: "ETH", value: eth, color: "#627eea" },
-            { label: "USDC", value: stables, color: "#2775ca" },
-            { label: "TKN", value: tokens, color: "#f59e0b" },
-            { label: "MORALE", value: morale, color: morale > 50 ? "#10b981" : morale > 25 ? "#f59e0b" : "#ef4444" },
+            { label: "ETH", value: eth, color: "#818cf8" },
+            { label: "USDC", value: stables, color: "#38bdf8" },
+            { label: "TKN", value: tokens, color: "#fbbf24" },
+            { label: "MORALE", value: morale, color: morale > 50 ? "#34d399" : morale > 25 ? "#fbbf24" : "#f87171" },
           ].map((r) => (
             <div key={r.label} style={{
-              padding: "8px 4px", background: "#0a0a12", border: "2px solid #1a1a2e",
+              padding: "8px 4px",
+              background: "linear-gradient(180deg, #0c0c1a 0%, #080812 100%)",
+              border: "2px solid #1e1e3a",
+              borderRadius: "4px",
               textAlign: "center",
             }}>
-              <div style={{ fontSize: "16px", fontWeight: "900", color: r.color, fontFamily: "monospace" }}>{r.value}</div>
-              <div style={{ fontSize: "8px", color: "#fff", textTransform: "uppercase", letterSpacing: "2px", marginTop: "2px" }}>{r.label}</div>
+              <div style={{ fontSize: "16px", fontWeight: "900", color: r.color, fontFamily: "monospace", textShadow: `0 0 8px ${r.color}44` }}>{r.value}</div>
+              <div style={{ fontSize: "8px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", marginTop: "2px" }}>{r.label}</div>
             </div>
           ))}
         </div>
 
         {/* ITEMS */}
         <div style={{
-          display: "flex", gap: "8px", marginBottom: "12px", fontSize: "9px", color: "#fff",
-          padding: "6px", background: "#0a0a12", border: "1px solid #1a1a2e",
+          display: "flex", gap: "8px", marginBottom: "12px", fontSize: "9px", color: "#94a3b8",
+          padding: "6px 10px",
+          background: "linear-gradient(180deg, #0c0c1a 0%, #080812 100%)",
+          border: "1px solid #1e1e3a", borderRadius: "4px",
           justifyContent: "center", flexWrap: "wrap", letterSpacing: "1px",
         }}>
           <span>AUDIT:{shopItems.audits}</span>
-          <span style={{ color: "#fff" }}>|</span>
+          <span style={{ color: "#1e1e3a" }}>|</span>
           <span>HW:{shopItems.hardwareWallets}</span>
-          <span style={{ color: "#fff" }}>|</span>
+          <span style={{ color: "#1e1e3a" }}>|</span>
           <span>VPN:{shopItems.vpn}</span>
-          <span style={{ color: "#fff" }}>|</span>
+          <span style={{ color: "#1e1e3a" }}>|</span>
           <span>AI:{shopItems.aiAgent}</span>
         </div>
 
         {/* PARTY */}
         <div style={{ marginBottom: "12px" }}>
-          <div style={{ fontSize: "10px", color: "#fff", marginBottom: "6px", fontWeight: "700", letterSpacing: "2px" }}>
+          <div style={{ fontSize: "10px", color: "#c4b5fd", marginBottom: "6px", fontWeight: "700", letterSpacing: "2px" }}>
             DEGEN SQUAD
           </div>
           <div style={{ display: "grid", gap: "4px" }}>
             {party.map((member) => (
               <div key={member.id} style={{
-                padding: "8px 10px", background: member.alive ? "#0a0a12" : "#050508",
-                border: `2px solid ${member.alive ? (member.health > 50 ? "#0a2e0a" : member.health > 25 ? "#2e2a0a" : "#2e0a0a") : "#111"}`,
+                padding: "8px 10px",
+                background: member.alive ? "linear-gradient(90deg, #0c0c1a, #080812)" : "#050508",
+                border: `2px solid ${member.alive ? (member.health > 50 ? "#0f2e1a" : member.health > 25 ? "#2e2a0f" : "#2e0f0f") : "#111"}`,
+                borderRadius: "4px",
                 opacity: member.alive ? 1 : 0.4,
                 display: "flex", justifyContent: "space-between", alignItems: "center",
               }}>
                 <div>
-                  <span style={{ fontWeight: "700", color: member.alive ? "#ccc" : "#444", fontSize: "12px", letterSpacing: "1px" }}>
+                  <span style={{ fontWeight: "700", color: member.alive ? "#e2e8f0" : "#444", fontSize: "12px", letterSpacing: "1px" }}>
                     {member.alive ? ">" : "X"} {member.name.toUpperCase()}
                   </span>
                   {member.affliction && (
-                    <span style={{ fontSize: "10px", color: "#ef4444", marginLeft: "8px", letterSpacing: "1px" }}>
+                    <span style={{ fontSize: "10px", color: "#f87171", marginLeft: "8px", letterSpacing: "1px", textShadow: "0 0 4px #ef444444" }}>
                       [{member.affliction.name.toUpperCase()}]
                     </span>
                   )}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   {member.alive && (
-                    <div style={{ width: "50px", height: "6px", background: "#111", overflow: "hidden", border: "1px solid #222" }}>
+                    <div style={{ width: "50px", height: "6px", background: "#0a0a18", overflow: "hidden", border: "1px solid #1e1e3a", borderRadius: "2px" }}>
                       <div style={{
                         height: "100%",
                         width: `${member.health}%`,
-                        background: member.health > 50 ? "#10b981" : member.health > 25 ? "#f59e0b" : "#ef4444",
+                        background: member.health > 50 ? "#34d399" : member.health > 25 ? "#fbbf24" : "#f87171",
+                        boxShadow: `0 0 4px ${member.health > 50 ? "#34d39944" : member.health > 25 ? "#fbbf2444" : "#f8717144"}`,
                         transition: "width 0.3s",
                       }} />
                     </div>
@@ -4290,8 +4555,9 @@ export default function CryptoTrail() {
                   {member.alive && member.affliction && shopItems.hardwareWallets > 0 && (
                     <button onClick={() => useHardwareWallet(member.id)} style={{
                       padding: "2px 6px", fontSize: "8px", background: "#7c3aed",
-                      color: "white", border: "none", cursor: "pointer",
+                      color: "white", border: "1px solid #a855f7", cursor: "pointer", borderRadius: "2px",
                       fontFamily: "'Courier New', monospace", letterSpacing: "1px",
+                      boxShadow: "0 0 6px #7c3aed44",
                     }}>HEAL</button>
                   )}
                 </div>
@@ -4302,17 +4568,19 @@ export default function CryptoTrail() {
 
         {/* PACE */}
         <div style={{ marginBottom: "12px" }}>
-          <div style={{ fontSize: "10px", color: "#fff", marginBottom: "4px", letterSpacing: "2px" }}>PACE</div>
+          <div style={{ fontSize: "10px", color: "#c4b5fd", marginBottom: "4px", letterSpacing: "2px" }}>PACE</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "4px" }}>
             {(["slow", "normal", "fast", "degen"] as const).map((p) => (
               <button key={p} onClick={() => setPace(p)} style={{
                 padding: "6px 2px", fontSize: "9px", fontWeight: pace === p ? "700" : "400",
-                background: pace === p ? "#7c3aed" : "#0a0a12",
-                color: pace === p ? "white" : "#555",
-                border: `2px solid ${pace === p ? "#7c3aed" : "#1a1a2e"}`,
-                borderBottom: pace === p ? "2px solid #5b21b6" : "4px solid #111",
+                background: pace === p ? "linear-gradient(180deg, #7c3aed, #6d28d9)" : "linear-gradient(180deg, #0c0c1a, #080812)",
+                color: pace === p ? "white" : "#64748b",
+                border: `2px solid ${pace === p ? "#a855f7" : "#1e1e3a"}`,
+                borderBottom: pace === p ? "2px solid #5b21b6" : "4px solid #0a0a12",
+                borderRadius: "4px",
                 cursor: "pointer", fontFamily: "'Courier New', monospace",
                 textTransform: "uppercase", letterSpacing: "1px",
+                boxShadow: pace === p ? "0 0 8px #7c3aed44" : "none",
               }}>{p}</button>
             ))}
           </div>
@@ -4320,18 +4588,19 @@ export default function CryptoTrail() {
 
         {/* LOG */}
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontSize: "10px", color: "#fff", marginBottom: "4px", letterSpacing: "2px" }}>TRAIL LOG</div>
+          <div style={{ fontSize: "10px", color: "#c4b5fd", marginBottom: "4px", letterSpacing: "2px" }}>TRAIL LOG</div>
           <div ref={logRef} style={{
-            height: "80px", overflow: "auto", background: "#050508",
-            border: "2px solid #1a1a2e", padding: "6px",
+            height: "80px", overflow: "auto",
+            background: "linear-gradient(180deg, #050510 0%, #03030a 100%)",
+            border: "2px solid #1e1e3a", borderRadius: "4px", padding: "6px",
             fontSize: "10px", lineHeight: "1.6",
           }}>
             {log.length === 0 ? (
-              <div style={{ color: "#fff", letterSpacing: "1px" }}>{'>'} AWAITING INPUT...</div>
+              <div style={{ color: "#64748b", letterSpacing: "1px" }}>{'>'} AWAITING INPUT...</div>
             ) : (
               log.map((entry, i) => (
-                <div key={i} style={{ color: "#fff" }}>
-                  <span style={{ color: "#fff" }}>[D{entry.day}]</span> {entry.text}
+                <div key={i} style={{ color: "#94a3b8" }}>
+                  <span style={{ color: "#7c3aed" }}>[D{entry.day}]</span> {entry.text}
                 </div>
               ))
             )}
@@ -4342,7 +4611,7 @@ export default function CryptoTrail() {
         <div style={{
           position: "fixed", bottom: 0, left: 0, right: 0,
           padding: "12px 16px",
-          background: "linear-gradient(transparent, #0a0a0f 20%)",
+          background: "linear-gradient(transparent, #05000f 30%)",
         }}>
           <div style={{ maxWidth: "600px", margin: "0 auto" }}>
             <PixelBtn onClick={advanceDay} color="#7c3aed" fullWidth size="lg">

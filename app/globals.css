@@ -121,5 +121,38 @@
   }
   body {
     @apply bg-background text-foreground;
+    image-rendering: pixelated;
+  }
+}
+
+/* ── CYBERPUNK 8-BIT THEME ── */
+@layer utilities {
+  .pixel-text {
+    font-family: 'Courier New', 'Lucida Console', monospace;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: unset;
+  }
+
+  .neon-glow-purple {
+    text-shadow: 0 0 7px #7c3aed, 0 0 10px #7c3aed, 0 0 21px #7c3aed, 0 0 42px #5b21b6;
+  }
+
+  .neon-glow-cyan {
+    text-shadow: 0 0 7px #06b6d4, 0 0 10px #06b6d4, 0 0 21px #06b6d4, 0 0 42px #0891b2;
+  }
+
+  .neon-glow-red {
+    text-shadow: 0 0 7px #ef4444, 0 0 10px #ef4444, 0 0 21px #ef4444, 0 0 42px #dc2626;
+  }
+
+  .cyber-border {
+    border: 2px solid #1e1e3a;
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.15), inset 0 0 8px rgba(0, 0, 0, 0.5);
+  }
+
+  .cyber-card {
+    background: linear-gradient(180deg, #0c0c1a 0%, #080812 100%);
+    border: 2px solid #1e1e3a;
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 }
