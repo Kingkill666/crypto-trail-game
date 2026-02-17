@@ -2889,7 +2889,19 @@ export default function CryptoTrail() {
 
           <div style={{ marginTop: "8px", width: "100%", maxWidth: "500px" }}>
             <PixelBtn
-              onClick={() => window.open("https://farcaster.xyz/miniapps/wgY6OPqYoIkz/pizza-party", "_blank")}
+              onClick={async () => {
+                const pizzaUrl = "https://farcaster.xyz/miniapps/wgY6OPqYoIkz/pizza-party";
+                try {
+                  const sdk = await farcasterSdkPromise;
+                  if (sdk?.actions?.openMiniApp) {
+                    await sdk.actions.openMiniApp({ url: pizzaUrl });
+                    return;
+                  }
+                } catch (e) {
+                  console.error("Failed to open Mini App:", e);
+                }
+                window.open(pizzaUrl, "_blank");
+              }}
               color="#ff2d9b"
               textColor="#000000"
               fullWidth
