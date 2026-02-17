@@ -27,9 +27,9 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
   {
     symbol: "BRND",
     name: "BRND",
-    address: "0x0000000000000000000000000000000000000000",
+    address: "0x41Ed0311640A5e489A90940b1c33433501a21B07",
     decimals: 18,
-    rewardAmount: BigInt(0), // TODO: Set to $0.01 worth once token price known
+    rewardAmount: BigInt("25270560000000000000000"), // $0.01 worth at $0.0000003957 per token (~25,270.56 BRND)
     eventTitle: "BRND MINI APP WINNER",
     displayAmount: "$0.01 BRND",
   },
