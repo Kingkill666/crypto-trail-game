@@ -2722,6 +2722,7 @@ export default function CryptoTrail() {
     background: "linear-gradient(180deg, #05000f 0%, #0a0a18 30%, #080c1a 100%)",
     color: "#e0e0e0",
     fontFamily: "'Courier New', 'Lucida Console', monospace",
+    fontWeight: "700",
     position: "relative",
     overflow: "hidden",
     transform: screenShake ? `translate(${rng(-4, 4)}px, ${rng(-4, 4)}px)` : "none",
@@ -2767,7 +2768,7 @@ export default function CryptoTrail() {
           </h1>
           <div style={{
             fontSize: "11px", color: "#f43f5e", letterSpacing: "8px", marginBottom: "8px",
-            textTransform: "uppercase",
+            textTransform: "uppercase", fontWeight: "700",
             textShadow: "0 0 8px #f43f5e88",
           }}>
             8-BIT DEGEN EDITION
@@ -2804,7 +2805,7 @@ export default function CryptoTrail() {
             boxShadow: "0 0 12px rgba(124, 58, 237, 0.1)",
           }}>
             <div style={{
-              fontSize: "11px", color: freePlay.hasFreePlay ? "#10b981" : "#c4b5fd", letterSpacing: "2px",
+              fontSize: "11px", color: freePlay.hasFreePlay ? "#10b981" : "#c4b5fd", letterSpacing: "2px", fontWeight: "700",
             }}>
               {freePlay.hasFreePlay
                 ? "★ FREE PLAY AVAILABLE ★"
@@ -2886,13 +2887,25 @@ export default function CryptoTrail() {
             </div>
           </div>
 
+          <div style={{ marginTop: "8px", width: "100%", maxWidth: "500px" }}>
+            <PixelBtn
+              onClick={() => window.open("https://farcaster.xyz/miniapps/wgY6OPqYoIkz/pizza-party", "_blank")}
+              color="#ff2d9b"
+              textColor="#000000"
+              fullWidth
+              size="sm"
+            >
+              <span style={{ fontSize: "13px" }}>PLAY PIZZA PARTY</span>
+            </PixelBtn>
+          </div>
+
           {/* Footer divider */}
           <div style={{
-            width: "150px", height: "1px", margin: "20px 0 12px",
+            width: "150px", height: "1px", margin: "8px 0 6px",
             background: "linear-gradient(90deg, transparent, #1e1e3a, transparent)",
           }} />
           <div style={{
-            fontSize: "9px", color: "#fff", maxWidth: "400px", letterSpacing: "2px",
+            fontSize: "9px", color: "#fff", maxWidth: "400px", letterSpacing: "2px", fontWeight: "700",
           }}>
             INSPIRED BY THE OREGON TRAIL (1971) * BUILT FOR FARCASTER * BASE MAINNET * CREATED BY VMFCOIN
           </div>
