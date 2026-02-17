@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useAccount, useConnect } from "wagmi";
 import { useGamePayment, useNftMint, useFreePlay } from "@/hooks/use-web3";
 import { useLeaderboard, usePlayerProfile, submitScore } from "@/hooks/use-leaderboard";
+import { useSponsoredRewards } from "@/hooks/use-sponsored-rewards";
+import { getSponsoredToken } from "@/lib/sponsored-tokens";
 
 // ═══════════════════════════════════════════════════════════════
 // CRYPTO TRAIL - A Degen Oregon Trail for Farcaster (8-BIT EDITION)
@@ -1997,6 +1999,7 @@ export default function CryptoTrail() {
   const gamePayment = useGamePayment();
   const nftMint = useNftMint();
   const freePlay = useFreePlay();
+  const sponsoredRewards = useSponsoredRewards();
 
   const [phase, setPhase] = useState("title");
   const [playerClass, setPlayerClass] = useState<typeof CLASSES[0] | null>(null);
@@ -2244,6 +2247,7 @@ export default function CryptoTrail() {
 
   const leaveShop = () => {
     addLog("You leave Genesis Block and begin your journey across the crypto frontier. Your AI agent hums to life...");
+    sponsoredRewards.initSession(); // Initialize rewards session
     setPhase("trail");
   };
 
@@ -2350,6 +2354,7 @@ export default function CryptoTrail() {
       }
       const event = pick(eventPool);
       setCurrentEvent(event);
+      sponsoredRewards.recordEvent(event.title); // Track sponsored events
       setParty(updatedParty);
       setDay(newDay);
       setMilesTraveled(newMiles);
@@ -3257,14 +3262,59 @@ export default function CryptoTrail() {
               {currentEvent.message}
             </p>
 
-            <div style={{
-              animation: eventAnimPhase >= 2 ? "pixelSlideUp 0.3s ease-out" : "none",
-              opacity: eventAnimPhase >= 2 ? 1 : 0,
-            }}>
-              <PixelBtn onClick={resolveEvent} color={colorMap[currentEvent.type]} textColor={currentEvent.type === "neutral" ? "#000" : "white"}>
-                {'>'} CONTINUE {'<'}
-              </PixelBtn>
-            </div>
+            {/* Sponsored event rewards */}
+            {(() => {
+              const tokenInfo = getSponsoredToken(currentEvent.title);
+              if (tokenInfo && sponsoredRewards.rewardsContractConfigured && tokenInfo.rewardAmount > BigInt(0)) {
+                return (
+                  <>
+                    <div style={{
+                      fontSize: "11px", color: "#10b981", marginBottom: "16px", letterSpacing: "2px",
+                      animation: eventAnimPhase >= 2 ? "pixelFadeIn 0.4s ease-out 0.2s both" : "none",
+                    }}>
+                      🎁 YOU EARNED: {tokenInfo.displayAmount}
+                    </div>
+                    <div style={{
+                      display: "flex", gap: "8px", flexDirection: "column",
+                      animation: eventAnimPhase >= 2 ? "pixelSlideUp 0.3s ease-out 0.3s both" : "none",
+                    }}>
+                      <PixelBtn
+                        onClick={async () => {
+                          await sponsoredRewards.claimReward(currentEvent.title);
+                          resolveEvent();
+                        }}
+                        color="#7c3aed"
+                        fullWidth
+                        disabled={sponsoredRewards.claimState === "claiming" || sponsoredRewards.claimState === "confirming"}
+                      >
+                        {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : `CLAIM ${tokenInfo.displayAmount}`}
+                      </PixelBtn>
+                      <PixelBtn
+                        onClick={async () => {
+                          await sponsoredRewards.deferReward(currentEvent.title);
+                          resolveEvent();
+                        }}
+                        color="#333"
+                        textColor="#aaa"
+                        fullWidth
+                      >
+                        CLAIM LATER
+                      </PixelBtn>
+                    </div>
+                  </>
+                );
+              }
+              return (
+                <div style={{
+                  animation: eventAnimPhase >= 2 ? "pixelSlideUp 0.3s ease-out" : "none",
+                  opacity: eventAnimPhase >= 2 ? 1 : 0,
+                }}>
+                  <PixelBtn onClick={resolveEvent} color={colorMap[currentEvent.type]} textColor={currentEvent.type === "neutral" ? "#000" : "white"}>
+                    {'>'} CONTINUE {'<'}
+                  </PixelBtn>
+                </div>
+              );
+            })()}
           </EventPrompt>
         </div>
       </div>
@@ -3682,6 +3732,50 @@ export default function CryptoTrail() {
             </div>
           )}
 
+          {/* Sponsored Rewards Breakdown */}
+          {sponsoredRewards.pendingRewards.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{
+                fontSize: "10px", color: "#10b981", marginBottom: "8px", letterSpacing: "2px",
+                textAlign: "center",
+              }}>
+                🎁 REWARDS EARNED
+              </div>
+              <div style={{
+                padding: "12px", background: "#0a0a12", border: "2px solid #10b98144",
+                marginBottom: "12px", textAlign: "left",
+              }}>
+                {sponsoredRewards.pendingRewards.map((reward, i) => (
+                  <div key={i} style={{
+                    fontSize: "10px", color: "#fff", marginBottom: "4px", display: "flex",
+                    justifyContent: "space-between", letterSpacing: "1px",
+                  }}>
+                    <span>{reward.eventTitle}</span>
+                    <span style={{ color: "#10b981" }}>{reward.displayAmount}</span>
+                  </div>
+                ))}
+              </div>
+              <PixelBtn
+                onClick={sponsoredRewards.claimAllPending}
+                color="#10b981"
+                fullWidth
+                disabled={sponsoredRewards.claimState === "claiming" || sponsoredRewards.claimState === "confirming"}
+              >
+                {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : `CLAIM ALL REWARDS (${sponsoredRewards.pendingRewards.length})`}
+              </PixelBtn>
+              {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
+                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px" }}>
+                  {sponsoredRewards.errorMsg}
+                </div>
+              )}
+              {sponsoredRewards.claimState === "success" && (
+                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px" }}>
+                  ✓ Rewards claimed successfully!
+                </div>
+              )}
+            </div>
+          )}
+
           <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
             <PixelBtn
               onClick={async () => {
@@ -3960,6 +4054,50 @@ export default function CryptoTrail() {
                   {t.epitaph}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Sponsored Rewards Breakdown */}
+          {sponsoredRewards.pendingRewards.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{
+                fontSize: "10px", color: "#10b981", marginBottom: "8px", letterSpacing: "2px",
+                textAlign: "center",
+              }}>
+                🎁 REWARDS EARNED
+              </div>
+              <div style={{
+                padding: "12px", background: "#0a0a12", border: "2px solid #10b98144",
+                marginBottom: "12px", textAlign: "left",
+              }}>
+                {sponsoredRewards.pendingRewards.map((reward, i) => (
+                  <div key={i} style={{
+                    fontSize: "10px", color: "#fff", marginBottom: "4px", display: "flex",
+                    justifyContent: "space-between", letterSpacing: "1px",
+                  }}>
+                    <span>{reward.eventTitle}</span>
+                    <span style={{ color: "#10b981" }}>{reward.displayAmount}</span>
+                  </div>
+                ))}
+              </div>
+              <PixelBtn
+                onClick={sponsoredRewards.claimAllPending}
+                color="#10b981"
+                fullWidth
+                disabled={sponsoredRewards.claimState === "claiming" || sponsoredRewards.claimState === "confirming"}
+              >
+                {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : `CLAIM ALL REWARDS (${sponsoredRewards.pendingRewards.length})`}
+              </PixelBtn>
+              {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
+                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px" }}>
+                  {sponsoredRewards.errorMsg}
+                </div>
+              )}
+              {sponsoredRewards.claimState === "success" && (
+                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px" }}>
+                  ✓ Rewards claimed successfully!
+                </div>
+              )}
             </div>
           )}
 
