@@ -2031,6 +2031,7 @@ export default function CryptoTrail() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+  const [pizzaEventTriggered, setPizzaEventTriggered] = useState(false); // Track if guaranteed PIZZA event happened
   const { leaderboard: globalLeaderboard, loading: lbLoading, error: lbError, fetchLeaderboard } = useLeaderboard();
   const { profile: playerProfile, loading: profileLoading, fetchProfile, clearProfile } = usePlayerProfile();
   const logRef = useRef<HTMLDivElement>(null);
@@ -2343,6 +2344,23 @@ export default function CryptoTrail() {
       setMorale(clamp(newMorale, 0, 100));
       setPhase("bridge");
       return;
+    }
+
+    // GUARANTEED PIZZA EVENT - Once per game around 50% mark
+    if (!pizzaEventTriggered && newMiles >= 1000 && newMiles <= 1400) {
+      const pizzaEvent = TRAIL_EVENTS.find((e) => e.title === "PIZZA PARTY FOR VETS");
+      if (pizzaEvent) {
+        setPizzaEventTriggered(true);
+        setCurrentEvent(pizzaEvent);
+        sponsoredRewards.recordEvent(pizzaEvent.title);
+        setParty(updatedParty);
+        setDay(newDay);
+        setMilesTraveled(newMiles);
+        setStables(Math.max(0, newStables));
+        setMorale(clamp(newMorale, 0, 100));
+        setPhase("event");
+        return;
+      }
     }
 
     if (Math.random() < (0.35 + progress * 0.1) * risk) {
@@ -2665,6 +2683,8 @@ export default function CryptoTrail() {
                 )}
                 <br />
                 <span style={{ color: "#fff", fontSize: "10px" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
+                <br />
+                <span style={{ color: "#fbbf24", fontSize: "9px", letterSpacing: "1.5px" }}>REAL REWARD TOKENS FROM PIZZA, BETR, BRND, JESSE, QR, DAU... AND MORE!!</span>
               </>
             }
           </div>

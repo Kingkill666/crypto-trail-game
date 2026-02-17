@@ -51,6 +51,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Already signed" }, { status: 409 });
     }
 
+    // Apply random multiplier for randomReward tokens (1x-5x)
+    let finalRewardAmount = token.rewardAmount;
+    let multiplier = 1;
+    if (token.randomReward) {
+      multiplier = Math.floor(Math.random() * 5) + 1; // Random 1-5
+      finalRewardAmount = token.rewardAmount * BigInt(multiplier);
+    }
+
+    // Calculate display amount
+    const displayAmount = token.randomReward
+      ? `$0.0${multiplier} ${token.symbol}`
+      : token.displayAmount;
+
     // Generate unique claimId
     const claimId = keccak256(
       encodePacked(
@@ -70,7 +83,7 @@ export async function POST(req: NextRequest) {
         [
           wallet as `0x${string}`,
           token.address,
-          token.rewardAmount,
+          finalRewardAmount,
           claimId as `0x${string}`,
           expiry,
           BigInt(CHAIN_ID),
@@ -82,24 +95,24 @@ export async function POST(req: NextRequest) {
       message: { raw: toBytes(messageHash) },
     });
 
-    // Record in Redis
+    // Record in Redis with final amount and display
     await markRewardSigned(wallet, gameSessionId, eventTitle, {
       claimId,
       token: token.address,
-      amount: token.rewardAmount.toString(),
+      amount: finalRewardAmount.toString(),
       expiry: Number(expiry),
       signature,
-      displayAmount: token.displayAmount,
+      displayAmount,
       symbol: token.symbol,
     });
 
     return NextResponse.json({
       claimId,
       token: token.address,
-      amount: token.rewardAmount.toString(),
+      amount: finalRewardAmount.toString(),
       expiry: Number(expiry),
       signature,
-      displayAmount: token.displayAmount,
+      displayAmount,
       symbol: token.symbol,
     });
   } catch (err: unknown) {
