@@ -842,11 +842,25 @@ function PixelEventIcon({ eventTitle, animFrame }: { eventTitle: string; animFra
 
 // ── PIXEL CANVAS COMPONENTS (inlined) ──
 
-function PixelTrailCanvas({ width = 600, height = 160, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor = "red" }: {
+function PixelTrailCanvas({ width = 600, height = 300, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor = "red" }: {
   width?: number; height?: number; animFrame: number; milesTraveled: number; totalMiles: number;
   tombstones: Array<{ mile: number }>; nextLandmarkEmoji: string; lamboColor?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bgImgRef = useRef<HTMLImageElement | null>(null);
+  const lamboImgRef = useRef<HTMLImageElement | null>(null);
+  const bgLoadedRef = useRef(false);
+  const lamboLoadedRef = useRef(false);
+
+  useEffect(() => {
+    const bgImg = new Image();
+    bgImg.onload = () => { bgLoadedRef.current = true; bgImgRef.current = bgImg; };
+    bgImg.src = "/images/sprites/cityscape-trail.png";
+    const lamboImg = new Image();
+    lamboImg.onload = () => { lamboLoadedRef.current = true; lamboImgRef.current = lamboImg; };
+    lamboImg.src = "/images/sprites/lambo-red.png";
+  }, []);
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -854,116 +868,47 @@ function PixelTrailCanvas({ width = 600, height = 160, animFrame, milesTraveled,
     if (!ctx) return;
     const W = width, H = height;
 
-    // ── SKY: Deep purple-blue gradient like reference ──
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
-    skyGrad.addColorStop(0, "#0a0015");
-    skyGrad.addColorStop(0.3, "#15082e");
-    skyGrad.addColorStop(0.6, "#1a1045");
-    skyGrad.addColorStop(1, "#0d1a3a");
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, W, H * 0.55);
+    // Clear canvas
+    ctx.clearRect(0, 0, W, H);
 
-    // ── MOUNTAINS/HILLS in background ──
-    ctx.fillStyle = "#0a0f2a";
-    for (let x = 0; x < W; x += 2) {
-      const mh = Math.sin(x * 0.008 + 1) * 12 + Math.sin(x * 0.02 + 3) * 6 + 20;
-      ctx.fillRect(x, H * 0.35 - mh, 2, mh + H * 0.2);
-    }
-    ctx.fillStyle = "#0d1233";
-    for (let x = 0; x < W; x += 2) {
-      const mh = Math.sin(x * 0.012 + 5) * 8 + Math.sin(x * 0.025) * 4 + 12;
-      ctx.fillRect(x, H * 0.42 - mh, 2, mh + H * 0.15);
+    if (bgLoadedRef.current && bgImgRef.current) {
+      // Draw scrolling background - tile it for seamless scroll
+      const bgW = bgImgRef.current.naturalWidth;
+      const bgH = bgImgRef.current.naturalHeight;
+      const scale = H / bgH;
+      const scaledW = bgW * scale;
+      const scrollOffset = (animFrame * 3) % scaledW;
+      // Draw two copies for seamless scrolling
+      ctx.drawImage(bgImgRef.current, -scrollOffset, 0, scaledW, H);
+      ctx.drawImage(bgImgRef.current, -scrollOffset + scaledW, 0, scaledW, H);
+      if (-scrollOffset + scaledW * 2 < W) {
+        ctx.drawImage(bgImgRef.current, -scrollOffset + scaledW * 2, 0, scaledW, H);
+      }
+    } else {
+      // Fallback while loading
+      ctx.fillStyle = "#0a0015";
+      ctx.fillRect(0, 0, W, H);
     }
 
-    // ── STARS ──
-    const starSeed = 42;
-    for (let i = 0; i < 30; i++) {
-      const sx = ((starSeed * (i + 1) * 7) % W);
-      const sy = ((starSeed * (i + 1) * 3) % (H * 0.3));
+    // ── Animated star twinkle ──
+    for (let i = 0; i < 15; i++) {
+      const sx = ((42 * (i + 1) * 7) % W);
+      const sy = ((42 * (i + 1) * 3) % (H * 0.25));
       const twinkle = (animFrame + i) % 5;
       ctx.fillStyle = "#ffffff";
-      ctx.globalAlpha = twinkle === 0 ? 0.9 : twinkle < 3 ? 0.3 : 0.6;
+      ctx.globalAlpha = twinkle === 0 ? 0.7 : twinkle < 3 ? 0.15 : 0.4;
       ctx.fillRect(sx, sy, twinkle === 0 ? 2 : 1, twinkle === 0 ? 2 : 1);
     }
     ctx.globalAlpha = 1;
 
-    // ── CYBERPUNK CITYSCAPE with neon accents ──
-    const scroll = (animFrame * 3) % W;
-    for (let bi = 0; bi < 16; bi++) {
-      const bx = ((bi * 45 - scroll + W * 2) % (W + 100)) - 50;
-      const bldg = BUILDINGS[bi % BUILDINGS.length];
-      const px = 3;
-      const bh = bldg.pixels.length * px;
-      const by = H * 0.50 - bh;
-      ctx.globalAlpha = 0.6;
-      bldg.pixels.forEach((row, ry) => {
-        row.forEach((p, rx) => {
-          if (p) {
-            ctx.fillStyle = bldg.color;
-            ctx.fillRect(bx + rx * px, by + ry * px, px, px);
-          } else {
-            // Neon-lit windows with building accent color
-            const windowOn = (animFrame + bi + ry * 3 + rx) % 7 < 3;
-            if (windowOn) {
-              ctx.fillStyle = (bldg as any).accent || "#ffff0044";
-              ctx.globalAlpha = 0.4 + ((animFrame + bi) % 3) * 0.1;
-              ctx.fillRect(bx + rx * px, by + ry * px, px, px);
-              ctx.globalAlpha = 0.6;
-            }
-          }
-        });
-      });
-      // Neon accent strip on top of some buildings
-      if (bi % 3 === 0) {
-        ctx.fillStyle = (bldg as any).accent || "#7c3aed";
-        ctx.globalAlpha = 0.5 + Math.sin(animFrame * 0.2 + bi) * 0.2;
-        ctx.fillRect(bx, by - 1, bldg.pixels[0].length * px, 2);
-      }
-    }
-    ctx.globalAlpha = 1;
-
-    // ── FENCE / BARRIER like reference ──
-    const fenceY = H * 0.52;
-    ctx.fillStyle = "#222244";
-    for (let fi = 0; fi < 40; fi++) {
-      const fx = ((fi * 20 - animFrame * 4 + W * 3) % (W + 40)) - 20;
-      ctx.fillRect(fx + 2, fenceY - 8, 2, 10); // vertical post
-    }
-    ctx.fillStyle = "#333355";
-    ctx.fillRect(0, fenceY - 6, W, 1); // top wire
-    ctx.fillRect(0, fenceY - 2, W, 1); // bottom wire
-
-    // ── GROUND ──
-    ctx.fillStyle = "#0a0e1e";
-    ctx.fillRect(0, H * 0.55, W, H * 0.45);
-
-    // ── ROAD with wet reflections ──
-    const roadY = H * 0.60;
-    const roadH = 24;
-    const roadGrad = ctx.createLinearGradient(0, roadY, 0, roadY + roadH);
-    roadGrad.addColorStop(0, "#1a1a2e");
-    roadGrad.addColorStop(0.5, "#151525");
-    roadGrad.addColorStop(1, "#1a1a2e");
-    ctx.fillStyle = roadGrad;
-    ctx.fillRect(0, roadY, W, roadH);
-    // Road edge lines
-    ctx.fillStyle = "#333355";
-    ctx.fillRect(0, roadY, W, 1);
-    ctx.fillRect(0, roadY + roadH - 1, W, 1);
-    // Center line dashes
-    ctx.fillStyle = "#555544";
-    for (let di = 0; di < 30; di++) {
-      const dx = ((di * 25 - animFrame * 6 + W * 3) % (W + 50)) - 25;
-      ctx.fillRect(dx, roadY + 11, 12, 2);
-    }
-
-    // ── WET ROAD REFLECTIONS (neon color spills) ──
-    for (let ri = 0; ri < 8; ri++) {
-      const rx = ((ri * 80 + animFrame * 2) % (W + 60)) - 30;
-      const reflectColors = ["#7c3aed", "#06b6d4", "#f43f5e", "#10b981", "#f59e0b"];
-      ctx.fillStyle = reflectColors[ri % reflectColors.length];
-      ctx.globalAlpha = 0.06 + Math.sin(animFrame * 0.15 + ri) * 0.03;
-      ctx.fillRect(rx, roadY + 2, 30, roadH - 4);
+    // ── Neon reflection shimmer on road ──
+    const roadY = H * 0.72;
+    for (let ri = 0; ri < 6; ri++) {
+      const rx = ((ri * 100 + animFrame * 2) % (W + 60)) - 30;
+      const reflColors = ["#7c3aed", "#06b6d4", "#f43f5e", "#10b981", "#f59e0b"];
+      ctx.fillStyle = reflColors[ri % reflColors.length];
+      ctx.globalAlpha = 0.04 + Math.sin(animFrame * 0.15 + ri) * 0.02;
+      ctx.fillRect(rx, roadY, 35, H * 0.20);
     }
     ctx.globalAlpha = 1;
 
@@ -971,47 +916,49 @@ function PixelTrailCanvas({ width = 600, height = 160, animFrame, milesTraveled,
     const nearTombs = tombstones.filter((t) => t.mile <= milesTraveled && t.mile > milesTraveled - 200);
     nearTombs.forEach((t, i) => {
       const tx = W * 0.1 + (i * W * 0.12);
-      const ty = roadY - 12;
+      const ty = roadY - 16;
       ctx.fillStyle = "#555555";
-      ctx.fillRect(tx + 2, ty, 2, 8);
-      ctx.fillRect(tx, ty + 2, 6, 2);
+      ctx.fillRect(tx + 2, ty, 3, 10);
+      ctx.fillRect(tx, ty + 3, 7, 3);
       ctx.fillStyle = "#444444";
-      ctx.font = "bold 5px monospace";
+      ctx.font = "bold 6px monospace";
       ctx.fillText("RIP", tx - 1, ty - 2);
     });
 
-    // ── LAMBO with bounce and ground reflection ──
-    const colors = LAMBO_COLORS[lamboColor] || LAMBO_COLORS.red;
-    const pxSize = 3;
-    const lamboX = W * 0.32;
-    const lamboY = roadY - LAMBO_SPRITE.length * pxSize + 10;
+    // ── LAMBO (AI-generated sprite or fallback pixel art) ──
+    const lamboW = 140;
+    const lamboH = 70;
+    const lamboX = W * 0.28;
+    const lamboYPos = roadY - lamboH + 8;
     const bounce = animFrame % 3 === 0 ? -1 : 0;
-    LAMBO_SPRITE.forEach((row, ry) => {
-      row.forEach((p, rx) => {
-        if (p > 0) {
-          ctx.fillStyle = colors[p] || "#ff0000";
-          ctx.fillRect(lamboX + rx * pxSize, lamboY + ry * pxSize + bounce, pxSize, pxSize);
-        }
-      });
-    });
 
-    // ── Lambo REFLECTION on wet road ──
-    ctx.globalAlpha = 0.12;
-    LAMBO_SPRITE.forEach((row, ry) => {
-      row.forEach((p, rx) => {
-        if (p > 0) {
-          ctx.fillStyle = colors[p] || "#ff0000";
-          const reflY = roadY + roadH - 2 - ry * pxSize * 0.5;
-          ctx.fillRect(lamboX + rx * pxSize, reflY + bounce, pxSize, Math.max(1, pxSize * 0.5));
-        }
+    if (lamboLoadedRef.current && lamboImgRef.current) {
+      ctx.drawImage(lamboImgRef.current, lamboX, lamboYPos + bounce, lamboW, lamboH);
+      // Reflection
+      ctx.save();
+      ctx.globalAlpha = 0.12;
+      ctx.translate(0, roadY + lamboH + 12);
+      ctx.scale(1, -0.4);
+      ctx.drawImage(lamboImgRef.current, lamboX, bounce, lamboW, lamboH);
+      ctx.restore();
+    } else {
+      // Fallback: code-drawn pixel sprite
+      const colors = LAMBO_COLORS[lamboColor] || LAMBO_COLORS.red;
+      const pxSize = 3;
+      LAMBO_SPRITE.forEach((row, ry) => {
+        row.forEach((p, rx) => {
+          if (p > 0) {
+            ctx.fillStyle = colors[p] || "#ff0000";
+            ctx.fillRect(lamboX + rx * pxSize, lamboYPos + ry * pxSize + bounce, pxSize, pxSize);
+          }
+        });
       });
-    });
-    ctx.globalAlpha = 1;
+    }
 
     // ── Exhaust particles ──
     for (let ei = 0; ei < 5; ei++) {
       const ex = lamboX - 8 - ei * 6 - ((animFrame * 3 + ei * 7) % 20);
-      const ey = lamboY + LAMBO_SPRITE.length * pxSize * 0.65 + bounce + Math.sin(animFrame + ei) * 2;
+      const ey = lamboYPos + lamboH * 0.65 + bounce + Math.sin(animFrame + ei) * 2;
       ctx.globalAlpha = 0.25 - ei * 0.04;
       ctx.fillStyle = "#aaaacc";
       ctx.fillRect(ex, ey, 3 - (ei > 2 ? 1 : 0), 2);
@@ -1019,39 +966,56 @@ function PixelTrailCanvas({ width = 600, height = 160, animFrame, milesTraveled,
     ctx.globalAlpha = 1;
 
     // ── Headlight beam ──
-    const beamX = lamboX + LAMBO_SPRITE[0].length * pxSize;
+    const beamX = lamboX + lamboW;
     ctx.globalAlpha = 0.06;
     ctx.fillStyle = "#ffee44";
-    ctx.fillRect(beamX, lamboY + LAMBO_SPRITE.length * pxSize * 0.4 + bounce, W - beamX, 6);
+    ctx.fillRect(beamX, lamboYPos + lamboH * 0.4 + bounce, W - beamX, 6);
     ctx.globalAlpha = 0.03;
-    ctx.fillRect(beamX, lamboY + LAMBO_SPRITE.length * pxSize * 0.3 + bounce, W - beamX, 12);
+    ctx.fillRect(beamX, lamboYPos + lamboH * 0.3 + bounce, W - beamX, 12);
     ctx.globalAlpha = 1;
 
     // ── Next landmark icon ──
-    ctx.font = "16px serif";
+    ctx.font = "18px serif";
     ctx.globalAlpha = 0.25 + Math.sin(animFrame * 0.3) * 0.1;
-    ctx.fillText(nextLandmarkEmoji, W * 0.85, roadY - 2);
+    ctx.fillText(nextLandmarkEmoji, W * 0.85, roadY - 4);
+    ctx.globalAlpha = 1;
+
+    // ── Scanline overlay ──
+    ctx.globalAlpha = 0.03;
+    ctx.fillStyle = "#000000";
+    for (let sy = 0; sy < H; sy += 3) {
+      ctx.fillRect(0, sy, W, 1);
+    }
     ctx.globalAlpha = 1;
 
     // ── Progress bar ──
-    const barY = H - 8;
+    const barY = H - 10;
     ctx.fillStyle = "#111133";
-    ctx.fillRect(10, barY, W - 20, 4);
+    ctx.fillRect(10, barY, W - 20, 5);
     const pct = milesTraveled / totalMiles;
     const barGrad = ctx.createLinearGradient(10, barY, 10 + (W - 20) * pct, barY);
     barGrad.addColorStop(0, "#7c3aed");
     barGrad.addColorStop(1, "#06b6d4");
     ctx.fillStyle = barGrad;
-    ctx.fillRect(10, barY, (W - 20) * pct, 4);
+    ctx.fillRect(10, barY, (W - 20) * pct, 5);
     ctx.fillStyle = "#ff3333";
-    ctx.fillRect(10 + (W - 20) * pct - 2, barY - 1, 4, 6);
+    ctx.fillRect(10 + (W - 20) * pct - 2, barY - 1, 4, 7);
   }, [width, height, animFrame, milesTraveled, totalMiles, tombstones, nextLandmarkEmoji, lamboColor]);
   useEffect(() => { draw(); }, [draw]);
   return <canvas ref={canvasRef} width={width} height={height} style={{ width: "100%", height: "auto", imageRendering: "pixelated" as const, borderRadius: "4px", border: "2px solid #1e1e3a", boxShadow: "0 0 20px rgba(124, 58, 237, 0.15)" }} />;
 }
 
-function PixelTitleCanvas({ width = 600, height = 200, animFrame }: { width?: number; height?: number; animFrame: number }) {
+function PixelTitleCanvas({ width = 600, height = 300, animFrame }: { width?: number; height?: number; animFrame: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bgImgRef = useRef<HTMLImageElement | null>(null);
+  const bgLoadedRef = useRef(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => { bgLoadedRef.current = true; bgImgRef.current = img; };
+    img.src = "/images/sprites/cityscape-title.png";
+  }, []);
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1059,170 +1023,41 @@ function PixelTitleCanvas({ width = 600, height = 200, animFrame }: { width?: nu
     if (!ctx) return;
     const W = width, H = height;
 
-    // ── SKY: Rich purple-blue cyberpunk gradient ──
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
-    skyGrad.addColorStop(0, "#05001a");
-    skyGrad.addColorStop(0.25, "#1a0a3d");
-    skyGrad.addColorStop(0.5, "#1a1055");
-    skyGrad.addColorStop(0.75, "#0d1a4a");
-    skyGrad.addColorStop(1, "#081530");
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, W, H * 0.55);
+    // Clear canvas
+    ctx.clearRect(0, 0, W, H);
 
-    // ── DISTANT MOUNTAINS ──
-    ctx.fillStyle = "#0a0f2e";
-    for (let x = 0; x < W; x += 2) {
-      const mh = Math.sin(x * 0.006 + 2) * 18 + Math.sin(x * 0.018 + 5) * 8 + 25;
-      ctx.fillRect(x, H * 0.30 - mh, 2, mh + H * 0.25);
-    }
-    ctx.fillStyle = "#0d1238";
-    for (let x = 0; x < W; x += 2) {
-      const mh = Math.sin(x * 0.01 + 7) * 10 + Math.sin(x * 0.03) * 5 + 15;
-      ctx.fillRect(x, H * 0.38 - mh, 2, mh + H * 0.20);
+    if (bgLoadedRef.current && bgImgRef.current) {
+      // Draw the AI-generated cityscape background, covering full canvas
+      ctx.drawImage(bgImgRef.current, 0, 0, W, H);
+    } else {
+      // Fallback: solid dark background while image loads
+      ctx.fillStyle = "#05001a";
+      ctx.fillRect(0, 0, W, H);
     }
 
-    // ── STARS with twinkle ──
-    for (let i = 0; i < 50; i++) {
+    // ── Animated star twinkle overlay ──
+    for (let i = 0; i < 20; i++) {
       const sx = (i * 137 + 23) % W;
-      const sy = (i * 89 + 11) % (H * 0.3);
+      const sy = (i * 89 + 11) % (H * 0.25);
       const twinkle = (animFrame + i * 3) % 6;
       ctx.fillStyle = "#ffffff";
-      ctx.globalAlpha = twinkle < 2 ? 0.9 : twinkle < 4 ? 0.25 : 0.5;
+      ctx.globalAlpha = twinkle < 2 ? 0.7 : twinkle < 4 ? 0.15 : 0.35;
       ctx.fillRect(sx, sy, twinkle === 0 ? 2 : 1, twinkle === 0 ? 2 : 1);
     }
     ctx.globalAlpha = 1;
 
-    // ── CYBERPUNK SKYLINE with neon accents ──
-    const scroll = (animFrame * 2) % W;
-    for (let bi = 0; bi < 20; bi++) {
-      const bx = ((bi * 38 - scroll + W * 2) % (W + 80)) - 40;
-      const bldg = BUILDINGS[bi % BUILDINGS.length];
-      const px = 3;
-      const bh = bldg.pixels.length * px;
-      const by = H * 0.48 - bh;
-      ctx.globalAlpha = 0.65;
-      bldg.pixels.forEach((row, ry) => {
-        row.forEach((p, rx) => {
-          if (p) {
-            ctx.fillStyle = bldg.color;
-            ctx.fillRect(bx + rx * px, by + ry * px, px, px);
-          } else {
-            const windowOn = (animFrame + bi * 3 + ry * 5 + rx * 2) % 8 < 3;
-            if (windowOn) {
-              ctx.fillStyle = (bldg as any).accent || "#ffff00";
-              ctx.globalAlpha = 0.35 + ((animFrame + bi) % 4) * 0.08;
-              ctx.fillRect(bx + rx * px, by + ry * px, px, px);
-              ctx.globalAlpha = 0.65;
-            }
-          }
-        });
-      });
-      // Neon rooftop strip
-      if (bi % 2 === 0) {
-        ctx.fillStyle = (bldg as any).accent || "#7c3aed";
-        ctx.globalAlpha = 0.6 + Math.sin(animFrame * 0.15 + bi) * 0.25;
-        ctx.fillRect(bx, by - 1, bldg.pixels[0].length * px, 2);
-      }
-    }
-    ctx.globalAlpha = 1;
-
-    // ── FENCE ──
-    const fenceY = H * 0.50;
-    ctx.fillStyle = "#1e1e44";
-    for (let fi = 0; fi < 50; fi++) {
-      const fx = ((fi * 16 - animFrame * 3 + W * 3) % (W + 40)) - 20;
-      ctx.fillRect(fx + 1, fenceY - 10, 2, 12);
-    }
-    ctx.fillStyle = "#2a2a55";
-    ctx.fillRect(0, fenceY - 8, W, 1);
-    ctx.fillRect(0, fenceY - 3, W, 1);
-
-    // ── GROUND ──
-    ctx.fillStyle = "#080c1a";
-    ctx.fillRect(0, H * 0.52, W, H * 0.48);
-
-    // ── ROAD ──
-    const roadY = H * 0.58;
-    const roadH = 28;
-    const roadGrad = ctx.createLinearGradient(0, roadY, 0, roadY + roadH);
-    roadGrad.addColorStop(0, "#1e1e35");
-    roadGrad.addColorStop(0.5, "#151528");
-    roadGrad.addColorStop(1, "#1e1e35");
-    ctx.fillStyle = roadGrad;
-    ctx.fillRect(0, roadY, W, roadH);
-    ctx.fillStyle = "#333366";
-    ctx.fillRect(0, roadY, W, 1);
-    ctx.fillRect(0, roadY + roadH - 1, W, 1);
-    ctx.fillStyle = "#555544";
-    for (let di = 0; di < 30; di++) {
-      const dx = ((di * 25 - animFrame * 8 + W * 3) % (W + 50)) - 25;
-      ctx.fillRect(dx, roadY + 13, 12, 2);
-    }
-
-    // ── WET ROAD REFLECTIONS ──
-    for (let ri = 0; ri < 10; ri++) {
-      const rx = ((ri * 65 + animFrame * 2) % (W + 40)) - 20;
+    // ── Subtle neon reflection shimmer on road area ──
+    const roadY = H * 0.72;
+    for (let ri = 0; ri < 6; ri++) {
+      const rx = ((ri * 100 + animFrame * 3) % (W + 60)) - 30;
       const reflColors = ["#7c3aed", "#06b6d4", "#f43f5e", "#10b981"];
       ctx.fillStyle = reflColors[ri % reflColors.length];
-      ctx.globalAlpha = 0.05 + Math.sin(animFrame * 0.1 + ri * 2) * 0.025;
-      ctx.fillRect(rx, roadY + 2, 25, roadH - 4);
+      ctx.globalAlpha = 0.04 + Math.sin(animFrame * 0.12 + ri * 2) * 0.02;
+      ctx.fillRect(rx, roadY, 40, H - roadY);
     }
     ctx.globalAlpha = 1;
 
-    // ── LAMBO driving across (animated position) ──
-    const colors = LAMBO_COLORS.red;
-    const pxSize = 3;
-    const lamboX = ((animFrame * 4) % (W + 200)) - 160;
-    const lamboYPos = roadY - LAMBO_SPRITE.length * pxSize + 14;
-    const bounce = animFrame % 3 === 0 ? -1 : 0;
-    LAMBO_SPRITE.forEach((row, ry) => {
-      row.forEach((p, rx) => {
-        if (p > 0) {
-          ctx.fillStyle = colors[p] || "#ff0000";
-          ctx.fillRect(lamboX + rx * pxSize, lamboYPos + ry * pxSize + bounce, pxSize, pxSize);
-        }
-      });
-    });
-
-    // ── Lambo reflection on wet road ──
-    ctx.globalAlpha = 0.10;
-    LAMBO_SPRITE.forEach((row, ry) => {
-      row.forEach((p, rx) => {
-        if (p > 0) {
-          ctx.fillStyle = colors[p] || "#ff0000";
-          const reflY = roadY + roadH - 4 - ry * pxSize * 0.4;
-          ctx.fillRect(lamboX + rx * pxSize, reflY + bounce, pxSize, Math.max(1, pxSize * 0.4));
-        }
-      });
-    });
-    ctx.globalAlpha = 1;
-
-    // ── Headlight beam ──
-    const beamX = lamboX + LAMBO_SPRITE[0].length * pxSize;
-    ctx.globalAlpha = 0.08;
-    ctx.fillStyle = "#ffee44";
-    ctx.fillRect(beamX, lamboYPos + LAMBO_SPRITE.length * pxSize * 0.4 + bounce, Math.max(0, W - beamX + 20), 8);
-    ctx.globalAlpha = 0.04;
-    ctx.fillRect(beamX, lamboYPos + LAMBO_SPRITE.length * pxSize * 0.25 + bounce, Math.max(0, W - beamX + 20), 16);
-    ctx.globalAlpha = 1;
-
-    // ── Exhaust smoke ──
-    for (let ei = 0; ei < 6; ei++) {
-      const ex = lamboX - 6 - ei * 5 - ((animFrame * 4 + ei * 5) % 18);
-      const ey = lamboYPos + LAMBO_SPRITE.length * pxSize * 0.6 + bounce + Math.sin(animFrame * 0.5 + ei) * 2;
-      ctx.globalAlpha = 0.2 - ei * 0.03;
-      ctx.fillStyle = "#aaaacc";
-      ctx.fillRect(ex, ey, 3, 2);
-    }
-    ctx.globalAlpha = 1;
-
-    // ── Tail light glow ──
-    ctx.globalAlpha = 0.15 + Math.sin(animFrame * 0.3) * 0.05;
-    ctx.fillStyle = "#ff2222";
-    ctx.fillRect(lamboX - 4, lamboYPos + LAMBO_SPRITE.length * pxSize * 0.4, 8, 4);
-    ctx.globalAlpha = 1;
-
-    // ── Scanline overlay ──
+    // ── Scanline overlay for retro feel ──
     ctx.globalAlpha = 0.04;
     ctx.fillStyle = "#000000";
     for (let sy = 0; sy < H; sy += 3) {
