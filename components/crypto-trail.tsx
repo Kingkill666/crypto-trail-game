@@ -925,21 +925,27 @@ function PixelTrailCanvas({ width = 600, height = 300, animFrame, milesTraveled,
       ctx.fillText("RIP", tx - 1, ty - 2);
     });
 
-    // ── LAMBO (AI-generated sprite or fallback pixel art) ──
+    // ── LAMBO driving left to right (flipped to face left) ──
     const lamboW = 140;
     const lamboH = 70;
-    const lamboX = W * 0.28;
+    const lamboX = ((animFrame * 3) % (W + lamboW * 2)) - lamboW;
     const lamboYPos = roadY - lamboH + 8;
     const bounce = animFrame % 3 === 0 ? -1 : 0;
 
     if (lamboLoadedRef.current && lamboImgRef.current) {
-      ctx.drawImage(lamboImgRef.current, lamboX, lamboYPos + bounce, lamboW, lamboH);
-      // Reflection
+      // Flip horizontally so car faces left (driving left to right)
+      ctx.save();
+      ctx.translate(lamboX + lamboW, lamboYPos + bounce);
+      ctx.scale(-1, 1);
+      ctx.drawImage(lamboImgRef.current, 0, 0, lamboW, lamboH);
+      ctx.restore();
+
+      // Reflection on wet road
       ctx.save();
       ctx.globalAlpha = 0.12;
-      ctx.translate(0, roadY + lamboH + 12);
-      ctx.scale(1, -0.4);
-      ctx.drawImage(lamboImgRef.current, lamboX, bounce, lamboW, lamboH);
+      ctx.translate(lamboX + lamboW, roadY + lamboH * 0.15);
+      ctx.scale(-1, -0.4);
+      ctx.drawImage(lamboImgRef.current, 0, 0, lamboW, lamboH);
       ctx.restore();
     } else {
       // Fallback: code-drawn pixel sprite
@@ -955,23 +961,28 @@ function PixelTrailCanvas({ width = 600, height = 300, animFrame, milesTraveled,
       });
     }
 
-    // ── Exhaust particles ──
+    // ── Exhaust smoke (behind car — to the right since car faces left) ──
     for (let ei = 0; ei < 5; ei++) {
-      const ex = lamboX - 8 - ei * 6 - ((animFrame * 3 + ei * 7) % 20);
-      const ey = lamboYPos + lamboH * 0.65 + bounce + Math.sin(animFrame + ei) * 2;
+      const ex = lamboX + lamboW + 4 + ei * 6 + ((animFrame * 3 + ei * 7) % 20);
+      const ey = lamboYPos + lamboH * 0.55 + bounce + Math.sin(animFrame + ei) * 2;
       ctx.globalAlpha = 0.25 - ei * 0.04;
       ctx.fillStyle = "#aaaacc";
       ctx.fillRect(ex, ey, 3 - (ei > 2 ? 1 : 0), 2);
     }
     ctx.globalAlpha = 1;
 
-    // ── Headlight beam ──
-    const beamX = lamboX + lamboW;
+    // ── Headlight beam (ahead of car — to the left) ──
     ctx.globalAlpha = 0.06;
     ctx.fillStyle = "#ffee44";
-    ctx.fillRect(beamX, lamboYPos + lamboH * 0.4 + bounce, W - beamX, 6);
+    ctx.fillRect(Math.max(0, lamboX - 80), lamboYPos + lamboH * 0.4 + bounce, Math.max(0, lamboX + 80), 6);
     ctx.globalAlpha = 0.03;
-    ctx.fillRect(beamX, lamboYPos + lamboH * 0.3 + bounce, W - beamX, 12);
+    ctx.fillRect(Math.max(0, lamboX - 120), lamboYPos + lamboH * 0.3 + bounce, Math.max(0, lamboX + 120), 12);
+    ctx.globalAlpha = 1;
+
+    // ── Tail light glow (right side — rear of flipped car) ──
+    ctx.globalAlpha = 0.15 + Math.sin(animFrame * 0.3) * 0.05;
+    ctx.fillStyle = "#ff2222";
+    ctx.fillRect(lamboX + lamboW - 2, lamboYPos + lamboH * 0.35 + bounce, 8, 4);
     ctx.globalAlpha = 1;
 
     // ── Next landmark icon ──
@@ -1008,12 +1019,17 @@ function PixelTrailCanvas({ width = 600, height = 300, animFrame, milesTraveled,
 function PixelTitleCanvas({ width = 600, height = 300, animFrame }: { width?: number; height?: number; animFrame: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bgImgRef = useRef<HTMLImageElement | null>(null);
+  const lamboImgRef = useRef<HTMLImageElement | null>(null);
   const bgLoadedRef = useRef(false);
+  const lamboLoadedRef = useRef(false);
 
   useEffect(() => {
-    const img = new Image();
-    img.onload = () => { bgLoadedRef.current = true; bgImgRef.current = img; };
-    img.src = "/images/sprites/cityscape-title.png";
+    const bgImg = new Image();
+    bgImg.onload = () => { bgLoadedRef.current = true; bgImgRef.current = bgImg; };
+    bgImg.src = "/images/sprites/cityscape-trail.png";
+    const lamboImg = new Image();
+    lamboImg.onload = () => { lamboLoadedRef.current = true; lamboImgRef.current = lamboImg; };
+    lamboImg.src = "/images/sprites/lambo-red.png";
   }, []);
 
   const draw = useCallback(() => {
@@ -1027,10 +1043,18 @@ function PixelTitleCanvas({ width = 600, height = 300, animFrame }: { width?: nu
     ctx.clearRect(0, 0, W, H);
 
     if (bgLoadedRef.current && bgImgRef.current) {
-      // Draw the AI-generated cityscape background, covering full canvas
-      ctx.drawImage(bgImgRef.current, 0, 0, W, H);
+      // Scrolling cityscape background
+      const bgW = bgImgRef.current.naturalWidth;
+      const bgH = bgImgRef.current.naturalHeight;
+      const scale = H / bgH;
+      const scaledW = bgW * scale;
+      const scrollOffset = (animFrame * 2) % scaledW;
+      ctx.drawImage(bgImgRef.current, -scrollOffset, 0, scaledW, H);
+      ctx.drawImage(bgImgRef.current, -scrollOffset + scaledW, 0, scaledW, H);
+      if (-scrollOffset + scaledW * 2 < W) {
+        ctx.drawImage(bgImgRef.current, -scrollOffset + scaledW * 2, 0, scaledW, H);
+      }
     } else {
-      // Fallback: solid dark background while image loads
       ctx.fillStyle = "#05001a";
       ctx.fillRect(0, 0, W, H);
     }
@@ -1046,8 +1070,57 @@ function PixelTitleCanvas({ width = 600, height = 300, animFrame }: { width?: nu
     }
     ctx.globalAlpha = 1;
 
-    // ── Subtle neon reflection shimmer on road area ──
+    // ── Lambo driving across left to right (flipped to face left) ──
+    const lamboW = 160;
+    const lamboH = 80;
     const roadY = H * 0.72;
+    const lamboX = ((animFrame * 4) % (W + lamboW * 2)) - lamboW;
+    const lamboYPos = roadY - lamboH + 10;
+    const bounce = animFrame % 3 === 0 ? -1 : 0;
+
+    if (lamboLoadedRef.current && lamboImgRef.current) {
+      // Flip horizontally so car faces left (driving left to right)
+      ctx.save();
+      ctx.translate(lamboX + lamboW, lamboYPos + bounce);
+      ctx.scale(-1, 1);
+      ctx.drawImage(lamboImgRef.current, 0, 0, lamboW, lamboH);
+      ctx.restore();
+
+      // Reflection on wet road
+      ctx.save();
+      ctx.globalAlpha = 0.12;
+      ctx.translate(lamboX + lamboW, roadY + lamboH * 0.15);
+      ctx.scale(-1, -0.4);
+      ctx.drawImage(lamboImgRef.current, 0, 0, lamboW, lamboH);
+      ctx.restore();
+    }
+
+    // ── Exhaust smoke (trails behind car — to the left since car moves right) ──
+    for (let ei = 0; ei < 6; ei++) {
+      const ex = lamboX + lamboW + 4 + ei * 6 + ((animFrame * 4 + ei * 5) % 18);
+      const ey = lamboYPos + lamboH * 0.55 + bounce + Math.sin(animFrame * 0.5 + ei) * 2;
+      ctx.globalAlpha = 0.2 - ei * 0.03;
+      ctx.fillStyle = "#aaaacc";
+      ctx.fillRect(ex, ey, 3, 2);
+    }
+    ctx.globalAlpha = 1;
+
+    // ── Headlight beam (ahead of car — to the left) ──
+    const beamX = lamboX;
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = "#ffee44";
+    ctx.fillRect(Math.max(0, beamX - 80), lamboYPos + lamboH * 0.4 + bounce, Math.max(0, beamX + 80), 6);
+    ctx.globalAlpha = 0.03;
+    ctx.fillRect(Math.max(0, beamX - 120), lamboYPos + lamboH * 0.3 + bounce, Math.max(0, beamX + 120), 12);
+    ctx.globalAlpha = 1;
+
+    // ── Tail light glow (right side — rear of car) ──
+    ctx.globalAlpha = 0.15 + Math.sin(animFrame * 0.3) * 0.05;
+    ctx.fillStyle = "#ff2222";
+    ctx.fillRect(lamboX + lamboW - 2, lamboYPos + lamboH * 0.35 + bounce, 8, 5);
+    ctx.globalAlpha = 1;
+
+    // ── Neon reflection shimmer on road area ──
     for (let ri = 0; ri < 6; ri++) {
       const rx = ((ri * 100 + animFrame * 3) % (W + 60)) - 30;
       const reflColors = ["#7c3aed", "#06b6d4", "#f43f5e", "#10b981"];
