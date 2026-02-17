@@ -925,7 +925,7 @@ function PixelTrailCanvas({ width = 600, height = 300, animFrame, milesTraveled,
       ctx.fillText("RIP", tx - 1, ty - 2);
     });
 
-    // ── LAMBO driving left to right (flipped to face left) ──
+    // ── LAMBO driving left to right ──
     const lamboW = 140;
     const lamboH = 70;
     const lamboX = ((animFrame * 3) % (W + lamboW * 2)) - lamboW;
@@ -933,18 +933,14 @@ function PixelTrailCanvas({ width = 600, height = 300, animFrame, milesTraveled,
     const bounce = animFrame % 3 === 0 ? -1 : 0;
 
     if (lamboLoadedRef.current && lamboImgRef.current) {
-      // Flip horizontally so car faces left (driving left to right)
-      ctx.save();
-      ctx.translate(lamboX + lamboW, lamboYPos + bounce);
-      ctx.scale(-1, 1);
-      ctx.drawImage(lamboImgRef.current, 0, 0, lamboW, lamboH);
-      ctx.restore();
+      // Sprite already faces right — draw directly
+      ctx.drawImage(lamboImgRef.current, lamboX, lamboYPos + bounce, lamboW, lamboH);
 
       // Reflection on wet road
       ctx.save();
       ctx.globalAlpha = 0.12;
-      ctx.translate(lamboX + lamboW, roadY + lamboH * 0.15);
-      ctx.scale(-1, -0.4);
+      ctx.translate(lamboX, roadY + lamboH * 0.15);
+      ctx.scale(1, -0.4);
       ctx.drawImage(lamboImgRef.current, 0, 0, lamboW, lamboH);
       ctx.restore();
     } else {
@@ -1079,25 +1075,21 @@ function PixelTitleCanvas({ width = 600, height = 300, animFrame }: { width?: nu
     const bounce = animFrame % 3 === 0 ? -1 : 0;
 
     if (lamboLoadedRef.current && lamboImgRef.current) {
-      // Flip horizontally so car faces left (driving left to right)
-      ctx.save();
-      ctx.translate(lamboX + lamboW, lamboYPos + bounce);
-      ctx.scale(-1, 1);
-      ctx.drawImage(lamboImgRef.current, 0, 0, lamboW, lamboH);
-      ctx.restore();
+      // Sprite already faces right — draw directly
+      ctx.drawImage(lamboImgRef.current, lamboX, lamboYPos + bounce, lamboW, lamboH);
 
       // Reflection on wet road
       ctx.save();
       ctx.globalAlpha = 0.12;
-      ctx.translate(lamboX + lamboW, roadY + lamboH * 0.15);
-      ctx.scale(-1, -0.4);
+      ctx.translate(lamboX, roadY + lamboH * 0.15);
+      ctx.scale(1, -0.4);
       ctx.drawImage(lamboImgRef.current, 0, 0, lamboW, lamboH);
       ctx.restore();
     }
 
-    // ── Exhaust smoke (trails behind car — to the left since car moves right) ──
+    // ── Exhaust smoke (trails behind car — to the left of the rear) ──
     for (let ei = 0; ei < 6; ei++) {
-      const ex = lamboX + lamboW + 4 + ei * 6 + ((animFrame * 4 + ei * 5) % 18);
+      const ex = lamboX - 4 - ei * 6 - ((animFrame * 4 + ei * 5) % 18);
       const ey = lamboYPos + lamboH * 0.55 + bounce + Math.sin(animFrame * 0.5 + ei) * 2;
       ctx.globalAlpha = 0.2 - ei * 0.03;
       ctx.fillStyle = "#aaaacc";
@@ -1105,13 +1097,13 @@ function PixelTitleCanvas({ width = 600, height = 300, animFrame }: { width?: nu
     }
     ctx.globalAlpha = 1;
 
-    // ── Headlight beam (ahead of car — to the left) ──
-    const beamX = lamboX;
+    // ── Headlight beam (ahead of car — to the right) ──
+    const beamX = lamboX + lamboW;
     ctx.globalAlpha = 0.06;
     ctx.fillStyle = "#ffee44";
-    ctx.fillRect(Math.max(0, beamX - 80), lamboYPos + lamboH * 0.4 + bounce, Math.max(0, beamX + 80), 6);
+    ctx.fillRect(beamX, lamboYPos + lamboH * 0.4 + bounce, 80, 6);
     ctx.globalAlpha = 0.03;
-    ctx.fillRect(Math.max(0, beamX - 120), lamboYPos + lamboH * 0.3 + bounce, Math.max(0, beamX + 120), 12);
+    ctx.fillRect(beamX, lamboYPos + lamboH * 0.3 + bounce, 120, 12);
     ctx.globalAlpha = 1;
 
     // ── Tail light glow (right side — rear of car) ──
