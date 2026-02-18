@@ -52,7 +52,7 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
     address: "0x50F88fe97f72CD3E75b9Eb4f747F59BcEBA80d59",
     decimals: 18,
     rewardAmount: BigInt("4000000000000000000"), // $0.01 worth at $0.0025 per token (~4 JESSE)
-    eventTitle: "JESSE POLLAK HEALS",
+    eventTitle: "JESSE POLLAK APED IN",
     displayAmount: "$0.01-$0.05 JESSE",
     randomReward: true,
   },

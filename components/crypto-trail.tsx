@@ -3462,7 +3462,7 @@ export default function CryptoTrail() {
             {/* Sponsored event rewards */}
             {(() => {
               const tokenInfo = getSponsoredToken(currentEvent.title);
-              if (tokenInfo && sponsoredRewards.rewardsContractConfigured && tokenInfo.rewardAmount > BigInt(0)) {
+              if (tokenInfo && tokenInfo.rewardAmount > BigInt(0) && tokenInfo.address !== "0x0000000000000000000000000000000000000000") {
                 return (
                   <>
                     <div style={{
