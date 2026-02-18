@@ -7,7 +7,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const API_KEY = "REDACTED_XAI_KEY";
+const API_KEY = process.env.XAI_API_KEY;
+if (!API_KEY) { console.error("ERROR: Set XAI_API_KEY env variable"); process.exit(1); }
 const API_URL = "https://api.x.ai/v1/images/generations";
 const OUTPUT_DIR = path.join(__dirname, "..", "public", "images", "sprites");
 

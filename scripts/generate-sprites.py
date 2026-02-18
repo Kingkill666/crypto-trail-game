@@ -7,7 +7,10 @@ import ssl
 import os
 import sys
 
-API_KEY = "REDACTED_XAI_KEY"
+API_KEY = os.environ.get("XAI_API_KEY")
+if not API_KEY:
+    print("ERROR: Set XAI_API_KEY env variable", file=sys.stderr)
+    sys.exit(1)
 API_URL = "https://api.x.ai/v1/images/generations"
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "public", "images", "sprites")
 
