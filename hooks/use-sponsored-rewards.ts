@@ -89,8 +89,14 @@ export function useSponsoredRewards() {
   const [claimState, setClaimState] = useState<ClaimState>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // LAYER 1: Track on-chain claimed events to prevent double claims
+  const claimedOnChainRef = useRef<Set<string>>(new Set());
+
   // Resolve ref to bridge wagmi effects into an awaitable promise
   const claimResolveRef = useRef<((success: boolean) => void) | null>(null);
+  // Track which reward we're currently claiming for auto-defer on failure
+  const currentClaimEventRef = useRef<string | null>(null);
+  const currentSignedRewardRef = useRef<PendingReward | null>(null);
 
   const {
     writeContract,
@@ -116,10 +122,16 @@ export function useSponsoredRewards() {
       (claimState === "confirming" || claimState === "claiming")
     ) {
       setClaimState("success");
+      // LAYER 1: Mark as claimed on-chain
+      if (currentClaimEventRef.current) {
+        claimedOnChainRef.current.add(currentClaimEventRef.current);
+      }
       if (claimResolveRef.current) {
         claimResolveRef.current(true);
         claimResolveRef.current = null;
       }
+      currentClaimEventRef.current = null;
+      currentSignedRewardRef.current = null;
     }
   }, [isConfirmed, claimState]);
 
@@ -136,10 +148,25 @@ export function useSponsoredRewards() {
               ? "Reward pool empty — try again later"
               : err?.message?.slice(0, 100) || "Claim failed"
       );
+
+      // LAYER 2: Auto-defer to pendingRewards if we have a signed reward and it failed
+      if (currentSignedRewardRef.current && currentClaimEventRef.current) {
+        const failedReward = currentSignedRewardRef.current;
+        const failedEvent = currentClaimEventRef.current;
+        // Only auto-defer if not already in pending
+        setPendingRewards((prev) => {
+          const exists = prev.some((r) => r.eventTitle === failedEvent);
+          if (exists) return prev;
+          return [...prev, failedReward];
+        });
+      }
+
       if (claimResolveRef.current) {
         claimResolveRef.current(false);
         claimResolveRef.current = null;
       }
+      currentClaimEventRef.current = null;
+      currentSignedRewardRef.current = null;
     }
   }, [writeError, receiptError]);
 
@@ -150,6 +177,7 @@ export function useSponsoredRewards() {
     const sessionId = crypto.randomUUID();
     sessionIdRef.current = sessionId;
     setEarnedRewards([]); // Reset for new game
+    claimedOnChainRef.current.clear(); // Reset claim tracker
     try {
       await fetch("/api/rewards/session", {
         method: "POST",
@@ -162,7 +190,7 @@ export function useSponsoredRewards() {
     return sessionId;
   }, [address]);
 
-  // Record that a sponsored event occurred in this game session
+  // LAYER 3: Record that a sponsored event occurred in this game session
   const recordEvent = useCallback(
     async (eventTitle: string) => {
       if (!address || !sessionIdRef.current) return;
@@ -172,7 +200,7 @@ export function useSponsoredRewards() {
       const token = getSponsoredToken(eventTitle);
       const amount = token ? getRandomizedRewardAmount(token) : undefined;
 
-      // Add to earnedRewards immediately
+      // Add to earnedRewards immediately (LAYER 3: always show on end screen)
       if (token) {
         setEarnedRewards((prev) => [
           ...prev,
@@ -218,6 +246,13 @@ export function useSponsoredRewards() {
         return false;
       }
 
+      // LAYER 1: Check if already claimed on-chain
+      if (claimedOnChainRef.current.has(eventTitle)) {
+        setErrorMsg("Already claimed");
+        setClaimState("error");
+        return false;
+      }
+
       setClaimState("signing");
       setErrorMsg(null);
       resetWrite();
@@ -243,6 +278,10 @@ export function useSponsoredRewards() {
           eventTitle,
         };
 
+        // Store for auto-defer on failure (LAYER 2)
+        currentClaimEventRef.current = eventTitle;
+        currentSignedRewardRef.current = reward;
+
         setClaimState("claiming");
 
         // Create a promise that resolves when the tx confirms or fails
@@ -262,7 +301,7 @@ export function useSponsoredRewards() {
           });
         });
 
-        // Mark as claimed in earnedRewards if successful
+        // Mark as claimed in earnedRewards if successful (LAYER 3)
         if (result) {
           setEarnedRewards((prev) =>
             prev.map((r) =>
@@ -323,9 +362,12 @@ export function useSponsoredRewards() {
 
     try {
       const now = Math.floor(Date.now() / 1000);
-      const valid = pendingRewards.filter((r) => r.expiry > now);
+      // LAYER 1: Filter out already-claimed AND expired rewards
+      const valid = pendingRewards.filter(
+        (r) => r.expiry > now && !claimedOnChainRef.current.has(r.eventTitle)
+      );
       if (valid.length === 0) {
-        setErrorMsg("Rewards expired");
+        setErrorMsg("No valid rewards to claim");
         setClaimState("error");
         return false;
       }
@@ -364,8 +406,11 @@ export function useSponsoredRewards() {
       });
 
       if (result) {
+        // LAYER 1: Mark all batch-claimed rewards as claimed on-chain
+        valid.forEach((r) => claimedOnChainRef.current.add(r.eventTitle));
+
         setPendingRewards([]);
-        // Mark all pending rewards as claimed in earnedRewards
+        // LAYER 3: Mark all pending rewards as claimed in earnedRewards
         setEarnedRewards((prev) =>
           prev.map((r) =>
             valid.some((p) => p.eventTitle === r.eventTitle)
