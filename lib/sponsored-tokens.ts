@@ -13,7 +13,6 @@ export interface SponsoredToken {
   randomReward?: boolean; // If true, multiply by random 1-5x ($0.01-$0.05)
 }
 
-// Placeholder addresses — replace with real Base mainnet token addresses
 // Reward amounts: Base $0.01 (randomReward: true = $0.01-$0.05), $0.10 for PIZZA
 export const SPONSORED_TOKENS: SponsoredToken[] = [
   {
@@ -23,8 +22,8 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
     decimals: 18,
     rewardAmount: BigInt("4572790000000000000000"), // $0.01 worth at $0.000002187 per token (~4,572.79 BETR)
     eventTitle: "BETR POKER CHAMPION",
-    displayAmount: "$0.01-$0.05 BETR",
-    randomReward: true, // Random 1x-5x multiplier
+    displayAmount: "BETR",
+    randomReward: true,
   },
   {
     symbol: "BRND",
@@ -33,7 +32,7 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
     decimals: 18,
     rewardAmount: BigInt("25252530000000000000000"), // $0.01 worth at $0.000000396 per token (~25,252.53 BRND)
     eventTitle: "BRND MINI APP WINNER",
-    displayAmount: "$0.01-$0.05 BRND",
+    displayAmount: "BRND",
     randomReward: true,
   },
   {
@@ -43,7 +42,7 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
     decimals: 18,
     rewardAmount: BigInt("52910000000000000000"), // $0.01 worth at $0.0001890 per token (~52.91 DAU)
     eventTitle: "DAU CO-SPONSOR",
-    displayAmount: "$0.01-$0.05 DAU",
+    displayAmount: "DAU",
     randomReward: true,
   },
   {
@@ -53,7 +52,7 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
     decimals: 18,
     rewardAmount: BigInt("4000000000000000000"), // $0.01 worth at $0.0025 per token (~4 JESSE)
     eventTitle: "JESSE POLLAK APED IN",
-    displayAmount: "$0.01-$0.05 JESSE",
+    displayAmount: "JESSE",
     randomReward: true,
   },
   {
@@ -63,7 +62,7 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
     decimals: 6,
     rewardAmount: BigInt(10000), // 0.01 USDC = 10000 (6 decimals)
     eventTitle: "FARCASTER MINI APP",
-    displayAmount: "$0.01-$0.05 USDC",
+    displayAmount: "USDC",
     randomReward: true,
   },
   {
@@ -73,8 +72,8 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
     decimals: 18,
     rewardAmount: BigInt("71326530000000000000000"), // $0.10 worth at $0.000001402 per token (~71,326.53 PIZZA)
     eventTitle: "PIZZA PARTY FOR VETS",
-    displayAmount: "$0.10 PIZZA", // Fixed amount, not random
-    randomReward: false,
+    displayAmount: "PIZZA",
+    randomReward: false, // Fixed amount, not random
   },
   {
     symbol: "QR",
@@ -83,7 +82,7 @@ export const SPONSORED_TOKENS: SponsoredToken[] = [
     decimals: 18,
     rewardAmount: BigInt("1108780000000000000000"), // $0.01 worth at $0.000009019 per token (~1,108.78 QR)
     eventTitle: "QR ONCHAIN ATTENTION",
-    displayAmount: "$0.01-$0.05 QR",
+    displayAmount: "QR",
     randomReward: true,
   },
 ];
@@ -96,4 +95,11 @@ export function getSponsoredToken(
   eventTitle: string
 ): SponsoredToken | undefined {
   return SPONSORED_TOKENS.find((t) => t.eventTitle === eventTitle);
+}
+
+/** Apply random 1-5x multiplier for randomReward tokens, or return base amount for fixed (PIZZA). */
+export function getRandomizedRewardAmount(token: SponsoredToken): bigint {
+  if (!token.randomReward) return token.rewardAmount;
+  const multiplier = Math.floor(Math.random() * 5) + 1; // 1-5x
+  return token.rewardAmount * BigInt(multiplier);
 }

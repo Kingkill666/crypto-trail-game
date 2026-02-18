@@ -6,7 +6,7 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { SPONSORED_EVENT_TITLES } from "@/lib/sponsored-tokens";
+import { SPONSORED_EVENT_TITLES, getSponsoredToken, getRandomizedRewardAmount } from "@/lib/sponsored-tokens";
 
 // ── CONSTANTS ──
 
@@ -82,6 +82,9 @@ export function useSponsoredRewards() {
   const [claimState, setClaimState] = useState<ClaimState>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Resolve ref to bridge wagmi effects into an awaitable promise
+  const claimResolveRef = useRef<((success: boolean) => void) | null>(null);
+
   const {
     writeContract,
     data: txHash,
@@ -106,6 +109,10 @@ export function useSponsoredRewards() {
       (claimState === "confirming" || claimState === "claiming")
     ) {
       setClaimState("success");
+      if (claimResolveRef.current) {
+        claimResolveRef.current(true);
+        claimResolveRef.current = null;
+      }
     }
   }, [isConfirmed, claimState]);
 
@@ -122,6 +129,10 @@ export function useSponsoredRewards() {
               ? "Reward pool empty — try again later"
               : err?.message?.slice(0, 100) || "Claim failed"
       );
+      if (claimResolveRef.current) {
+        claimResolveRef.current(false);
+        claimResolveRef.current = null;
+      }
     }
   }, [writeError, receiptError]);
 
@@ -148,6 +159,11 @@ export function useSponsoredRewards() {
     async (eventTitle: string) => {
       if (!address || !sessionIdRef.current) return;
       if (!SPONSORED_EVENT_TITLES.has(eventTitle)) return;
+
+      // Get randomized reward amount
+      const token = getSponsoredToken(eventTitle);
+      const amount = token ? getRandomizedRewardAmount(token) : undefined;
+
       try {
         await fetch("/api/rewards/session", {
           method: "POST",
@@ -157,6 +173,7 @@ export function useSponsoredRewards() {
             wallet: address,
             sessionId: sessionIdRef.current,
             eventTitle,
+            amount: amount?.toString(),
           }),
         });
       } catch {
@@ -169,16 +186,16 @@ export function useSponsoredRewards() {
   // ── CLAIM NOW ──
 
   const claimReward = useCallback(
-    async (eventTitle: string) => {
+    async (eventTitle: string): Promise<boolean> => {
       if (!address || !isConnected || !sessionIdRef.current) {
         setErrorMsg("Connect your wallet first");
         setClaimState("error");
-        return;
+        return false;
       }
       if (!REWARDS_CONTRACT || REWARDS_CONTRACT.length < 10) {
         setErrorMsg("Rewards contract not configured");
         setClaimState("error");
-        return;
+        return false;
       }
 
       setClaimState("signing");
@@ -207,18 +224,25 @@ export function useSponsoredRewards() {
         };
 
         setClaimState("claiming");
-        writeContract({
-          address: REWARDS_CONTRACT,
-          abi: CRYPTO_TRAIL_REWARDS_ABI,
-          functionName: "claim",
-          args: [
-            reward.token as `0x${string}`,
-            BigInt(reward.amount),
-            reward.claimId as `0x${string}`,
-            BigInt(reward.expiry),
-            reward.signature as `0x${string}`,
-          ],
+
+        // Create a promise that resolves when the tx confirms or fails
+        const result = await new Promise<boolean>((resolve) => {
+          claimResolveRef.current = resolve;
+          writeContract({
+            address: REWARDS_CONTRACT,
+            abi: CRYPTO_TRAIL_REWARDS_ABI,
+            functionName: "claim",
+            args: [
+              reward.token as `0x${string}`,
+              BigInt(reward.amount),
+              reward.claimId as `0x${string}`,
+              BigInt(reward.expiry),
+              reward.signature as `0x${string}`,
+            ],
+          });
         });
+
+        return result;
       } catch (err: unknown) {
         setClaimState("error");
         setErrorMsg(
@@ -226,6 +250,7 @@ export function useSponsoredRewards() {
             ? err.message.slice(0, 100)
             : "Claim failed"
         );
+        return false;
       }
     },
     [address, isConnected, writeContract, resetWrite]
@@ -259,9 +284,9 @@ export function useSponsoredRewards() {
 
   // ── BATCH CLAIM ALL PENDING ──
 
-  const claimAllPending = useCallback(async () => {
-    if (!address || !isConnected || pendingRewards.length === 0) return;
-    if (!REWARDS_CONTRACT || REWARDS_CONTRACT.length < 10) return;
+  const claimAllPending = useCallback(async (): Promise<boolean> => {
+    if (!address || !isConnected || pendingRewards.length === 0) return false;
+    if (!REWARDS_CONTRACT || REWARDS_CONTRACT.length < 10) return false;
 
     setClaimState("claiming");
     setErrorMsg(null);
@@ -273,37 +298,46 @@ export function useSponsoredRewards() {
       if (valid.length === 0) {
         setErrorMsg("Rewards expired");
         setClaimState("error");
-        return;
+        return false;
       }
 
-      if (valid.length === 1) {
-        const r = valid[0];
-        writeContract({
-          address: REWARDS_CONTRACT,
-          abi: CRYPTO_TRAIL_REWARDS_ABI,
-          functionName: "claim",
-          args: [
-            r.token as `0x${string}`,
-            BigInt(r.amount),
-            r.claimId as `0x${string}`,
-            BigInt(r.expiry),
-            r.signature as `0x${string}`,
-          ],
-        });
-      } else {
-        writeContract({
-          address: REWARDS_CONTRACT,
-          abi: CRYPTO_TRAIL_REWARDS_ABI,
-          functionName: "batchClaim",
-          args: [
-            valid.map((r) => r.token as `0x${string}`),
-            valid.map((r) => BigInt(r.amount)),
-            valid.map((r) => r.claimId as `0x${string}`),
-            valid.map((r) => BigInt(r.expiry)),
-            valid.map((r) => r.signature as `0x${string}`),
-          ],
-        });
+      const result = await new Promise<boolean>((resolve) => {
+        claimResolveRef.current = resolve;
+
+        if (valid.length === 1) {
+          const r = valid[0];
+          writeContract({
+            address: REWARDS_CONTRACT,
+            abi: CRYPTO_TRAIL_REWARDS_ABI,
+            functionName: "claim",
+            args: [
+              r.token as `0x${string}`,
+              BigInt(r.amount),
+              r.claimId as `0x${string}`,
+              BigInt(r.expiry),
+              r.signature as `0x${string}`,
+            ],
+          });
+        } else {
+          writeContract({
+            address: REWARDS_CONTRACT,
+            abi: CRYPTO_TRAIL_REWARDS_ABI,
+            functionName: "batchClaim",
+            args: [
+              valid.map((r) => r.token as `0x${string}`),
+              valid.map((r) => BigInt(r.amount)),
+              valid.map((r) => r.claimId as `0x${string}`),
+              valid.map((r) => BigInt(r.expiry)),
+              valid.map((r) => r.signature as `0x${string}`),
+            ],
+          });
+        }
+      });
+
+      if (result) {
+        setPendingRewards([]);
       }
+      return result;
     } catch (err: unknown) {
       setClaimState("error");
       setErrorMsg(
@@ -311,6 +345,7 @@ export function useSponsoredRewards() {
           ? err.message.slice(0, 100)
           : "Batch claim failed"
       );
+      return false;
     }
   }, [address, isConnected, pendingRewards, writeContract, resetWrite]);
 

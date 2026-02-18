@@ -5,7 +5,7 @@ import { useAccount, useConnect } from "wagmi";
 import { useGamePayment, useNftMint, useFreePlay } from "@/hooks/use-web3";
 import { useLeaderboard, usePlayerProfile, submitScore } from "@/hooks/use-leaderboard";
 import { useSponsoredRewards } from "@/hooks/use-sponsored-rewards";
-import { getSponsoredToken } from "@/lib/sponsored-tokens";
+import { getSponsoredToken, getRandomizedRewardAmount } from "@/lib/sponsored-tokens";
 
 // ═══════════════════════════════════════════════════════════════
 // CRYPTO TRAIL - A Degen Oregon Trail for Farcaster (8-BIT EDITION)
@@ -3469,7 +3469,7 @@ export default function CryptoTrail() {
                       fontSize: "11px", color: "#10b981", marginBottom: "16px", letterSpacing: "2px",
                       animation: eventAnimPhase >= 2 ? "pixelFadeIn 0.4s ease-out 0.2s both" : "none",
                     }}>
-                      🎁 YOU EARNED: {tokenInfo.displayAmount}
+                      🎁 YOU EARNED: {tokenInfo.symbol} TOKENS
                     </div>
                     <div style={{
                       display: "flex", gap: "8px", flexDirection: "column",
@@ -3477,15 +3477,28 @@ export default function CryptoTrail() {
                     }}>
                       <PixelBtn
                         onClick={async () => {
-                          await sponsoredRewards.claimReward(currentEvent.title);
-                          resolveEvent();
+                          const success = await sponsoredRewards.claimReward(currentEvent.title);
+                          if (success) {
+                            resolveEvent();
+                          }
                         }}
                         color="#7c3aed"
                         fullWidth
                         disabled={sponsoredRewards.claimState === "claiming" || sponsoredRewards.claimState === "confirming"}
                       >
-                        {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : `CLAIM ${tokenInfo.displayAmount}`}
+                        {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : "CLAIM REWARDS"}
                       </PixelBtn>
+                      {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
+                        <div style={{ fontSize: "9px", color: "#ef4444", letterSpacing: "1px", textAlign: "center" }}>
+                          {sponsoredRewards.errorMsg}
+                          <span
+                            onClick={() => sponsoredRewards.reset()}
+                            style={{ color: "#fff", marginLeft: "8px", cursor: "pointer", textDecoration: "underline" }}
+                          >
+                            RETRY
+                          </span>
+                        </div>
+                      )}
                       <PixelBtn
                         onClick={async () => {
                           await sponsoredRewards.deferReward(currentEvent.title);
@@ -3799,6 +3812,50 @@ export default function CryptoTrail() {
             )}
           </div>
 
+          {/* Sponsored Rewards Breakdown */}
+          {sponsoredRewards.pendingRewards.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{
+                fontSize: "10px", color: "#10b981", marginBottom: "8px", letterSpacing: "2px",
+                textAlign: "center",
+              }}>
+                🎁 REWARDS EARNED
+              </div>
+              <div style={{
+                padding: "12px", background: "#0a0a12", border: "2px solid #10b98144",
+                marginBottom: "12px", textAlign: "left",
+              }}>
+                {sponsoredRewards.pendingRewards.map((reward, i) => (
+                  <div key={i} style={{
+                    fontSize: "10px", color: "#fff", marginBottom: "4px", display: "flex",
+                    justifyContent: "space-between", letterSpacing: "1px",
+                  }}>
+                    <span>{reward.eventTitle}</span>
+                    <span style={{ color: "#10b981" }}>{reward.displayAmount}</span>
+                  </div>
+                ))}
+              </div>
+              <PixelBtn
+                onClick={sponsoredRewards.claimAllPending}
+                color="#10b981"
+                fullWidth
+                disabled={sponsoredRewards.claimState === "claiming" || sponsoredRewards.claimState === "confirming"}
+              >
+                {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : "CLAIM REWARDS"}
+              </PixelBtn>
+              {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
+                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px" }}>
+                  {sponsoredRewards.errorMsg}
+                </div>
+              )}
+              {sponsoredRewards.claimState === "success" && (
+                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px" }}>
+                  ✓ Rewards claimed successfully!
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Mint Death NFT Button */}
           {deathNftImage && deathNftMintState === "ready" && !deathMintSuccess && (
             <div style={{ marginBottom: "16px" }}>
@@ -3926,50 +3983,6 @@ export default function CryptoTrail() {
                   {t.epitaph}
                 </div>
               ))}
-            </div>
-          )}
-
-          {/* Sponsored Rewards Breakdown */}
-          {sponsoredRewards.pendingRewards.length > 0 && (
-            <div style={{ marginBottom: "16px" }}>
-              <div style={{
-                fontSize: "10px", color: "#10b981", marginBottom: "8px", letterSpacing: "2px",
-                textAlign: "center",
-              }}>
-                🎁 REWARDS EARNED
-              </div>
-              <div style={{
-                padding: "12px", background: "#0a0a12", border: "2px solid #10b98144",
-                marginBottom: "12px", textAlign: "left",
-              }}>
-                {sponsoredRewards.pendingRewards.map((reward, i) => (
-                  <div key={i} style={{
-                    fontSize: "10px", color: "#fff", marginBottom: "4px", display: "flex",
-                    justifyContent: "space-between", letterSpacing: "1px",
-                  }}>
-                    <span>{reward.eventTitle}</span>
-                    <span style={{ color: "#10b981" }}>{reward.displayAmount}</span>
-                  </div>
-                ))}
-              </div>
-              <PixelBtn
-                onClick={sponsoredRewards.claimAllPending}
-                color="#10b981"
-                fullWidth
-                disabled={sponsoredRewards.claimState === "claiming" || sponsoredRewards.claimState === "confirming"}
-              >
-                {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : `CLAIM ALL REWARDS (${sponsoredRewards.pendingRewards.length})`}
-              </PixelBtn>
-              {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
-                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px" }}>
-                  {sponsoredRewards.errorMsg}
-                </div>
-              )}
-              {sponsoredRewards.claimState === "success" && (
-                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px" }}>
-                  ✓ Rewards claimed successfully!
-                </div>
-              )}
             </div>
           )}
 
@@ -4124,6 +4137,50 @@ export default function CryptoTrail() {
             )}
           </div>
 
+          {/* Sponsored Rewards Breakdown */}
+          {sponsoredRewards.pendingRewards.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{
+                fontSize: "10px", color: "#10b981", marginBottom: "8px", letterSpacing: "2px",
+                textAlign: "center",
+              }}>
+                🎁 REWARDS EARNED
+              </div>
+              <div style={{
+                padding: "12px", background: "#0a0a12", border: "2px solid #10b98144",
+                marginBottom: "12px", textAlign: "left",
+              }}>
+                {sponsoredRewards.pendingRewards.map((reward, i) => (
+                  <div key={i} style={{
+                    fontSize: "10px", color: "#fff", marginBottom: "4px", display: "flex",
+                    justifyContent: "space-between", letterSpacing: "1px",
+                  }}>
+                    <span>{reward.eventTitle}</span>
+                    <span style={{ color: "#10b981" }}>{reward.displayAmount}</span>
+                  </div>
+                ))}
+              </div>
+              <PixelBtn
+                onClick={sponsoredRewards.claimAllPending}
+                color="#10b981"
+                fullWidth
+                disabled={sponsoredRewards.claimState === "claiming" || sponsoredRewards.claimState === "confirming"}
+              >
+                {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : "CLAIM REWARDS"}
+              </PixelBtn>
+              {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
+                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px" }}>
+                  {sponsoredRewards.errorMsg}
+                </div>
+              )}
+              {sponsoredRewards.claimState === "success" && (
+                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px" }}>
+                  ✓ Rewards claimed successfully!
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Mint NFT Button */}
           {nftImage && nftMintState === "ready" && !mintSuccess && (
             <div style={{ marginBottom: "16px" }}>
@@ -4251,50 +4308,6 @@ export default function CryptoTrail() {
                   {t.epitaph}
                 </div>
               ))}
-            </div>
-          )}
-
-          {/* Sponsored Rewards Breakdown */}
-          {sponsoredRewards.pendingRewards.length > 0 && (
-            <div style={{ marginBottom: "16px" }}>
-              <div style={{
-                fontSize: "10px", color: "#10b981", marginBottom: "8px", letterSpacing: "2px",
-                textAlign: "center",
-              }}>
-                🎁 REWARDS EARNED
-              </div>
-              <div style={{
-                padding: "12px", background: "#0a0a12", border: "2px solid #10b98144",
-                marginBottom: "12px", textAlign: "left",
-              }}>
-                {sponsoredRewards.pendingRewards.map((reward, i) => (
-                  <div key={i} style={{
-                    fontSize: "10px", color: "#fff", marginBottom: "4px", display: "flex",
-                    justifyContent: "space-between", letterSpacing: "1px",
-                  }}>
-                    <span>{reward.eventTitle}</span>
-                    <span style={{ color: "#10b981" }}>{reward.displayAmount}</span>
-                  </div>
-                ))}
-              </div>
-              <PixelBtn
-                onClick={sponsoredRewards.claimAllPending}
-                color="#10b981"
-                fullWidth
-                disabled={sponsoredRewards.claimState === "claiming" || sponsoredRewards.claimState === "confirming"}
-              >
-                {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : `CLAIM ALL REWARDS (${sponsoredRewards.pendingRewards.length})`}
-              </PixelBtn>
-              {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
-                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px" }}>
-                  {sponsoredRewards.errorMsg}
-                </div>
-              )}
-              {sponsoredRewards.claimState === "success" && (
-                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px" }}>
-                  ✓ Rewards claimed successfully!
-                </div>
-              )}
             </div>
           )}
 
