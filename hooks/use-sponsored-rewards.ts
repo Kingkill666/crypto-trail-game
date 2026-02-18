@@ -65,6 +65,12 @@ export interface PendingReward {
   symbol: string;
 }
 
+export interface EarnedReward {
+  eventTitle: string;
+  symbol: string;
+  claimed: boolean;
+}
+
 export type ClaimState =
   | "idle"
   | "signing"
@@ -79,6 +85,7 @@ export function useSponsoredRewards() {
   const { address, isConnected } = useAccount();
   const sessionIdRef = useRef<string | null>(null);
   const [pendingRewards, setPendingRewards] = useState<PendingReward[]>([]);
+  const [earnedRewards, setEarnedRewards] = useState<EarnedReward[]>([]);
   const [claimState, setClaimState] = useState<ClaimState>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -142,6 +149,7 @@ export function useSponsoredRewards() {
     if (!address) return;
     const sessionId = crypto.randomUUID();
     sessionIdRef.current = sessionId;
+    setEarnedRewards([]); // Reset for new game
     try {
       await fetch("/api/rewards/session", {
         method: "POST",
@@ -163,6 +171,18 @@ export function useSponsoredRewards() {
       // Get randomized reward amount
       const token = getSponsoredToken(eventTitle);
       const amount = token ? getRandomizedRewardAmount(token) : undefined;
+
+      // Add to earnedRewards immediately
+      if (token) {
+        setEarnedRewards((prev) => [
+          ...prev,
+          {
+            eventTitle,
+            symbol: token.symbol,
+            claimed: false,
+          },
+        ]);
+      }
 
       try {
         await fetch("/api/rewards/session", {
@@ -241,6 +261,15 @@ export function useSponsoredRewards() {
             ],
           });
         });
+
+        // Mark as claimed in earnedRewards if successful
+        if (result) {
+          setEarnedRewards((prev) =>
+            prev.map((r) =>
+              r.eventTitle === eventTitle ? { ...r, claimed: true } : r
+            )
+          );
+        }
 
         return result;
       } catch (err: unknown) {
@@ -336,6 +365,14 @@ export function useSponsoredRewards() {
 
       if (result) {
         setPendingRewards([]);
+        // Mark all pending rewards as claimed in earnedRewards
+        setEarnedRewards((prev) =>
+          prev.map((r) =>
+            valid.some((p) => p.eventTitle === r.eventTitle)
+              ? { ...r, claimed: true }
+              : r
+          )
+        );
       }
       return result;
     } catch (err: unknown) {
@@ -371,6 +408,7 @@ export function useSponsoredRewards() {
     deferReward,
     claimAllPending,
     pendingRewards,
+    earnedRewards,
     // State
     claimState,
     errorMsg,
