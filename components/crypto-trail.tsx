@@ -3847,13 +3847,18 @@ export default function CryptoTrail() {
                   {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : "CLAIM REWARDS"}
                 </PixelBtn>
               )}
+              {!sponsoredRewards.rewardsContractConfigured && (
+                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px", textAlign: "center" }}>
+                  Rewards contract not configured
+                </div>
+              )}
               {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
-                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px" }}>
+                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px", textAlign: "center" }}>
                   {sponsoredRewards.errorMsg}
                 </div>
               )}
               {sponsoredRewards.claimState === "success" && (
-                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px" }}>
+                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px", textAlign: "center" }}>
                   ✓ Rewards claimed successfully!
                 </div>
               )}
@@ -3866,15 +3871,15 @@ export default function CryptoTrail() {
               {isConnected ? (
                 <PixelBtn
                   onClick={handleMintDeathNft}
-                  color={deathIsMinting ? "#333" : "#ef4444"}
-                  size="lg"
+                  color={deathIsMinting ? "#333" : "#7c3aed"}
+                  size="md"
                   fullWidth
                   disabled={deathIsMinting}
                 >
                   {deathIsMinting
                     ? (nftMint.mintState === "minting" ? "CONFIRM IN WALLET..." : "MINTING ON BASE...")
                     : nftMint.nftContractConfigured
-                      ? "> MINT DEATH NFT <"
+                      ? "> MINT NFT <"
                       : "> MINT NFT (CONTRACT PENDING) <"
                   }
                 </PixelBtn>
@@ -4176,13 +4181,18 @@ export default function CryptoTrail() {
                   {sponsoredRewards.claimState === "claiming" ? "CLAIMING..." : sponsoredRewards.claimState === "confirming" ? "CONFIRMING..." : "CLAIM REWARDS"}
                 </PixelBtn>
               )}
+              {!sponsoredRewards.rewardsContractConfigured && (
+                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px", textAlign: "center" }}>
+                  Rewards contract not configured
+                </div>
+              )}
               {sponsoredRewards.claimState === "error" && sponsoredRewards.errorMsg && (
-                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px" }}>
+                <div style={{ fontSize: "9px", color: "#ef4444", marginTop: "6px", letterSpacing: "1px", textAlign: "center" }}>
                   {sponsoredRewards.errorMsg}
                 </div>
               )}
               {sponsoredRewards.claimState === "success" && (
-                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px" }}>
+                <div style={{ fontSize: "9px", color: "#10b981", marginTop: "6px", letterSpacing: "1px", textAlign: "center" }}>
                   ✓ Rewards claimed successfully!
                 </div>
               )}
@@ -4195,15 +4205,15 @@ export default function CryptoTrail() {
               {isConnected ? (
                 <PixelBtn
                   onClick={handleMintNft}
-                  color={isMinting ? "#333" : "#10b981"}
-                  size="lg"
+                  color={isMinting ? "#333" : "#7c3aed"}
+                  size="md"
                   fullWidth
                   disabled={isMinting}
                 >
                   {isMinting
                     ? (nftMint.mintState === "minting" ? "CONFIRM IN WALLET..." : "MINTING ON BASE...")
                     : nftMint.nftContractConfigured
-                      ? "> MINT NFT TO WALLET (BASE) <"
+                      ? "> MINT NFT <"
                       : "> MINT NFT (CONTRACT PENDING) <"
                   }
                 </PixelBtn>
