@@ -1629,7 +1629,7 @@ function seededRng(seed: number) {
 }
 
 function getRarityTier(score: number) {
-  if (score >= 6000) return "legendary";
+  if (score >= 5500) return "legendary";
   if (score >= 4000) return "epic";
   if (score >= 2000) return "rare";
   return "common";
@@ -2810,16 +2810,16 @@ export default function CryptoTrail() {
               {freePlay.hasFreePlay
                 ? "★ FREE PLAY AVAILABLE ★"
                 : <>
-                  <span style={{ color: "#f43f5e" }}>ENTRY:</span> ${gamePayment.entryFeeUsd.toFixed(2)} USD
+                  <span style={{ color: "#f43f5e" }}>ENTRY:</span> <span style={{ color: "#fff", fontWeight: "900" }}>${gamePayment.entryFeeUsd.toFixed(2)} USD</span>
                   {gamePayment.entryFeeEth && (
-                    <span style={{ color: "#fff" }}>
+                    <span style={{ color: "#fff", fontWeight: "900" }}>
                       {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
                     </span>
                   )}
                   <br />
-                  <span style={{ color: "#fff", fontSize: "10px", whiteSpace: "nowrap" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
+                  <span style={{ color: "#ffd700", fontSize: "10px", fontWeight: "900", whiteSpace: "nowrap" }}>PAID ENTRY GIVES A DEATH OR VICTORY NFT</span>
                   <br />
-                  <span style={{ color: "#fbbf24", fontSize: "9px", letterSpacing: "1.5px" }}>REAL REWARD TOKENS FROM PIZZA, BETR, BRND, JESSE, QR, DAU, USDC... AND MORE!!</span>
+                  <span style={{ color: "#ef4444", fontSize: "11px", fontWeight: "900", letterSpacing: "1.5px" }}>REAL REWARD TOKENS FROM PIZZA, BETR, BRND, JESSE, QR, DAU, USDC... AND MORE!!</span>
                 </>
               }
             </div>
