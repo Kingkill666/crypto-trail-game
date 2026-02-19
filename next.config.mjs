@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Force environment variables to be available at build time (v2)
   env: {
     NEXT_PUBLIC_REWARDS_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_REWARDS_CONTRACT_ADDRESS,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
