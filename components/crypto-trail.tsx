@@ -2810,7 +2810,7 @@ export default function CryptoTrail() {
               {freePlay.hasFreePlay
                 ? "★ FREE PLAY AVAILABLE ★"
                 : <>
-                  <span style={{ color: "#f43f5e" }}>ENTRY:</span> <span style={{ color: "#fff", fontWeight: "900" }}>${gamePayment.entryFeeUsd.toFixed(2)} USD</span>
+                  <span style={{ color: "#f43f5e" }}>ENTRY:</span> <span style={{ color: "#fff", fontWeight: "900" }}>${gamePayment.entryFeeUsd.toFixed(2)} USDC</span>
                   {gamePayment.entryFeeEth && (
                     <span style={{ color: "#fff", fontWeight: "900" }}>
                       {" "}({gamePayment.entryFeeEth.toFixed(6)} ETH)
