@@ -11,7 +11,8 @@ import { SPONSORED_EVENT_TITLES, getSponsoredToken, getRandomizedRewardAmount } 
 // ── CONSTANTS ──
 
 const REWARDS_CONTRACT = (
-  process.env.NEXT_PUBLIC_REWARDS_CONTRACT_ADDRESS || ""
+  process.env.NEXT_PUBLIC_REWARDS_CONTRACT_ADDRESS ||
+  "0xBd727931C785FaDcCd2aF6a4Ea70d12C90341B12"
 ) as `0x${string}`;
 
 // ── ABI (minimal — only what we call from the frontend) ──
