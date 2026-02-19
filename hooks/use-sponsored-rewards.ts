@@ -19,34 +19,31 @@ const REWARDS_CONTRACT = (
 export const CRYPTO_TRAIL_REWARDS_ABI = [
   {
     inputs: [
+      { name: "eventTitle", type: "string" },
       { name: "token", type: "address" },
       { name: "amount", type: "uint256" },
-      { name: "claimId", type: "bytes32" },
-      { name: "expiry", type: "uint256" },
+      { name: "nonce", type: "uint256" },
       { name: "signature", type: "bytes" },
     ],
-    name: "claim",
+    name: "claimReward",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [
-      { name: "tokens", type: "address[]" },
-      { name: "amounts", type: "uint256[]" },
-      { name: "claimIds", type: "bytes32[]" },
-      { name: "expiries", type: "uint256[]" },
-      { name: "signatures", type: "bytes[]" },
+      { name: "player", type: "address" },
+      { name: "eventTitle", type: "string" },
     ],
-    name: "batchClaim",
-    outputs: [],
-    stateMutability: "nonpayable",
+    name: "hasPlayerClaimed",
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "view",
     type: "function",
   },
   {
-    inputs: [{ name: "token", type: "address" }],
-    name: "tokenBalance",
-    outputs: [{ name: "", type: "uint256" }],
+    inputs: [{ name: "eventTitle", type: "string" }],
+    name: "eventTokens",
+    outputs: [{ name: "", type: "address" }],
     stateMutability: "view",
     type: "function",
   },
@@ -55,10 +52,9 @@ export const CRYPTO_TRAIL_REWARDS_ABI = [
 // ── TYPES ──
 
 export interface PendingReward {
-  claimId: string;
+  nonce: string;
   token: string;
   amount: string;
-  expiry: number;
   signature: string;
   eventTitle: string;
   displayAmount: string;
@@ -290,12 +286,12 @@ export function useSponsoredRewards() {
           writeContract({
             address: REWARDS_CONTRACT,
             abi: CRYPTO_TRAIL_REWARDS_ABI,
-            functionName: "claim",
+            functionName: "claimReward",
             args: [
+              eventTitle,
               reward.token as `0x${string}`,
               BigInt(reward.amount),
-              reward.claimId as `0x${string}`,
-              BigInt(reward.expiry),
+              BigInt(reward.nonce),
               reward.signature as `0x${string}`,
             ],
           });
@@ -361,10 +357,9 @@ export function useSponsoredRewards() {
     resetWrite();
 
     try {
-      const now = Math.floor(Date.now() / 1000);
-      // LAYER 1: Filter out already-claimed AND expired rewards
+      // LAYER 1: Filter out already-claimed rewards
       const valid = pendingRewards.filter(
-        (r) => r.expiry > now && !claimedOnChainRef.current.has(r.eventTitle)
+        (r) => !claimedOnChainRef.current.has(r.eventTitle)
       );
       if (valid.length === 0) {
         setErrorMsg("No valid rewards to claim");
@@ -372,50 +367,41 @@ export function useSponsoredRewards() {
         return false;
       }
 
+      // Claim first pending reward
+      const r = valid[0];
+      currentClaimEventRef.current = r.eventTitle;
+      currentSignedRewardRef.current = r;
+
       const result = await new Promise<boolean>((resolve) => {
         claimResolveRef.current = resolve;
 
-        if (valid.length === 1) {
-          const r = valid[0];
-          writeContract({
-            address: REWARDS_CONTRACT,
-            abi: CRYPTO_TRAIL_REWARDS_ABI,
-            functionName: "claim",
-            args: [
-              r.token as `0x${string}`,
-              BigInt(r.amount),
-              r.claimId as `0x${string}`,
-              BigInt(r.expiry),
-              r.signature as `0x${string}`,
-            ],
-          });
-        } else {
-          writeContract({
-            address: REWARDS_CONTRACT,
-            abi: CRYPTO_TRAIL_REWARDS_ABI,
-            functionName: "batchClaim",
-            args: [
-              valid.map((r) => r.token as `0x${string}`),
-              valid.map((r) => BigInt(r.amount)),
-              valid.map((r) => r.claimId as `0x${string}`),
-              valid.map((r) => BigInt(r.expiry)),
-              valid.map((r) => r.signature as `0x${string}`),
-            ],
-          });
-        }
+        writeContract({
+          address: REWARDS_CONTRACT,
+          abi: CRYPTO_TRAIL_REWARDS_ABI,
+          functionName: "claimReward",
+          args: [
+            r.eventTitle,
+            r.token as `0x${string}`,
+            BigInt(r.amount),
+            BigInt(r.nonce),
+            r.signature as `0x${string}`,
+          ],
+        });
       });
 
       if (result) {
-        // LAYER 1: Mark all batch-claimed rewards as claimed on-chain
-        valid.forEach((r) => claimedOnChainRef.current.add(r.eventTitle));
+        // LAYER 1: Mark as claimed on-chain
+        claimedOnChainRef.current.add(r.eventTitle);
 
-        setPendingRewards([]);
-        // LAYER 3: Mark all pending rewards as claimed in earnedRewards
+        // Remove from pending
+        setPendingRewards((prev) => prev.filter((p) => p.eventTitle !== r.eventTitle));
+
+        // LAYER 3: Mark as claimed in earnedRewards
         setEarnedRewards((prev) =>
-          prev.map((r) =>
-            valid.some((p) => p.eventTitle === r.eventTitle)
-              ? { ...r, claimed: true }
-              : r
+          prev.map((reward) =>
+            reward.eventTitle === r.eventTitle
+              ? { ...reward, claimed: true }
+              : reward
           )
         );
       }
@@ -425,7 +411,7 @@ export function useSponsoredRewards() {
       setErrorMsg(
         err instanceof Error
           ? err.message.slice(0, 100)
-          : "Batch claim failed"
+          : "Claim failed"
       );
       return false;
     }

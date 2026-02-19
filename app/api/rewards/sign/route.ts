@@ -11,7 +11,6 @@ import { getSponsoredToken } from "@/lib/sponsored-tokens";
 const SIGNER_PRIVATE_KEY = process.env.REWARDS_SIGNER_PRIVATE_KEY as `0x${string}` | undefined;
 const REWARDS_CONTRACT = process.env.NEXT_PUBLIC_REWARDS_CONTRACT_ADDRESS as `0x${string}` | undefined;
 const CHAIN_ID = 8453; // Base mainnet
-const SIGNATURE_TTL = 3600; // 1 hour
 
 // POST /api/rewards/sign — Validate session + sign a claim authorization
 // Body: { wallet, eventTitle, gameSessionId }
@@ -35,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check reward amount is configured (non-zero)
-    if (token.rewardAmount === 0n) {
+    if (token.rewardAmount === BigInt(0)) {
       return NextResponse.json({ error: "Reward amount not configured" }, { status: 503 });
     }
 
@@ -64,53 +63,76 @@ export async function POST(req: NextRequest) {
       ? `$0.0${multiplier} ${token.symbol}`
       : token.displayAmount;
 
-    // Generate unique claimId
-    const claimId = keccak256(
+    // Generate unique nonce (replay protection)
+    const nonce = keccak256(
       encodePacked(
         ["address", "string", "string", "uint256"],
         [wallet as `0x${string}`, gameSessionId, eventTitle, BigInt(Date.now())]
       )
     );
 
-    // Compute expiry
-    const expiry = BigInt(Math.floor(Date.now() / 1000) + SIGNATURE_TTL);
-
-    // Sign the message (must match contract's _verifyClaim)
+    // Sign using EIP-712 (matches contract's claimReward function)
     const account = privateKeyToAccount(SIGNER_PRIVATE_KEY);
-    const messageHash = keccak256(
+
+    // EIP-712 Domain Separator (must match contract)
+    const DOMAIN_SEPARATOR = keccak256(
       encodePacked(
-        ["address", "address", "uint256", "bytes32", "uint256", "uint256", "address"],
+        ["bytes32", "bytes32", "bytes32", "uint256", "address"],
         [
-          wallet as `0x${string}`,
-          token.address,
-          finalRewardAmount,
-          claimId as `0x${string}`,
-          expiry,
+          keccak256(toBytes("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")),
+          keccak256(toBytes("CryptoTrailRewards")),
+          keccak256(toBytes("1")),
           BigInt(CHAIN_ID),
           REWARDS_CONTRACT,
         ]
       )
     );
+
+    // EIP-712 Struct Hash (matches contract's CLAIM_TYPEHASH)
+    const CLAIM_TYPEHASH = keccak256(
+      toBytes("Claim(address player,string eventTitle,address token,uint256 amount,uint256 nonce)")
+    );
+
+    const structHash = keccak256(
+      encodePacked(
+        ["bytes32", "address", "bytes32", "address", "uint256", "uint256"],
+        [
+          CLAIM_TYPEHASH,
+          wallet as `0x${string}`,
+          keccak256(toBytes(eventTitle)),
+          token.address,
+          finalRewardAmount,
+          BigInt(nonce),
+        ]
+      )
+    );
+
+    // Final EIP-712 digest
+    const digest = keccak256(
+      encodePacked(
+        ["string", "bytes32", "bytes32"],
+        ["\x19\x01", DOMAIN_SEPARATOR, structHash]
+      )
+    );
+
     const signature = await account.signMessage({
-      message: { raw: toBytes(messageHash) },
+      message: { raw: toBytes(digest) },
     });
 
     // Record in Redis with final amount and display
     await markRewardSigned(wallet, gameSessionId, eventTitle, {
-      claimId,
+      nonce: nonce,
       token: token.address,
       amount: finalRewardAmount.toString(),
-      expiry: Number(expiry),
       signature,
       displayAmount,
       symbol: token.symbol,
     });
 
     return NextResponse.json({
-      claimId,
+      nonce: nonce,
       token: token.address,
       amount: finalRewardAmount.toString(),
-      expiry: Number(expiry),
       signature,
       displayAmount,
       symbol: token.symbol,

@@ -1,0 +1,10 @@
+{
+  "proxyAddress": "0xBd727931C785FaDcCd2aF6a4Ea70d12C90341B12",
+  "implementationAddress": "0x2948C87859F1C06fc820EA8fC9cCa9A5050db049",
+  "owner": "0x15E916FbAF9762F1344e0544ecdadA62d2Face15",
+  "network": "base",
+  "chainId": 8453,
+  "deployedAt": "2026-02-18T00:00:00.000Z",
+  "deploymentTx": "0xa8dbcdeeca5b946879c87ebe69ca5238e8f94c739c5995f549573f4e9254b772",
+  "pattern": "UUPS Upgradeable Proxy"
+}

@@ -3,10 +3,9 @@ import { Redis } from "@upstash/redis";
 // ── TYPES ──
 
 export interface SignedReward {
-  claimId: string;
+  nonce: string;
   token: string;
   amount: string;
-  expiry: number;
   signature: string;
   eventTitle: string;
   displayAmount: string;
