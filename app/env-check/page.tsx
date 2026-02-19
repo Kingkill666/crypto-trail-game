@@ -1,13 +1,20 @@
-"use client";
-
 /**
  * Environment Variable Diagnostic Page
  * Navigate to /env-check to verify NEXT_PUBLIC vars in production
+ *
+ * NOTE: This is a SERVER component to properly read process.env
  */
 
 export default function EnvCheckPage() {
+  // These are read at BUILD TIME on the server
   const rewardsContract = process.env.NEXT_PUBLIC_REWARDS_CONTRACT_ADDRESS || "";
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+
+  console.log("BUILD TIME ENV CHECK:", {
+    rewardsContract,
+    appUrl,
+    allEnv: Object.keys(process.env).filter(k => k.startsWith("NEXT_PUBLIC"))
+  });
 
   return (
     <div style={{
